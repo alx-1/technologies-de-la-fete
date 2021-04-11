@@ -1,0 +1,12 @@
+/Users/alx/esp/link/build/CMakeFiles/rebuild_cache.dir
+/Users/alx/esp/link/build/CMakeFiles/edit_cache.dir
+/Users/alx/esp/link/build/include/CMakeFiles/rebuild_cache.dir
+/Users/alx/esp/link/build/include/CMakeFiles/edit_cache.dir
+/Users/alx/esp/link/build/src/CMakeFiles/rebuild_cache.dir
+/Users/alx/esp/link/build/src/CMakeFiles/edit_cache.dir
+/Users/alx/esp/link/build/src/CMakeFiles/LinkDiscoveryTest.dir
+/Users/alx/esp/link/build/src/CMakeFiles/LinkCoreTest.dir
+/Users/alx/esp/link/build/examples/CMakeFiles/rebuild_cache.dir
+/Users/alx/esp/link/build/examples/CMakeFiles/edit_cache.dir
+/Users/alx/esp/link/build/examples/CMakeFiles/LinkHutSilent.dir
+/Users/alx/esp/link/build/examples/CMakeFiles/LinkHut.dir
