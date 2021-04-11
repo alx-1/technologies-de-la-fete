@@ -6,5 +6,6 @@ Uses smart config, need the app from Espressif to configure the IP
 
 Tested with esp-idf release/v4.0.
 
-Based on the ESP32 Ableton Link port by Mathias Bredholt https://github.com/mathiasbredholt/link_esp32_example.git
+Based on the ESP32 Ableton Link port by Mathias Bredholt https://github.com/mathiasbredholt/link-esp
+
 
