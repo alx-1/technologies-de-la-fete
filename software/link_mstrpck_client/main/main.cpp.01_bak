@@ -1,0 +1,472 @@
+//#include "driver/gpio.h"
+#include "esp_event.h"
+#include "esp_wifi.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "nvs_flash.h"
+//#include "protocol_examples_common.h"
+#include <ableton/Link.hpp>
+#include <stdio.h>
+#include "sdkconfig.h"
+
+///////// TOUCH //////
+#include "freertos/queue.h"
+#include "esp_log.h"
+#include "driver/touch_pad.h"
+#include "soc/rtc_periph.h"
+#include "soc/sens_periph.h"
+
+///////// DELS ///////
+extern "C"{
+#include <apa102.h>
+}
+
+///// SPI CONFIG TTGO
+///// HSPI
+///// HSPI MOSI 23
+///// HSPI SCK 18
+
+//// LES TACHES //////
+
+// tp_example_read_task (interrupt) touch pads
+// link task (pinned to core 0) 
+// appelle 
+// tick task // ableton link sur core 1
+
+
+extern "C"{
+static int docolors()
+    {
+	for (int i = 0; i < LEDSTRIP.count; i++)
+	    {
+		    int v = (0xFF * ((i + LEDSTRIP.phase) % LEDSTRIP.count)) / LEDSTRIP.count;
+		    LEDSTRIP.leds[i] = RGBL(v, v + 0x44, v + 0x88, 0xFF);
+	    }
+	    return ESP_OK;
+    }
+}
+
+
+
+///// seq /////
+
+bool bd[16] = {}; // empty 16 boolean values aray to store hits
+
+//// indicateur ////
+
+int compteur = 0;
+
+/////////////////// WiFI station example //////////////////////
+extern "C"{
+#include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/event_groups.h"
+#include "esp_system.h"
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_log.h"
+#include "nvs_flash.h"
+#include "lwip/err.h"
+#include "lwip/sys.h"
+}
+
+extern "C" { 
+#define EXAMPLE_ESP_WIFI_SSID      "link"
+#define EXAMPLE_ESP_WIFI_PASS      "nidieunimaitre"
+#define EXAMPLE_ESP_MAXIMUM_RETRY  2
+
+static EventGroupHandle_t s_wifi_event_group;
+
+#define WIFI_CONNECTED_BIT BIT0
+#define WIFI_FAIL_BIT      BIT1
+static const char *TAG = "tdlf client";
+
+static int s_retry_num = 0;
+}
+extern "C" { 
+static void event_handler(void* arg, esp_event_base_t event_base,
+                                int32_t event_id, void* event_data)
+                                {
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+        esp_wifi_connect();
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY) {
+            esp_wifi_connect();
+            s_retry_num++;
+            ESP_LOGI(TAG, "retry to connect to the AP");
+        } else {
+            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+        }
+        ESP_LOGI(TAG,"connect to the AP fail");
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
+        s_retry_num = 0;
+        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+    }
+}
+} // fin de extern "C"
+
+extern "C" { void wifi_init_sta(void)
+{
+    s_wifi_event_group = xEventGroupCreate();
+
+    ESP_ERROR_CHECK(esp_netif_init());
+
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    esp_netif_create_default_wifi_sta();
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
+
+    
+    ////
+    wifi_config_t wifi_config = { // whatever parce que C, c'est pas C++
+      { EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS }
+      };
+
+    /////
+ 
+
+    ///
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+    ESP_ERROR_CHECK(esp_wifi_start() );
+
+    ESP_LOGI(TAG, "wifi_init_sta finished.");
+
+    /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
+     * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
+    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
+            WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+            pdFALSE,
+            pdFALSE,
+            portMAX_DELAY);
+
+    /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
+     * happened. */
+    if (bits & WIFI_CONNECTED_BIT) {
+        ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
+                 EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+    } else if (bits & WIFI_FAIL_BIT) {
+        ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
+                 EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+    } else {
+        ESP_LOGE(TAG, "UNEXPECTED EVENT");
+    }
+
+    /* The event will not be processed after unregister */
+    //ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip));
+    //ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id));
+    //vEventGroupDelete(s_wifi_event_group);
+}
+} // fin de extern "C"
+
+
+///// fin station example
+
+// static const char *TAG = "Touch pad";
+
+#define TOUCH_THRESH_NO_USE   (0)
+#define TOUCH_THRESH_PERCENT  (90)
+#define TOUCHPAD_FILTER_TOUCH_PERIOD (10)
+
+static bool s_pad_activated[TOUCH_PAD_MAX];
+static uint32_t s_pad_init_val[TOUCH_PAD_MAX];
+////////////// TOUCH /////////
+
+
+extern "C" {
+
+bool flagTrue = 0;
+bool flagFalse = 0; // à enlever peut-être
+
+
+void TurnLedOn(int compteur){
+    printf("compteur : %d\n", compteur);
+/*
+        LEDSTRIP.update();
+		vTaskDelay(10);
+        LEDSTRIP.deinit();*///
+
+    for (int i = 0; i < 16;i++){
+        // printf("bd[i] = %d\n", bd[i]);
+        if(bd[i]){ // is the beat selected (true)   
+        printf("beat = %d\n", i);
+        LEDSTRIP.leds[0] = RGBL(0xFF, 0x22, 0x22, 0x88); // r v b l
+        LEDSTRIP.update();
+		vTaskDelay(100 / portTICK_PERIOD_MS); // 20
+        LEDSTRIP.deinit();
+        }
+
+        }
+    
+}
+
+////////// TOUCH //////////
+static void tp_example_set_thresholds(void)
+{
+    uint16_t touch_value;
+    for (int i = 0; i < TOUCH_PAD_MAX; i++) {
+        //read filtered value
+        touch_pad_read_filtered((touch_pad_t)i, &touch_value);
+        s_pad_init_val[i] = touch_value;
+        ESP_LOGI(TAG, "test init: touch pad [%d] val is %d", i, touch_value);
+        //set interrupt threshold.
+        ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)i, touch_value * 2 / 3));
+    }
+}
+
+
+static void tp_example_read_task(void *pvParameter)
+{
+    static int show_message;
+    int change_mode = 0;
+    int filter_mode = 0;
+
+    while (1) {
+        if (filter_mode == 0) {
+            //interrupt mode, enable touch interrupt
+            touch_pad_intr_enable();
+            for (int i = 0; i < TOUCH_PAD_MAX; i++) {
+                if (s_pad_activated[i] == true) {
+
+                /// logique ici
+                if(s_pad_activated[2] && s_pad_activated[4]){
+                    ESP_LOGI(TAG, "piton 1");
+                    bd[0] = !bd[0];
+                        }
+                if(s_pad_activated[0] && s_pad_activated[4]){
+                    ESP_LOGI(TAG, "piton 2");
+                    bd[1] = !bd[1];
+                        }
+                if(s_pad_activated[3] && s_pad_activated[4]){
+                    ESP_LOGI(TAG, "piton 3");
+                    bd[2] = !bd[2];
+                        }
+                if(s_pad_activated[9] && s_pad_activated[4]){
+                    ESP_LOGI(TAG, "piton 4");
+                    bd[3] = !bd[3];
+                        }
+                /////// 5-8
+                if(s_pad_activated[2] && s_pad_activated[5]){
+                            ESP_LOGI(TAG, "piton 5");
+                            bd[4] = !bd[4];
+                                }
+                if(s_pad_activated[0] && s_pad_activated[5]){
+                            ESP_LOGI(TAG, "piton 6");
+                            bd[5] = !bd[5];
+                                }
+                if(s_pad_activated[3] && s_pad_activated[5]){
+                            ESP_LOGI(TAG, "piton 7");
+                            bd[6] = !bd[6];
+                                }
+                if(s_pad_activated[9] && s_pad_activated[5]){
+                            ESP_LOGI(TAG, "piton 8");
+                            bd[7] = !bd[7];
+                                }
+                /////// 9-12
+                if(s_pad_activated[2] && s_pad_activated[6]){
+                        ESP_LOGI(TAG, "piton 9");
+                        bd[8] = !bd[8];
+                            }
+                if(s_pad_activated[0] && s_pad_activated[6]){
+                        ESP_LOGI(TAG, "piton 10");
+                        bd[9] = !bd[9];
+                            }
+                if(s_pad_activated[3] && s_pad_activated[6]){
+                        ESP_LOGI(TAG, "piton 11");
+                        bd[10] = !bd[10];
+                            }
+                if(s_pad_activated[9] && s_pad_activated[6]){
+                        ESP_LOGI(TAG, "piton 12");
+                        bd[11] = !bd[11];
+                            }
+                /////// 13-16
+                if(s_pad_activated[2] && s_pad_activated[7]){
+                      ESP_LOGI(TAG, "piton 13");
+                      bd[12] = !bd[12];
+                          }
+                if(s_pad_activated[0] && s_pad_activated[7]){
+                      ESP_LOGI(TAG, "piton 14");
+                      bd[13] = !bd[13];
+                          }
+                if(s_pad_activated[3] && s_pad_activated[7]){
+                      ESP_LOGI(TAG, "piton 15");
+                      bd[14] = !bd[14];
+                          }
+                if(s_pad_activated[9] && s_pad_activated[7]){
+                      ESP_LOGI(TAG, "piton 16");
+                      bd[15] = !bd[15];
+                          }
+
+                    ESP_LOGI(TAG, "T%d activated!", i);
+                    // Wait a while for the pad being released
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    // Clear information on pad activation
+                    s_pad_activated[i] = false;
+                    // Reset the counter triggering a message
+                    // that application is running
+                    show_message = 1;  /// ??
+                }
+            }
+        }
+
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+
+    }
+}
+
+
+static void tp_example_rtc_intr(void *arg)
+{
+    uint32_t pad_intr = touch_pad_get_status();
+    //clear interrupt
+    touch_pad_clear_status();
+    for (int i = 0; i < TOUCH_PAD_MAX; i++) {
+        if ((pad_intr >> i) & 0x01) {
+            s_pad_activated[i] = true;
+        }
+    }
+}
+
+/*
+ * Before reading touch pad, we need to initialize the RTC IO.
+ */
+static void tp_example_touch_pad_init(void)
+{
+    for (int i = 0; i < TOUCH_PAD_MAX; i++) {
+        //init RTC IO and mode for touch pad.
+        touch_pad_config((touch_pad_t)i, TOUCH_THRESH_NO_USE);
+    }
+}
+
+/////////// TOUCH //////////
+
+
+} // fin de extern "C"
+
+
+unsigned int if_nametoindex(const char* ifname)
+{
+  return 0;
+}
+
+char* if_indextoname(unsigned int ifindex, char* ifname)
+{
+  return nullptr;
+}
+
+void tick_task(void* user_param)
+{
+    auto pLink = static_cast<ableton::Link*>(user_param);
+    
+    while (true)
+    {
+        const auto state = pLink->captureAudioSessionState();
+        const auto phase = state.phaseAtTime(pLink->clock().micros(), 1.);
+        //gpio_set_level(LED, fmodf(phase, 1.) < 0.1);
+        //std::printf("state beat : \n");
+        //std::printf(state.beatAtTime);
+        bool yep = fmodf(phase, 1.) < 0.1;
+
+if (yep == true && flagTrue == false)
+	{
+    //std::printf("allume la led \n");
+    TurnLedOn(compteur); // ok il reste à allumer les DELs à partir de ça
+    compteur = compteur + 1;
+	compteur = compteur % 16;
+    flagTrue = !flagTrue;
+    }
+else if (yep == false && flagTrue == true) {
+    flagTrue = !flagTrue;
+}
+  }
+
+} // fin de tick_task
+
+
+void link_task(void* user_param)
+{
+  ableton::Link link(120.0f);
+  link.enable(true);
+
+//ESP_LOGI(TAG, "on se rend ici link task ! ");
+
+  xTaskCreatePinnedToCore(
+    tick_task, "tick_task", 8192, static_cast<void*>(&link), 10, nullptr, 1); // sur core 1
+
+  while (true)
+  {
+    vTaskDelay(portMAX_DELAY);
+  }
+}
+
+extern "C" void app_main()
+{
+
+  //Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+
+    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
+    wifi_init_sta();
+
+  //esp_wifi_set_ps(WIFI_PS_NONE);
+
+	LEDSTRIP.init(1); // arg est le nombre de LEDs
+	LEDSTRIP.refresh = docolors;
+
+    // xTaskCreate(&led_task, "led_task", 2048, NULL, 2, NULL); // n'importe quelle core
+
+    /*
+    for (;;)
+	{
+		LEDSTRIP.update();
+		vTaskDelay(10);
+	}
+
+	// for show
+	LEDSTRIP.deinit();
+    */
+
+/////// TOUCH INIT ////////
+
+// Initialize touch pad peripheral, it will start a timer to run a filter
+ESP_LOGI(TAG, "Initializing touch pad");
+touch_pad_init();
+// If use interrupt trigger mode, should set touch sensor FSM mode at 'TOUCH_FSM_MODE_TIMER'.
+touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+// Set reference voltage for charging/discharging
+// For most usage scenarios, we recommend using the following combination:
+// the high reference valtage will be 2.7V - 1V = 1.7V, The low reference voltage will be 0.5V.
+touch_pad_set_voltage(TOUCH_HVOLT_2V7, TOUCH_LVOLT_0V5, TOUCH_HVOLT_ATTEN_1V);
+// Init touch pad IO
+tp_example_touch_pad_init();
+// Initialize and start a software filter to detect slight change of capacitance.
+touch_pad_filter_start(TOUCHPAD_FILTER_TOUCH_PERIOD);
+// Set thresh hold
+tp_example_set_thresholds();
+// Register touch interrupt ISR
+touch_pad_isr_register(tp_example_rtc_intr, NULL);
+// Start a task to show what pads have been touched
+
+ ////////// TOUCH TASK ////////////
+  xTaskCreate(&tp_example_read_task, "touch_pad_read_task", 2048, NULL, 5, NULL); // n'importe quelle core
+  ///////// FIN TOUCH /////////
+
+// ESP_LOGI(TAG, "on se rend ici ! ");
+  xTaskCreatePinnedToCore(link_task, "link_task", 8192, nullptr, 10, nullptr, 0);  // core 0
+
+
+  vTaskDelete(nullptr);
+
+} // fin du extern "C"

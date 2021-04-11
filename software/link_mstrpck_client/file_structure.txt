@@ -1,0 +1,39 @@
+#### esp-apa102
+
+[esp-apa102] ->
+                apa102.c
+                apa102.h
+                CMakeLists.txt
+                Kconfig
+                README.md 
+                [example]       ->  
+                                    CMakeLists.txt
+                                    sdkconfig
+                                    sdkconfig.defaults
+                                    sdkconfig.old
+                                    [build]         ->
+                                    [main]          ->  
+                                                        apa102_example.c
+                                                        CMakeLists.txt
+
+
+[link_esp32_example_client] ->
+                CMakeLists.txt
+                partitions.csv
+                README.md
+                sdkcondig
+                sdkconfig.defaults
+                sdkconfig.old
+                [build]
+                [components]    ->  
+                                    CMakeLists.txt
+                                    [apa102]
+                                    [link_components] -> [link]
+                                                        
+                [main]          ->  
+                                    Kconfig.projbuild
+                                    CMakeLists.txt
+                                    main.cpp
+                                    main.cpp.bak.txt
+
+                

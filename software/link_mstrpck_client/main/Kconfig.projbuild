@@ -1,0 +1,41 @@
+menu "LIMITZ led strip APA102"
+
+	config LMTZ_APA102_NUM_LEDS
+		int
+		prompt "Number of leds"
+		default 16
+	
+	choice LMTZ_APA102_SPI
+		prompt "SPI host"
+		default LMTZ_APA102_SPI_HSPI
+
+		config LMTZ_APA102_SPI_HSPI
+			bool "HSPI"
+		
+		config LMTZ_APA102_SPI_VSPI
+			bool "VSPI"
+	endchoice
+
+		
+	config LMTZ_APA102_DMA_CHANNEL
+		int
+		prompt "DMA channel" 
+		default 2
+
+	config LMTZ_APA102_PIN_MOSI
+		int
+		prompt "SPI: MOSI pin"
+		default 23
+
+	config LMTZ_APA102_PIN_SCLK
+		int
+		prompt "SPI: SCLK pin"
+		default 18
+
+	config LMTZ_APA102_CLOCK_SPEED
+		int
+		prompt "SPI: Clock speed"
+		default 1000000
+
+endmenu
+

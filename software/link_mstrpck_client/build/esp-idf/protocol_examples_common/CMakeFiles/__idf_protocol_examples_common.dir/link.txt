@@ -1,0 +1,2 @@
+/Users/alx/.espressif/tools/xtensa-esp32-elf/esp-2020r2-8.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-ar qc libprotocol_examples_common.a CMakeFiles/__idf_protocol_examples_common.dir/connect.c.obj CMakeFiles/__idf_protocol_examples_common.dir/stdin_out.c.obj
+/Users/alx/.espressif/tools/xtensa-esp32-elf/esp-2020r2-8.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-ranlib libprotocol_examples_common.a
