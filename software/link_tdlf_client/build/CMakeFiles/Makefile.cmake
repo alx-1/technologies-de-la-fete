@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/HEAD"
-  "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/refs/heads/master"
+  "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/packed-refs"
   "../CMakeLists.txt"
   "CMakeFiles/3.18.4/CMakeASMCompiler.cmake"
   "CMakeFiles/3.18.4/CMakeCCompiler.cmake"
@@ -24,7 +24,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "esp-idf/esptool_py/flasher_args.json.in"
   "esp-idf/esptool_py/flasher_args.json.in2"
   "ldgen_libraries.in"
-  "../components/apa102/CMakeLists.txt"
+  "../components/ESP32APA102Driver/CMakeLists.txt"
   "../components/link_component/CMakeLists.txt"
   "../main/CMakeLists.txt"
   "../partitions.csv"
@@ -211,7 +211,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/git-data/head-ref"
   "CMakeFiles/git-data/HEAD"
   "CMakeFiles/git-data/grabRef.cmake"
-  "CMakeFiles/git-data/head-ref"
+  "CMakeFiles/git-data/packed-refs"
   "config.env"
   "bootloader-prefix/tmp/bootloader-cfgcmd.txt"
   "project_description.json"
@@ -301,7 +301,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "esp-idf/unity/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/wifi_provisioning/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/main/CMakeFiles/CMakeDirectoryInformation.cmake"
-  "esp-idf/apa102/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "esp-idf/ESP32APA102Driver/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/link_component/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/protocol_examples_common/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
@@ -398,6 +398,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "esp-idf/unity/CMakeFiles/__idf_unity.dir/DependInfo.cmake"
   "esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/DependInfo.cmake"
   "esp-idf/main/CMakeFiles/__idf_main.dir/DependInfo.cmake"
-  "esp-idf/apa102/CMakeFiles/__idf_apa102.dir/DependInfo.cmake"
+  "esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/DependInfo.cmake"
   "esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/DependInfo.cmake"
   )

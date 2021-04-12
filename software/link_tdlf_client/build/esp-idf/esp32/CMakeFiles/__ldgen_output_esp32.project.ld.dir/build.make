@@ -153,7 +153,7 @@ esp-idf/esp32/ld/esp32.project.ld: esp-idf/ulp/libulp.a
 esp-idf/esp32/ld/esp32.project.ld: esp-idf/unity/libunity.a
 esp-idf/esp32/ld/esp32.project.ld: esp-idf/wifi_provisioning/libwifi_provisioning.a
 esp-idf/esp32/ld/esp32.project.ld: esp-idf/main/libmain.a
-esp-idf/esp32/ld/esp32.project.ld: esp-idf/apa102/libapa102.a
+esp-idf/esp32/ld/esp32.project.ld: esp-idf/ESP32APA102Driver/libESP32APA102Driver.a
 esp-idf/esp32/ld/esp32.project.ld: esp-idf/protocol_examples_common/libprotocol_examples_common.a
 esp-idf/esp32/ld/esp32.project.ld: /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/sdkconfig
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating ld/esp32.project.ld"

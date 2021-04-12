@@ -1346,17 +1346,17 @@ __idf_main/fast:
 .PHONY : __idf_main/fast
 
 #=============================================================================
-# Target rules for targets named __idf_apa102
+# Target rules for targets named __idf_ESP32APA102Driver
 
 # Build rule for target.
-__idf_apa102: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 __idf_apa102
-.PHONY : __idf_apa102
+__idf_ESP32APA102Driver: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 __idf_ESP32APA102Driver
+.PHONY : __idf_ESP32APA102Driver
 
 # fast build rule for target.
-__idf_apa102/fast:
-	$(MAKE) $(MAKESILENT) -f esp-idf/apa102/CMakeFiles/__idf_apa102.dir/build.make esp-idf/apa102/CMakeFiles/__idf_apa102.dir/build
-.PHONY : __idf_apa102/fast
+__idf_ESP32APA102Driver/fast:
+	$(MAKE) $(MAKESILENT) -f esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/build.make esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/build
+.PHONY : __idf_ESP32APA102Driver/fast
 
 #=============================================================================
 # Target rules for targets named __idf_protocol_examples_common
@@ -1435,7 +1435,7 @@ help:
 	@echo "... size"
 	@echo "... size-components"
 	@echo "... size-files"
-	@echo "... __idf_apa102"
+	@echo "... __idf_ESP32APA102Driver"
 	@echo "... __idf_app_trace"
 	@echo "... __idf_app_update"
 	@echo "... __idf_asio"

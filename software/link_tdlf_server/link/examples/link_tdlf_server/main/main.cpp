@@ -373,7 +373,7 @@ extern "C" {
             //if(convertBits2Int(1) == 0){ // si le channel est '0' (10 pour les drums) // il se plaint, erreur de scope
             //}
 
-            int tmpTotal = 0; // reste avant de compter
+            int tmpTotal = 0; // reset avant de compter
             int sel = 1; // pour avoir accès à la valeur de la note
 
             for(int i=0;i<4;i++){
@@ -387,6 +387,7 @@ extern "C" {
               else if(i==1 && mstr[1+4*sel] == true){
                 tmpTotal = tmpTotal + 4;
                 }
+                
             }
             note = tmpTotal; // note peut être de 0-8 (ok 16)
             

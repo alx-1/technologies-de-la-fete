@@ -163,7 +163,7 @@ link_tdlf_client.elf: esp-idf/ulp/libulp.a
 link_tdlf_client.elf: esp-idf/unity/libunity.a
 link_tdlf_client.elf: esp-idf/wifi_provisioning/libwifi_provisioning.a
 link_tdlf_client.elf: esp-idf/main/libmain.a
-link_tdlf_client.elf: esp-idf/apa102/libapa102.a
+link_tdlf_client.elf: esp-idf/ESP32APA102Driver/libESP32APA102Driver.a
 link_tdlf_client.elf: esp-idf/protocol_examples_common/libprotocol_examples_common.a
 link_tdlf_client.elf: esp-idf/asio/libasio.a
 link_tdlf_client.elf: esp-idf/cbor/libcbor.a

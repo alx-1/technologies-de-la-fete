@@ -6,23 +6,33 @@
 
 #IncludeRegexTransform: 
 
-../components/apa102/apa102.h
+../components/ESP32APA102Driver/ESP32APA102Driver.h
+apa102LEDStrip.h
+../components/ESP32APA102Driver/apa102LEDStrip.h
+colourObject.h
+../components/ESP32APA102Driver/colourObject.h
 stdio.h
 -
 string.h
 -
-stdlib.h
--
 freertos/FreeRTOS.h
--
+../components/ESP32APA102Driver/freertos/FreeRTOS.h
 freertos/task.h
--
+../components/ESP32APA102Driver/freertos/task.h
 esp_system.h
--
-esp_log.h
--
+../components/ESP32APA102Driver/esp_system.h
+esp_spi_flash.h
+../components/ESP32APA102Driver/esp_spi_flash.h
+driver/gpio.h
+../components/ESP32APA102Driver/driver/gpio.h
+sdkconfig.h
+../components/ESP32APA102Driver/sdkconfig.h
 driver/spi_master.h
--
+../components/ESP32APA102Driver/driver/spi_master.h
+
+../components/ESP32APA102Driver/apa102LEDStrip.h
+
+../components/ESP32APA102Driver/colourObject.h
 
 ../components/link_component/link/include/ableton/Link.hpp
 ableton/platforms/Config.hpp
@@ -621,8 +631,8 @@ lwip/sys.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/lwip/sys.h
 lwip/netdb.h
 -
-apa102.h
--
+ESP32APA102Driver.h
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/ESP32APA102Driver.h
 string.h
 -
 freertos/FreeRTOS.h

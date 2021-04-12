@@ -60,24 +60,34 @@ int noteSelektor = 0; // note à stocker dans les bits 4-7 de bd[]
 int barSelektor = 0; // à stocker
 int currentBar = 0; // pour l'affichage
 
-//// conversion tableau en byte ////
-///////////////////////////byte result = 0;
-///////////////////////////int index = 8;
 
-///////// DELS /// SPI CONFIG TTGO // HSPI // HSPI MOSI 23 // HSPI SCK 18
+///////// DELS // SPI CONFIG TTGO // VSPI // SPI3 // MOSI 23 // SCK 18
+extern "C"{
+#include "ESP32APA102Driver.h"
 
-extern "C"{ 
-	#include <apa102.h> 
-	}
+unsigned char colourList[9*3]={maxValuePerColour,0,0, maxValuePerColour,maxValuePerColour,0, 0,maxValuePerColour,0, 0,maxValuePerColour,maxValuePerColour, 0,0,maxValuePerColour, maxValuePerColour,0,maxValuePerColour, maxValuePerColour,maxValuePerColour,maxValuePerColour, maxValuePerColour,0,0, 0,0,0};
 
-//// LES TACHES //////
-// tp_example_read_task (interrupt) touch pads
-// link task (pinned to core 0) 
-// appelle tick task // ableton link sur core 1
+struct apa102LEDStrip leds;
+struct colourObject dynColObject;
 
-// Global
+//SPI Vars
+spi_device_handle_t spi;
+spi_transaction_t spiTransObject;
+esp_err_t ret;
+spi_bus_config_t buscfg;
+spi_device_interface_config_t devcfg;
 
-///// seq /////
+unsigned char Colour[8][3] = { {16,7,9},{13,0,0},{14,6,0},{14,14,0},{0,5,0},{0,7,13},{3,0,9},{9,0,9}}; // sur 16 // rose // rouge // orange // jaune // vert // bleu clair // bleu foncé // mauve
+unsigned char beatStepColour[3] = {13,13,5};
+unsigned char stepColour[3] = {11,4,11};
+unsigned char offColour[3] = {0,0,0};
+unsigned char inColour[3] = {14,14,14}; // init indicator (wifi, broadcast, server address received, ready to go)
+}
+/////// DELS //////
+
+
+/////// SEQ ///////
+
 bool bd[72] = {}; // empty 16 boolean values aray to store hits // 4 bits channel, 4 bits note // 64 bit notes
 bool cbd[72] = {1}; // to determine if we have a changed bd
 int step = 0;
@@ -223,93 +233,53 @@ static uint32_t s_pad_init_val[TOUCH_PAD_MAX];
 extern "C" {
 
 void LEDinDicator(int lvl){
-
-    if (!APA102.transaction.tx_buffer) // De LEDSTRIP.update();
-	    {
-		APA102.transaction.tx_buffer = APA102.txbuffer;
+    
+    for(int i = 0;i<lvl;i++){
+        setPixel(&leds, i, inColour); // plus clair
 	}
 
-	spi_device_queue_trans(APA102.device, &APA102.transaction, portMAX_DELAY);
-    
-    //LEDSTRIP.leds[2] = RGBL(0xBB, 0xBB, 0xBB, 0xBB); // plus clair
-    //LEDSTRIP.leds[3] = RGBL(0x00, 0xBB, 0x00, 0xBB); // plus clair
-    //LEDSTRIP.leds[4] = RGBL(0x00, 0x00, 0xBB, 0xBB); // plus clair
+    renderLEDs();
 
-    for(int i = 1;i<=lvl;i++){
-        LEDSTRIP.leds[i] = RGBL(0xBB, 0xBB, 0x0BB, 0xBB); // plus clair
-    }
-    
-
-	spi_transaction_t* t;
-	spi_device_get_trans_result(APA102.device, &t, portMAX_DELAY);
-    // ESP_LOGI(TAG, "E 2");
-	//return ESP_OK; // retourne un warning / erreur lorsqu'activé
-	
-	vTaskDelay(100 / portTICK_PERIOD_MS); // 100 et 105 'fonctionnent'
+	vTaskDelay(50 / portTICK_PERIOD_MS); // 10
 
 }
 
-void TurnLedOn(int step){
+void TurnLedOn(int step){  //ESP32APA102Driver
 	
-	if (!APA102.transaction.tx_buffer) // De LEDSTRIP.update();
-	{
-		APA102.transaction.tx_buffer = APA102.txbuffer;
-	}
-
-	spi_device_queue_trans(APA102.device, &APA102.transaction, portMAX_DELAY);
-	
-    //LEDSTRIP.leds[3] = RGBL(0xAA, 0xAA, 0x11, 0xAA);
-    //LEDSTRIP.leds[step] = RGBL(0xAA, 0xAA, 0x11, 0xAA);
  
-    
-    for(int i = 0;i<16;i++){ // doit passer dans toutes les valeurs de bd[] // offset de '8' pour les infos de chan et note
-		// ESP_LOGI(TAG, "i : %i", i); // erreur à la 71 e valeur de 'i'
-        LEDSTRIP.leds[i+1] = RGBL(0x00, 0x00, 0x00, 0x00);// tout off // colors[0] // pour tester
-        // if(i == step+16*barSelektor){ // c'est la clé de la position // doit varier en fonction du nombre de bars
-        
-        if(i == step && currentBar == barSelektor){ // sélecteur d'affichage de bar
-            if (bd[i+8+16*barSelektor]){
-                LEDSTRIP.leds[i+1] = RGBL(0xBB, 0x00, 0x0BB, 0xBB); // plus clair
-                }
-            else{
-                //ESP_LOGI(TAG, "hey !! : %i", barSelektor);
+    	for (int i = 0; i < 16; i++){ 
 
-                LEDSTRIP.leds[i+1] = RGBL(0x99, 0x99, 0x11, 0xAA); // couleur normale (était jaune 0xAA, 0xAA, 0x11, 0xAA)
-                }
-        }
-		else if (bd[i+8+16*barSelektor] && noteSelektor == 0){ // la couleur de note
-              LEDSTRIP.leds[i+1] = RGBL(0xFF, 0x77, 0x99, 0xAA); // rose 
-            }
-        else if(bd[i+8+16*barSelektor] && noteSelektor == 1){
-              LEDSTRIP.leds[i+1] = RGBL(0xCC, 0x00, 0x00, 0x88); // rouge
-            }	
-        else if(bd[i+8+16*barSelektor] && noteSelektor == 2){
-              LEDSTRIP.leds[i+1] = RGBL(0xDD, 0x66, 0x00, 0x88);  // orange
-            }	
-        else if(bd[i+8+16*barSelektor] && noteSelektor == 3){
-              LEDSTRIP.leds[i+1] = RGBL(0xDD, 0xDD, 0x00, 0x88); // jaune  
-            }	
-        else if(bd[i+8+16*barSelektor] && noteSelektor == 4){
-              LEDSTRIP.leds[i+1] = RGBL(0x00, 0x55, 0x00, 0x88); // vert  
-            }	
-        else if(bd[i+8+16*barSelektor] && noteSelektor == 5){
-              LEDSTRIP.leds[i+1] = RGBL(0x00, 0x77, 0xCC, 0x99); // bleu clair
-            }	
-        else if(bd[i+8+16*barSelektor] && noteSelektor == 6){
-              LEDSTRIP.leds[i+1] = RGBL(0x33, 0x00, 0x99, 0x99); // bleu foncé
-            }	
-        else if(bd[i+8+16*barSelektor] && noteSelektor == 7){
-              LEDSTRIP.leds[i+1] = RGBL(0x88, 0x00, 0x88, 0xAA); // mauve
-            }	
-	}
+			setPixel(&leds, i, offColour); // turn LED off
 
-    // ESP_LOGI(TAG, "E 1");
-	spi_transaction_t* t;
-	spi_device_get_trans_result(APA102.device, &t, portMAX_DELAY);
-  
-	//return ESP_OK; // retourne un warning / erreur lorsqu'activé
-	
-	vTaskDelay(100 / portTICK_PERIOD_MS); // 100 et 105 'fonctionnent'
+            if(i == step && currentBar == barSelektor){ // sélecteur d'affichage de bar
+                if (bd[i+8+16*barSelektor]){
+                    setPixel(&leds, i, beatStepColour);    
+                    }else{
+                    setPixel(&leds, i, stepColour); 
+                    }
+            }else if (bd[i+8+16*barSelektor] && noteSelektor == 0){
+                setPixel(&leds, i, Colour[0]); // rose
+                }else if (bd[i+8+16*barSelektor] && noteSelektor == 1){
+                setPixel(&leds, i, Colour[1]); // rouge
+                }else if (bd[i+8+16*barSelektor] && noteSelektor == 2){
+                setPixel(&leds, i, Colour[2]); // orange
+                }else if (bd[i+8+16*barSelektor] && noteSelektor == 3){
+                setPixel(&leds, i, Colour[3]); // jaune
+                }else if (bd[i+8+16*barSelektor] && noteSelektor == 4){
+                setPixel(&leds, i, Colour[4]); // vert
+                }else if (bd[i+8+16*barSelektor] && noteSelektor == 5){
+                setPixel(&leds, i, Colour[5]); // bleu clair
+                }else if (bd[i+8+16*barSelektor] && noteSelektor == 6){
+                setPixel(&leds, i, Colour[6]); // bleu
+                }else if (bd[i+8+16*barSelektor] && noteSelektor == 7){
+                setPixel(&leds, i, Colour[7]); // mauve
+                }
+
+		}
+
+        renderLEDs();
+
+	vTaskDelay(100 / portTICK_PERIOD_MS); // 10
 
 }
 
@@ -820,7 +790,27 @@ extern "C" void app_main()
 
   	//esp_wifi_set_ps(WIFI_PS_NONE);
 
-	LEDSTRIP.init(16); // arg est le nombre de LEDs
+	// LEDSTRIP.init(16); // arg est le nombre de LEDs
+
+    //// LEDS /////
+    printf("\r\n\r\n\r\nHello Pixels!\n");
+	//Set up SPI
+	printf("Setting up SPI now\t[%d]\r\n", setupSPI());
+	//set up LED object
+	printf("Creating led object...\t");
+	initLEDs(&leds, totalPixels, bytesPerPixel, 255); // 255
+	printf("Frame Length\t%d\r\n", leds._frameLength);
+	//set up colours
+	initComplexColourObject(&dynColObject, maxValuePerColour, 9, colourList);	
+	//Set up SPI tx/rx storage Object
+	memset(&spiTransObject, 0, sizeof(spiTransObject));
+	spiTransObject.length = leds._frameLength*8;
+	spiTransObject.tx_buffer = leds.LEDs;
+	printf("SPI Object Initilized...\r\n");
+	printf("Sending SPI data block to clear all pixels....\r\n");
+	spi_device_queue_trans(spi, &spiTransObject, portMAX_DELAY);
+	printf("Pixels Cleared!\r\n");
+    //// LEDS /////
 	
 
 	/////// TOUCH INIT ////////
@@ -877,3 +867,35 @@ extern "C" void app_main()
 	vTaskDelete(nullptr);
 
 } // fin du extern "C"
+
+extern "C"{
+void renderLEDs()
+{
+	spi_device_queue_trans(spi, &spiTransObject, portMAX_DELAY);
+}
+
+int setupSPI()
+{
+	//Set up the Bus Config struct
+	buscfg.miso_io_num=-1;
+	buscfg.mosi_io_num=PIN_NUM_MOSI;
+	buscfg.sclk_io_num=PIN_NUM_CLK;
+	buscfg.quadwp_io_num=-1;
+	buscfg.quadhd_io_num=-1;
+	buscfg.max_transfer_sz=maxSPIFrameInBytes;
+	
+	//Set up the SPI Device Configuration Struct
+	devcfg.clock_speed_hz=maxSPIFrequency;
+	devcfg.mode=0;                        
+	devcfg.spics_io_num=-1;             
+	devcfg.queue_size=1;
+
+	//Initialize the SPI driver
+	ret=spi_bus_initialize(VSPI_HOST, &buscfg, 1);
+    ESP_ERROR_CHECK(ret);	
+	//Add SPI port to bus
+	ret=spi_bus_add_device(VSPI_HOST, &devcfg, &spi);
+	ESP_ERROR_CHECK(ret);
+	return ret;
+}
+}
