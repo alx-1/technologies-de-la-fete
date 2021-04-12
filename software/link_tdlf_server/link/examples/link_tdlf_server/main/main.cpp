@@ -1,6 +1,6 @@
 ////// tdlf server ///// réception de notes des cliens et envoi de notes midi aux instruments /////
-////// msterclck ///// node link // + - BPM et Start/Stop // UDP réception de notes midi des clients
-// connaître les notes ?
+////// midi clock ///// node link // + - BPM et Start/Stop // UDP réception de notes midi des clients
+
 
 #include "mstrpck.h"
 #include <ableton/Link.hpp>
@@ -40,8 +40,8 @@ extern "C" {
 #define PRINT_LINK_STATE false
 #define USE_TOUCH_PADS // touch_pad_5 (GPIO_NUM_12), touch_pad_7 (GPIO_NUM_27), touch_pad_9 (GPIO_NUM_32)
 
-#define USE_I2C_DISPLAY // SDA GPIO_NUM_17 (D2), SCL GPIO_NUM_2 (D1)
-#define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1)
+#define USE_I2C_DISPLAY // SDA GPIO_NUM_17 (D2), SCL GPIO_NUM_2 (D1) // which one is it? 
+//#define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1)
 
 #define USE_SOCKETS // we receive data from the seq clients
 
@@ -328,6 +328,11 @@ extern "C" {
             //mstr devrait être 72 valeurs;
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
+
+            //for (int i = 0; i < sizeof(mstr);i++){
+            //    ESP_LOGE(SOCKET_TAG, "mstr :  %i", mstr[i]);
+            //}
+            
             // doit filter en entrée selon le channel et la note et nourrir les 8 tracks au bon endroit
             // on a mstr qui contient 4 bits + 4 bits + 64 bits
             // 1 : le bon channel
@@ -556,8 +561,12 @@ extern "C" { void wifi_init_sta(void)
   #if defined USE_I2C_DISPLAY   
         if ( DefaultBusInit( ) == true ) {
         printf( "BUS Init lookin good...\n" );
-        SetupDemo( &I2CDisplay, &Font_droid_sans_mono_7x13 );
-        SayHello( &I2CDisplay, "TECHNOLOGIES DE LA FÊTE" );
+       
+        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Technologies", SSD_COLOR_WHITE );
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "de la fete", SSD_COLOR_WHITE );
+        SSD1306_Update( &I2CDisplay );  
+
    }
    #endif
 
@@ -618,13 +627,8 @@ extern "C" { void wifi_init_sta(void)
         ESP_LOGI(TAG, "nous sommes connectés par WiFI");
         
         #if defined USE_I2C_DISPLAY   
-        //if ( DefaultBusInit( ) == true ) {
-        //printf( "BUS Init lookin good...\n" );
-        //printf( "Drawing.\n" );
         SetupDemo( &I2CDisplay, &Font_droid_sans_mono_13x24 );
         SayHello( &I2CDisplay, "Link!" );
-        //printf( "Done!\n" );
-        //}
         #endif 
         
         // to ap SSID:%s password:%s",
@@ -766,12 +770,12 @@ extern "C" {
     }
 
     if(sel == 0){
-      ESP_LOGI(TAG, "channel : %i", tmpTotal); 
+      // ESP_LOGI(TAG, "channel : %i", tmpTotal); 
       channel = tmpTotal;
     }
     
     if(sel == 1){
-      ESP_LOGI(TAG, "note : %i", tmpTotal); 
+      // ESP_LOGI(TAG, "note : %i", tmpTotal); 
       note = tmpTotal;
     }
   }
@@ -923,16 +927,17 @@ void tickTask(void* userParam)
           // passe ds ttes les notes de mtmstr[] et sors ça...assez vite j'espère.
           for(int i = 0; i<8;i++){ // faut faire ça pour chaque valeur de note
                 
-              if (mtmstr[i][4+step] == 1){ // send midi note out // offset de 4 pour la note midi et hit ou non
+              if (mtmstr[i][step] == 1){ // send midi note out // offset de 4 pour la note midi et hit ou non
                 
                 if (channel == 0){ // are we playing drumz ?
-                  char zedata1[] = { MIDI_NOTE_ON_CH[i] }; // défini comme 10 pour l'instant mais dois pouvoir changer
+                  ESP_LOGI(TAG, "drums : %i", i);
+                  char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme 10 pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
                   char zedata2[] = {zeDrums[i]};      
                   uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
                 }
                 else if (channel == 1){ // premier jeu de notes
-                  char zedata1[] = { MIDI_NOTE_ON_CH[i] }; // défini comme midi channel channel 0 
+                  char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme midi channel channel 0 
                   uart_write_bytes(UART_NUM_1, zedata1, 1);                 
                   char zedata2[] = {zeDark[i]}; // tableau de valeurs de notes hexadécimales 
                   uart_write_bytes(UART_NUM_1, zedata2, 1); 

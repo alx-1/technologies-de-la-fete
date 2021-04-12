@@ -245,6 +245,8 @@ void LEDinDicator(int lvl){
 
 
 void TurnLedOn(int step){  //ESP32APA102Driver
+
+        // ESP_LOGI(TAG, "step : %i",step);
  
     	for (int i = 0; i < 16; i++){ 
 			setPixel(&leds, i, offColour); // turn LED off
@@ -317,7 +319,7 @@ static void udp_client_task(void *pvParameters)
             }
 
             if(!mstrpckIP){ 
-            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)); // peut envoyer une string au lieu du tableau vide
   
                 if (err < 0) {
                     ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
@@ -385,10 +387,15 @@ static void udp_client_task(void *pvParameters)
 
         else if (mstrpckIP && nouvSockette && bdChanged){
 
-            ESP_LOGI(TAG, "tente d'envoyer");
-           int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+            // ESP_LOGI(TAG, "tente d'envoyer");
 
-             for(int i = 0; i<sizeof(bd); i++){
+            //for (int i = 0; i < sizeof(bd);i++){
+            //    ESP_LOGE(TAG, "bd : %i,  %i", i, bd[i]);
+            //}
+
+            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+
+             for(int i = 0; i<sizeof(bd); i++){ // copy bd[] to cbd[] (changed bd)
                     cbd[i] = bd[i];
                     }
 
@@ -565,6 +572,10 @@ static void tp_example_read_task(void *pvParameter)
                         if(modSelektor<8){ // change la valeur de note représentée par sa couleur
                           noteSelektor = modSelektor;  
                           ESP_LOGI(TAG, "noteSelektor %d", noteSelektor);
+                          // vider bd[]
+                          for(int i = 8; i < sizeof(bd) ; i++) {
+                              bd[i] = 0;
+                          }
                           convertInt2Bits(noteSelektor, 1); // écrit les valeurs de note en bits ds bd[]
                         }
 
