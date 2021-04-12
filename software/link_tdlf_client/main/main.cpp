@@ -77,9 +77,9 @@ esp_err_t ret;
 spi_bus_config_t buscfg;
 spi_device_interface_config_t devcfg;
 
-unsigned char Colour[8][3] = { {16,7,9},{13,0,0},{14,6,0},{14,14,0},{0,5,0},{0,7,13},{3,0,9},{9,0,9}}; // sur 16 // rose // rouge // orange // jaune // vert // bleu clair // bleu foncé // mauve
+unsigned char Colour[8][3] = { {14,5,7},{13,0,0},{14,6,0},{14,14,0},{0,5,0},{0,7,13},{3,0,9},{9,0,9}}; // sur 16 // rose // rouge // orange // jaune // vert // bleu clair // bleu foncé // mauve
 unsigned char beatStepColour[3] = {13,13,5};
-unsigned char stepColour[3] = {11,4,11};
+unsigned char stepColour[3] = {13,8,13};
 unsigned char offColour[3] = {0,0,0};
 unsigned char inColour[3] = {14,14,14}; // init indicator (wifi, broadcast, server address received, ready to go)
 }
@@ -239,18 +239,15 @@ void LEDinDicator(int lvl){
 	}
 
     renderLEDs();
-
 	vTaskDelay(50 / portTICK_PERIOD_MS); // 10
 
 }
 
+
 void TurnLedOn(int step){  //ESP32APA102Driver
-	
  
     	for (int i = 0; i < 16; i++){ 
-
 			setPixel(&leds, i, offColour); // turn LED off
-
             if(i == step && currentBar == barSelektor){ // sélecteur d'affichage de bar
                 if (bd[i+8+16*barSelektor]){
                     setPixel(&leds, i, beatStepColour);    
@@ -274,14 +271,11 @@ void TurnLedOn(int step){  //ESP32APA102Driver
                 }else if (bd[i+8+16*barSelektor] && noteSelektor == 7){
                 setPixel(&leds, i, Colour[7]); // mauve
                 }
-
 		}
-
         renderLEDs();
-
-	vTaskDelay(100 / portTICK_PERIOD_MS); // 10
-
+	vTaskDelay(50 / portTICK_PERIOD_MS); // 10
 }
+
 
 void convertInt2Bits(int monInt, int monOffset){
     // monInt à convertir, monOffset pour l'écrire au bon endroit

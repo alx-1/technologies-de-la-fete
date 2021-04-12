@@ -37,13 +37,9 @@ extern "C" {
 #include "esp_log.h"
 }
 
-//#define LED GPIO_NUM_2 
 #define PRINT_LINK_STATE false
-//#define USE_TOUCH_PADS // touch_pad_7 (GPIO_NUM_27), touch_pad_8 (GPIO_NUM_33), touch_pad_9 (GPIO_NUM_32)
 #define USE_TOUCH_PADS // touch_pad_5 (GPIO_NUM_12), touch_pad_7 (GPIO_NUM_27), touch_pad_9 (GPIO_NUM_32)
 
-//#define USE_TTGO_DISPLAY // SPI Pins used: miso=0, mosi=19, sck=18, cs=5 
-//#define USE_I2C_DISPLAY // SDA GPIO_NUM21 (D2), SCL GPIO_NUM_22 (D1)
 #define USE_I2C_DISPLAY // SDA GPIO_NUM_17 (D2), SCL GPIO_NUM_2 (D1)
 #define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1)
 
@@ -63,38 +59,12 @@ static const char *TOUCH_TAG = "Touch pad";
   #include <lwip/netdb.h>
   }
   #define PORT 3333
-  // #define PORT 3000
-  // /* permit to send and to receive broadcast messages (see IP_SOF_BROADCAST option) */
-  //#define BROADCAST_IP_ADDR "192.168.0.255" // you might need to change this acroding to the subnet mask and gateway address
-  //#define BROADCAST_PORT 3000
 
 #endif
 ////// sockette server //////
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 
-
-#if defined USE_TTGO_DISPLAY // trop lent malheureusement incompatible avec AbletonLink
-extern "C" {
-  /// ====== DISPLAY======
-  //////#include <string.h>
-  #include "tftspi.h"
-  #include "tft.h"
-
-  #define SPI_BUS TFT_HSPI_HOST // Define which spi bus to use TFT_VSPI_HOST or TFT_HSPI_HOST
-}
-  //// pour reference depuis :  tftspi.h
-  /*
-  #define PIN_NUM_MISO 19		// SPI MISO
-  #define PIN_NUM_MOSI 18		// SPI MOSI
-  #define PIN_NUM_CLK  5		// SPI CLOCK pin
-  #define PIN_NUM_CS   15		// Display CS pin
-  #define PIN_NUM_DC   33		// Display command/data pin 
-
-  ////// depuis monitor : Pins used: miso=0, mosi=19, sck=18, cs=5
-  */
-  // ====================
-#endif
 
 // Serial midi
 #define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
@@ -159,11 +129,9 @@ double newBPM; // pour tenter d'envoyer à setTempo();
 double curr_beat_time;
 double prev_beat_time;
 
-bool connektMode = true; // flag pour envloyer l'adresse IP aux clients
+bool connektMode = true; // flag pour envoyer l'adresse IP aux clients
 
-// send IP to clients !!
-char str_ip[16] ="192.168.0.42"; // nécessaire au début, sinon l'adresse ne s'écrit pas comme il faut...espace dans la mémoire ?!
-//char str_test[16] = "192.168.0.42";
+char str_ip[16] ="192.168.0.42"; // send IP to clients !! // stand in ip necessary for memory space?
 
 
 /////////////////// I2C Display //////////////////
@@ -174,13 +142,13 @@ extern "C" {
 #include "ssd1306_font.h"
 #include "ssd1306_default_if.h"
 
-char buf[20]; // pour afficher le BPM
+char buf[20]; // BPM display
 char compte[8];
 char current_phase_step[4];
 
 static const int I2CDisplayAddress = 0x3C;
-static const int I2CDisplayWidth = 128; // seules valeurs // Écran wemos oled 
-static const int I2CDisplayHeight = 64; // qui fonctionnent
+static const int I2CDisplayWidth = 128; // wemos oled screen width and height
+static const int I2CDisplayHeight = 64; 
 static const int I2CResetPin = -1;
 
 struct SSD1306_Device I2CDisplay;
@@ -227,7 +195,7 @@ extern "C" {
 #include "soc/sens_periph.h"
 
 
-//#define TOUCH_PAD_NO_CHANGE   (-1) // était 'on'
+//#define TOUCH_PAD_NO_CHANGE   (-1) // not necessary ?
 #define TOUCH_THRESH_NO_USE   (0)
 #define TOUCH_THRESH_PERCENT  (80) // 95
 #define TOUCHPAD_FILTER_TOUCH_PERIOD (10) // 10
@@ -261,21 +229,21 @@ static void tp_example_read_task(void *pvParameter) {
         show_message = 1;
 
         } else if (s_pad_activated[7] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d activated!", 7);  // Wait a while for the pad being released
-        tempoDEC = true; // pour que le audio loop le prenne en compte
-        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
-        s_pad_activated[7] = false; // Reset the counter triggering a message // that application is running
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 7);  
+        tempoDEC = true; 
+        vTaskDelay(300 / portTICK_PERIOD_MS);  
+        s_pad_activated[7] = false; 
         show_message = 1;
 
         }
         else if (s_pad_activated[9] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d piton!", 9);  // Wait a while for the pad being released
-        startStopState = !startStopState; // inverse notre état, on veut changer localement
+        ESP_LOGI(TOUCH_TAG, "T%d piton!", 9);  
+        startStopState = !startStopState; 
         changePiton = true;
         ESP_LOGI(TOUCH_TAG, "startStopState : %i ", startStopState);
         ESP_LOGI(TOUCH_TAG, "changePiton : %i ", changePiton);
-        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
-        s_pad_activated[9] = false; // Reset the counter triggering a message // that application is running
+        vTaskDelay(300 / portTICK_PERIOD_MS);  
+        s_pad_activated[9] = false;  
         show_message = 1;
         }
     }
@@ -288,8 +256,7 @@ static void tp_example_read_task(void *pvParameter) {
 
 static void tp_example_rtc_intr(void *arg) { //  Handle an interrupt triggered when a pad is touched. Recognize what pad has been touched and save it in a table.
     uint32_t pad_intr = touch_pad_get_status();
-    //clear interrupt
-    touch_pad_clear_status();
+    touch_pad_clear_status(); //clear interrupt
     for (int i = 5; i < 10; i = i+2) {
     //for (int i = 7; i < 8; i++) { // juste touch 7
         if ((pad_intr >> i) & 0x01) {
@@ -300,9 +267,8 @@ static void tp_example_rtc_intr(void *arg) { //  Handle an interrupt triggered w
 
 
 static void tp_example_touch_pad_init(void) { // Before reading touch pad, we need to initialize the RTC IO.
-    for (int i = 5; i < 10; i = i+2) {
-        //init RTC IO and mode for touch pad.
-        touch_pad_config((touch_pad_t)i, TOUCH_THRESH_NO_USE);
+    for (int i = 5; i < 10; i = i+2) {   
+        touch_pad_config((touch_pad_t)i, TOUCH_THRESH_NO_USE); //init RTC IO and mode for touch pad.
     }
 }
 
@@ -321,7 +287,6 @@ extern "C" {
 
     while (1) { 
 
-
         struct sockaddr_in6 dest_addr; // IPV6*/
         bzero(&dest_addr.sin6_addr.un, sizeof(dest_addr.sin6_addr.un));
         dest_addr.sin6_family = AF_INET6;
@@ -331,7 +296,6 @@ extern "C" {
         inet6_ntoa_r(dest_addr.sin6_addr, addr_str, sizeof(addr_str) - 1);
 
         int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
-
 
         if (sock < 0) {
             ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
@@ -353,8 +317,6 @@ extern "C" {
             break;
         }
         
-
-
 
         while (1) {
 
@@ -492,24 +454,11 @@ extern "C" {
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP && goSMART == false) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         
-        //uint16_t monIP = IP2STR(&event->ip_info.ip);
-        //sprintf(monIP, "%x", (&event->ip_info.ip));
-
-        //my_test();
-
-        //sprintf("IP : %x", &event->ip_info.ip);
-        //char *esp_ip4addr_ntoa(const esp_ip4_addr_t *addr, char *buf, int buflen)
-
         ESP_LOGI(TAG, "got ip: %d.%d.%d.%d", IP2STR(&event->ip_info.ip));
   
 	      esp_ip4addr_ntoa(&event->ip_info.ip, str_ip, IP4ADDR_STRLEN_MAX);
 
 	      ESP_LOGI(TAG, "I have a connection and my IP is %s!", str_ip);  
-
-        // The IP2STR macro expands to 4 integers that represent the octets of the IP address, separated by commas; not a string.
-        // The IPSTR macro expands to "%d.%d.%d.%d".
-        // The IPSTR macro is "%d.%d.%d.%d" so the above is equivalent to:
-        // All three of these fields are of ip4_addr_t which is a 32bit representation of an IP 
         
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
@@ -794,43 +743,39 @@ void startStopChanged(bool state) {
   
 }
 
+
 extern "C" {
 
-void playThatFunkyMusic(int step){
+  void convertBits2Int(int sel){
+    //ESP_LOGI(TAG, "conversion");  
+    channel = 0; // reset avant de recompter
+    note = 0;
+    int tmpTotal = 0;
 
-}
+    for(int i=0;i<4;i++){
 
-void convertBits2Int(int sel){
-  //ESP_LOGI(TAG, "conversion");  
-  channel = 0; // reset avant de recompter
-  note = 0;
-  int tmpTotal = 0;
-
-  for(int i=0;i<4;i++){
-
-    if(i==3 && mstr[3+4*sel] == true){
-      tmpTotal = tmpTotal+1;
-    }
-    else if(i==2 && mstr[2+4*sel] == true){
-      tmpTotal = tmpTotal + 2;
-    }
-    else if(i==1 && mstr[1+4*sel] == true){
-      tmpTotal = tmpTotal + 4;
+      if(i==3 && mstr[3+4*sel] == true){
+        tmpTotal = tmpTotal+1;
+      }
+      else if(i==2 && mstr[2+4*sel] == true){
+        tmpTotal = tmpTotal + 2;
+      }
+      else if(i==1 && mstr[1+4*sel] == true){
+        tmpTotal = tmpTotal + 4;
+      }
     }
 
-  }
-  if(sel == 0){
-    ESP_LOGI(TAG, "channel : %i", tmpTotal); 
-    channel = tmpTotal;
-  }
-  if(sel == 1){
-    ESP_LOGI(TAG, "note : %i", tmpTotal); 
-    note = tmpTotal;
+    if(sel == 0){
+      ESP_LOGI(TAG, "channel : %i", tmpTotal); 
+      channel = tmpTotal;
+    }
+    
+    if(sel == 1){
+      ESP_LOGI(TAG, "note : %i", tmpTotal); 
+      note = tmpTotal;
+    }
   }
 
-  }
-
-  
 }
 
 void tickTask(void* userParam)
@@ -849,8 +794,6 @@ void tickTask(void* userParam)
   {
     xTaskCreate(printTask, "print", 8192, &link, 1, nullptr);
   }
-  
-  //gpio_set_direction(LED, GPIO_MODE_OUTPUT);
 
   // phase
   while (true)
@@ -860,10 +803,7 @@ void tickTask(void* userParam)
     const auto state = link.captureAudioSessionState(); 
     isPlaying = state.isPlaying();
     //  ESP_LOGI(TAG, "isPlaying : , %i", isPlaying);  
-
     //const auto phase = state.phaseAtTime(link.clock().micros(), 1); 
-    //gpio_set_level(LED, fmodf(phase, 1.) < 0.3); 
-
     //ESP_LOGI(TAG, "tempoINC : %i", tempoINC);
     //ESP_LOGI(TAG, "tempoDEC : %i", tempoDEC);
 
@@ -943,9 +883,8 @@ void tickTask(void* userParam)
             }
   
 
-      if(isPlaying){
+        if(isPlaying){
           //ESP_LOGI(TAG, "step %d", step); 
-          playThatFunkyMusic(step);
           step++;
           }
 
@@ -1006,9 +945,7 @@ void tickTask(void* userParam)
                 }
                   
           }
-        
         }
-
       }
 
     } // fin de if curr_beat_time is > prev_beat_time
@@ -1049,117 +986,16 @@ extern "C" { void app_main()
         xTaskCreate(smartconfig_example_task, "smartconfig_example_task", 4096, NULL, 3, &xHandle);
     }
 
-  //if (goLINK == true){
     ESP_LOGI(TAG, "weeeeeiiiiiiird ##################");
     tcpip_adapter_init();
   
   //ESP_ERROR_CHECK(esp_event_loop_create_default());
   
 
-  //////////////////////////////////////@@@@@@@@@@@@@
-
-  #if defined USE_TTGO_DISPLAY
-
-  // ======== DISPLAY INITIALIZATION  =========
-  esp_err_t ret1;   
-	tft_max_rdclock = 8000000; // Set maximum spi clock for display read 
-    TFT_PinsInit(); // Pins MUST be initialized before SPI interface initialization 
-
-    spi_lobo_device_handle_t spi; // CONFIGURE SPI DEVICES(s)
-	
-    spi_lobo_bus_config_t buscfg = {
-        .mosi_io_num = PIN_NUM_MOSI,				// set SPI MOSI pin // swwwwiiiitttccchhhheeeedddd !!!! (declaration order !!!)
-        .miso_io_num = PIN_NUM_MISO,				// set SPI MISO pin
-        .sclk_io_num = PIN_NUM_CLK,				// set SPI CLK pin
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-		.max_transfer_sz = 6*1024,
-    }; // error: designator order for field 'spi_lobo_bus_config_t::mosi_io_nu' does not match declaration order in 'spi_lobo_bus_config_t'
-    
-    // @@@@@@@@ // depuis spi_master_lobo.h 
-    /*typedef struct {
-    int mosi_io_num;                ///< GPIO pin for Master Out Slave In (=spi_d) signal, or -1 if not used.
-    int miso_io_num;                ///< GPIO pin for Master In Slave Out (=spi_q) signal, or -1 if not used.
-    int sclk_io_num;                ///< GPIO pin for Spi CLocK signal, or -1 if not used.
-    int quadwp_io_num;              ///< GPIO pin for WP (Write Protect) signal which is used as D2 in 4-bit communication modes, or -1 if not used.
-    int quadhd_io_num;              ///< GPIO pin for HD (HolD) signal which is used as D3 in 4-bit communication modes, or -1 if not used.
-    int max_transfer_sz;            ///< Maximum transfer size, in bytes. Defaults to 4094 if 0.
-} spi_lobo_bus_config_t;
-    */
-   // @@@@@@@@@ //
-    
-    spi_lobo_device_interface_config_t devcfg={
-        .mode=0,                                // SPI mode 0 // ssswwwwiiiittttcccchhhheeedddd !!! (declaration order !!!)
-        .clock_speed_hz=8000000,                // Initial clock out at 8 MHz
-        .spics_io_num=-1,                       // we will use external CS pin
-		    .spics_ext_io_num=PIN_NUM_CS,           // external CS pin
-		    .flags=LB_SPI_DEVICE_HALFDUPLEX,        // ALWAYS SET  to HALF DUPLEX MODE!! for display spi
-    };
-
-  vTaskDelay(500 / portTICK_RATE_MS);
-	printf("\r\n==============================\r\n");
-  printf("TFT display DEMO, LoBo 11/2017\r\n");
-	printf("==============================\r\n");
-  printf("Pins used: miso=%d, mosi=%d, sck=%d, cs=%d\r\n", PIN_NUM_MISO, PIN_NUM_MOSI, PIN_NUM_CLK, PIN_NUM_CS);
-	printf("==============================\r\n\r\n");
-	ret1=spi_lobo_bus_add_device(SPI_BUS, &buscfg, &devcfg, &spi); 	// ==== Initialize the SPI bus and attach the LCD to the SPI bus ====
-  assert(ret1==ESP_OK);
-	printf("SPI: display device added to spi bus (%d)\r\n", SPI_BUS);
-	tft_disp_spi = spi;
-	ret1 = spi_lobo_device_select(spi, 1); 	// ==== Test select/deselect ====
-  assert(ret1==ESP_OK);
-	ret1 = spi_lobo_device_deselect(spi);
-  assert(ret1==ESP_OK);
-	printf("SPI: attached display device, speed=%u\r\n", spi_lobo_get_speed(spi));
-	printf("SPI: bus uses native pins: %s\r\n", spi_lobo_uses_native_pins(spi) ? "true" : "false");
-	printf("SPI: display init...\r\n");
-	TFT_display_init(); // ==== Initialize the Display ====
-	TFT_invertDisplay(1);
-	printf("OK\r\n");
-    
-	// ---- Detect maximum read speed ----
-	tft_max_rdclock = find_rd_speed();
-	printf("SPI: Max rd speed = %u\r\n", tft_max_rdclock);
-    // ==== Set SPI clock used for display operations ====
-	//spi_lobo_set_speed(spi, DEFAULT_SPI_CLOCK);
-  spi_lobo_set_speed(spi, tft_max_rdclock);
-  
-
-	tft_font_rotate = 0;
-	tft_text_wrap = 0;
-	tft_font_transparent = 0;
-	tft_font_forceFixed = 0;
-	tft_gray_scale = 0;
-  TFT_setGammaCurve(DEFAULT_GAMMA_CURVE);
-	TFT_setRotation(LANDSCAPE);
-
-  TFT_setFont(2, NULL);  // TFT_setFont(DEFAULT_FONT, NULL); // #define DEJAVU24_FONT	2
-	//TFT_resetclipwin();
-	// TFT_fillWindow(TFT_BLACK);
-
-  tft_fg = TFT_ORANGE;
-	TFT_print("M S T R P C K", 20, 15);
-
-  TFT_setFont(0, NULL); // 0 == mini //  1 == ouain // 4 == 'assez grand' // 5 == comic ? // 6 outine // 7 mini  // 8 micro
-  TFT_print("o x x x o x x x o x x x o x x x", 12, 62);
-  TFT_print("o x x x o x x x o x x x o x x x", 12, 78);
-  TFT_print("o x x x o x x x o x x x o x x x", 12, 94);
-	TFT_print("o x x x o x x x o x x x o x x x", 12, 110);
-
-	TFT_drawRect(2,60,212,15, TFT_DARKGREY);
-	TFT_drawRect(2,76,212,15, TFT_DARKGREY);
-	TFT_drawRect(2,92,212,15, TFT_DARKGREY);
-	TFT_drawRect(2,108,212,15, TFT_DARKGREY);
-
-  ESP_LOGI(TAG, "TTGO again ??");
- 
+  #if defined USE_SOCKETS // yep sockette server //
+    xTaskCreate(udp_server_task, "udp_server", 4096, NULL, 5, NULL);
   #endif
 
-#if defined USE_SOCKETS // yep sockette server //
-    xTaskCreate(udp_server_task, "udp_server", 4096, NULL, 5, NULL);
-#endif
-
-  ///////////////////////////@@@@@@@@@@@@@@@@@@
 
   #if defined USE_TOUCH_PADS
     ESP_LOGI(TOUCH_TAG, "Initializing touch pad");     // Initialize touch pad peripheral, it will start a timer to run a filter
