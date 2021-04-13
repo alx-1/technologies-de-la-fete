@@ -37,11 +37,8 @@ extern "C" {
 #include "esp_log.h"
 }
 
-#define PRINT_LINK_STATE false
 #define USE_TOUCH_PADS // touch_pad_5 (GPIO_NUM_12), touch_pad_7 (GPIO_NUM_27), touch_pad_9 (GPIO_NUM_32)
-
-#define USE_I2C_DISPLAY // SDA GPIO_NUM_17 (D2), SCL GPIO_NUM_2 (D1) // which one is it? 
-//#define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1)
+#define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1)
 
 #define USE_SOCKETS // we receive data from the seq clients
 
@@ -106,6 +103,7 @@ char MIDI_NOTE_ON_CH[] = {0x99,0x90}; // note on, channel 10, note on, channel 0
 bool mstr[72] = {}; // 4 channel, 4 note, // 64 bits (up to) 64 sequence steps 
 int channel; // 4 bits midi channel (0-7) -> (10,1,2,3,4,5,6,7) // drums + más
 int note; // 4 bits note info // 8 notes correspond to 8 colors // (0-7) -> (36,38,43,50,42,46,39,75),67,49 // más de 8 !
+bool muteRecords = false;
 
 int mtmstr[16][64]; // stock tte les infos. note et 'hit'
 
@@ -329,10 +327,10 @@ extern "C" {
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
 
-            //for (int i = 0; i < sizeof(mstr);i++){
-            //    ESP_LOGE(SOCKET_TAG, "mstr :  %i", mstr[i]);
-            //}
-            
+            for (int i = 0; i < sizeof(mstr);i++){
+                ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
+            }
+
             // doit filter en entrée selon le channel et la note et nourrir les 8 tracks au bon endroit
             // on a mstr qui contient 4 bits + 4 bits + 64 bits
             // 1 : le bon channel
@@ -387,7 +385,6 @@ extern "C" {
                 
                 ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
               
-                //str_ip = "192.168.0.42"; // testing testing 1... 2...
                 ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
                 int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
 
@@ -691,25 +688,6 @@ void timerGroup0Init(int timerPeriodUS, void* userParam)
   timer_start(TIMER_GROUP_0, TIMER_0);
 }
 
-void printTask(void* userParam)
-{
-  auto link = static_cast<ableton::Link*>(userParam);
-  const auto quantum = 4.0;
- 
-  while (true)
-  {
-    const auto sessionState = link->captureAppSessionState();
-    const auto numPeers = link->numPeers();
-    const auto time = link->clock().micros();
-    const auto beats = sessionState.beatAtTime(time, quantum);
-
-    std::cout << std::defaultfloat << "| peers: " << numPeers << " | "
-              << "tempo: " << sessionState.tempo() << " | " << std::fixed
-              << "beats: " << beats << " |" << std::endl;
-    vTaskDelay(800 / portTICK_PERIOD_MS);
-
-  }
-}
 
 // callbacks
 void tempoChanged(double tempo) {
@@ -792,12 +770,6 @@ void tickTask(void* userParam)
   // callbacks
   link.setTempoCallback(tempoChanged);
   link.setStartStopCallback(startStopChanged);
-
-  // debug
-  if (PRINT_LINK_STATE)
-  {
-    xTaskCreate(printTask, "print", 8192, &link, 1, nullptr);
-  }
 
   // phase
   while (true)
@@ -927,7 +899,12 @@ void tickTask(void* userParam)
           // passe ds ttes les notes de mtmstr[] et sors ça...assez vite j'espère.
           for(int i = 0; i<8;i++){ // faut faire ça pour chaque valeur de note
                 
-              if (mtmstr[i][step] == 1){ // send midi note out // offset de 4 pour la note midi et hit ou non
+              // comment connaître le nombre de bars ? // réserver un espace dans bd[]? // [note(4 bits)][channel(4 bits)][bar (2 bits)][mute (1 bit)][steps(64 bits)] = 75 bits
+              // détecter la longueur de données 
+              // celles de 1 bar ont 16 steps, step+barSelektor*16
+              // compteur de quel bar on est rendus pour les séquences plus longues...
+
+              if (mtmstr[i][step] == 1 && !muteRecords){ // send midi note out // mute to be implemented
                 
                 if (channel == 0){ // are we playing drumz ?
                   ESP_LOGI(TAG, "drums : %i", i);
@@ -947,7 +924,8 @@ void tickTask(void* userParam)
                 char zedata3[] = { MIDI_NOTE_VEL };
                 uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
                 // uart_write_bytes(UART_NUM_1, 0, 1); // ??
-                }
+
+              }
                   
           }
         }
