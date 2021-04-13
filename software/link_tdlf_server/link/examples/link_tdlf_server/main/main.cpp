@@ -39,11 +39,10 @@ extern "C" {
 
 #define USE_TOUCH_PADS // touch_pad_5 (GPIO_NUM_12), touch_pad_7 (GPIO_NUM_27), touch_pad_9 (GPIO_NUM_32)
 #define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1)
-
 #define USE_SOCKETS // we receive data from the seq clients
 
 extern "C" {
-static const char *SOCKET_TAG = "socket";
+static const char *SOCKET_TAG = "Socket";
 static const char *TOUCH_TAG = "Touch pad";
 }
 
@@ -100,15 +99,17 @@ char MIDI_NOTE_ON_CH[] = {0x99,0x90}; // note on, channel 10, note on, channel 0
 
 ///// seq /////
 
-bool mstr[72] = {}; // 4 channel, 4 note, // 64 bits (up to) 64 sequence steps 
+bool mstr[75] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-9] (bar) // mstr[10] (mute) // mstr[11-74](steps)
 int channel; // 4 bits midi channel (0-7) -> (10,1,2,3,4,5,6,7) // drums + más
 int note; // 4 bits note info // 8 notes correspond to 8 colors // (0-7) -> (36,38,43,50,42,46,39,75),67,49 // más de 8 !
-bool muteRecords = false;
+int bar; // 2 bits, up to 4 bars?
+bool muteRecords = false; // 
 
 int mtmstr[16][64]; // stock tte les infos. note et 'hit'
 
 int beat = 0; 
 int step = 0 ;
+int barCount = 0;
 float oldstep;
 
 static void periodic_timer_callback(void* arg);
@@ -191,7 +192,6 @@ extern "C" {
 #include "driver/touch_pad.h" 
 #include "soc/rtc_periph.h"
 #include "soc/sens_periph.h"
-
 
 //#define TOUCH_PAD_NO_CHANGE   (-1) // not necessary ?
 #define TOUCH_THRESH_NO_USE   (0)
@@ -323,44 +323,39 @@ extern "C" {
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
             
-            //mstr devrait être 72 valeurs;
+            //mstr devrait être 75 valeurs;
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-
             for (int i = 0; i < sizeof(mstr);i++){
                 ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
             }
 
-            // doit filter en entrée selon le channel et la note et nourrir les 8 tracks au bon endroit
-            // on a mstr qui contient 4 bits + 4 bits + 64 bits
-            // 1 : le bon channel
-            //b. écrire les valeurs ds le tableau
-            //if(convertBits2Int(1) == 0){ // si le channel est '0' (10 pour les drums) // il se plaint, erreur de scope
-            //}
+            muteRecords = mst[10];
 
-            int tmpTotal = 0; // reset avant de compter
-            int sel = 1; // pour avoir accès à la valeur de la note
+            // Filter the array input and populate mtmstr
 
-            for(int i=0;i<4;i++){
+            int tmpTotal = 0; // reset before counting
 
-              if(i==3 && mstr[3+4*sel] == true){
+            for(int i=0;i<4;i++){ // 
+
+              if(i==3 && mstr[3+4] == true){
                 tmpTotal = tmpTotal+1;
                 }
-              else if(i==2 && mstr[2+4*sel] == true){
+              else if(i==2 && mstr[2+4] == true){
                 tmpTotal = tmpTotal + 2;
                 }
-              else if(i==1 && mstr[1+4*sel] == true){
+              else if(i==1 && mstr[1+4] == true){
                 tmpTotal = tmpTotal + 4;
-                }
-                
+                }  
             }
-            note = tmpTotal; // note peut être de 0-8 (ok 16)
+
+            note = tmpTotal; // only 8 note values for the moment
             
             for( int i=0; i<8; i++ ){
             
-              if ( i == note ){ // écrit dans le tableau correspondant à la note 
+              if ( i == note ){ // write into the array at the correct note index
                   for( int j=0; j<64; j++ ) {
-                    if(mstr[j+8]){ // tjrs le offset
+                    if(mstr[j+11]){ // 11 bit offset from the array
                       mtmstr[note][j] = 1;
                     }
                     else {
@@ -704,11 +699,6 @@ void tempoChanged(double tempo) {
     SSD1306_Update( &I2CDisplay );   
 #endif
 
-#if defined USE_TTGO_DISPLAY
-  ESP_LOGI(TAG, "TTGO tempochanged");
-  TFT_fillWindow(TFT_BLACK);
-#endif
-
     esp_timer_handle_t periodic_timer_handle = (esp_timer_handle_t) periodic_timer;
     ESP_ERROR_CHECK(esp_timer_stop(periodic_timer_handle));
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer_handle, midiClockMicroSecond));
@@ -731,10 +721,10 @@ extern "C" {
   void convertBits2Int(int sel){
     //ESP_LOGI(TAG, "conversion");  
     channel = 0; // reset avant de recompter
-    note = 0;
+    // note = 0; // note is calculated when the array is received
     int tmpTotal = 0;
 
-    for(int i=0;i<4;i++){
+    for(int i=0;i<4;i++){ // up to 8 channels, could hold 16 values
 
       if(i==3 && mstr[3+4*sel] == true){
         tmpTotal = tmpTotal+1;
@@ -746,16 +736,8 @@ extern "C" {
         tmpTotal = tmpTotal + 4;
       }
     }
-
-    if(sel == 0){
-      // ESP_LOGI(TAG, "channel : %i", tmpTotal); 
+      ESP_LOGI(TAG, "channel : %i", tmpTotal); 
       channel = tmpTotal;
-    }
-    
-    if(sel == 1){
-      // ESP_LOGI(TAG, "note : %i", tmpTotal); 
-      note = tmpTotal;
-    }
   }
 
 }
@@ -840,14 +822,13 @@ void tickTask(void* userParam)
 
         if( ( curr_step == 0 && changePiton ) || ( curr_step == 0 && changeLink ) ) { // start / stop implementation
             
-              if(startStopCB) { // on recommence à zéro
+              if(startStopCB) { // saw a simpler way of doing this!
                 char zedata[] = { MIDI_START };
                 uart_write_bytes(UART_NUM_1, zedata, 1);
                 uart_write_bytes(UART_NUM_1, 0, 1);
                 changeLink = false;
                 changePiton = false;
-                /// compteur = 1; // reset le compteur
-                step = 0;
+                step = 0; // reset step count
               } 
               else { // on jouait et on arrête // changer pout s'arrêter immédiatement après un stop 
                 char zedata[] = { MIDI_STOP };
@@ -861,11 +842,15 @@ void tickTask(void* userParam)
 
         if(isPlaying){
           //ESP_LOGI(TAG, "step %d", step); 
-          step++;
+          step++; // might be off to add '1' right away
           }
 
         if (step == 16){ // changer 16 pour la longueur des données dans le tableau 16-32-48-64
-          step = 0; 
+          step = 0;
+          barCount++; // +16*barCount
+          if( barCount == 4 ){
+            barCount = 0;
+            }
           }
 
         if(startStopCB){
@@ -899,15 +884,12 @@ void tickTask(void* userParam)
           // passe ds ttes les notes de mtmstr[] et sors ça...assez vite j'espère.
           for(int i = 0; i<8;i++){ // faut faire ça pour chaque valeur de note
                 
-              // comment connaître le nombre de bars ? // réserver un espace dans bd[]? // [note(4 bits)][channel(4 bits)][bar (2 bits)][mute (1 bit)][steps(64 bits)] = 75 bits
-              // détecter la longueur de données 
-              // celles de 1 bar ont 16 steps, step+barSelektor*16
               // compteur de quel bar on est rendus pour les séquences plus longues...
 
-              if (mtmstr[i][step] == 1 && !muteRecords){ // send midi note out // mute to be implemented
+              if (mtmstr[i][step]+16*barCount == 1 && !muteRecords){ // send midi note out // mute to be implemented
                 
                 if (channel == 0){ // are we playing drumz ?
-                  ESP_LOGI(TAG, "drums : %i", i);
+                  //ESP_LOGI(TAG, "drums : %i", i);
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme 10 pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
                   char zedata2[] = {zeDrums[i]};      

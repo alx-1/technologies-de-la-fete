@@ -83,13 +83,15 @@ unsigned char stepColour[3] = {13,8,13};
 unsigned char offColour[3] = {0,0,0};
 unsigned char inColour[3] = {14,14,14}; // init indicator (wifi, broadcast, server address received, ready to go)
 }
+
 /////// DELS //////
 
 
 /////// SEQ ///////
 
-bool bd[72] = {}; // empty 16 boolean values aray to store hits // 4 bits channel, 4 bits note // 64 bit notes
-bool cbd[72] = {1}; // to determine if we have a changed bd
+bool bd[75] = {}; // bd[0-3] (channel) // bd[4-7] (note) // bd[8-9] (bar) // bd[10] (mute) // bd[11-74](steps) 
+
+bool cbd[75] = {1}; // to determine if we have a changed bd
 int step = 0;
 float oldstep;
 
@@ -158,8 +160,10 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 }
 } // fin de extern "C"
 
-extern "C" { void wifi_init_sta(void)
-{
+extern "C" {
+
+    void wifi_init_sta(void) {
+    
     s_wifi_event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
@@ -178,7 +182,6 @@ extern "C" { void wifi_init_sta(void)
     wifi_config_t wifi_config = { // whatever parce que C, c'est pas C++
       { EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS }
       };
-
     /////
  
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
@@ -213,13 +216,11 @@ extern "C" { void wifi_init_sta(void)
     //ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip));
     //ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id));
     //vEventGroupDelete(s_wifi_event_group);
-}
+    }
 } // fin de extern "C"
 
 
 ///// fin station example
-
-// static const char *TAG = "Touch pad";
 
 #define TOUCH_THRESH_NO_USE   (0)
 #define TOUCH_THRESH_PERCENT  (90)
@@ -237,7 +238,6 @@ void LEDinDicator(int lvl){
     for(int i = 0;i<lvl;i++){
         setPixel(&leds, i, inColour); // plus clair
 	}
-
     renderLEDs();
 	vTaskDelay(10 / portTICK_PERIOD_MS); // 50
 
@@ -251,27 +251,13 @@ void TurnLedOn(int step){  //ESP32APA102Driver
     	for (int i = 0; i < 16; i++){ 
 			setPixel(&leds, i, offColour); // turn LED off
             if(i == step && currentBar == barSelektor){ // sélecteur d'affichage de bar
-                if (bd[i+8+16*barSelektor]){
+                if (bd[i+11+16*barSelektor]){
                     setPixel(&leds, i, beatStepColour);    
                     }else{
                     setPixel(&leds, i, stepColour); 
                     }
-            }else if (bd[i+8+16*barSelektor] && noteSelektor == 0){
-                setPixel(&leds, i, Colour[0]); // rose
-                }else if (bd[i+8+16*barSelektor] && noteSelektor == 1){
-                setPixel(&leds, i, Colour[1]); // rouge
-                }else if (bd[i+8+16*barSelektor] && noteSelektor == 2){
-                setPixel(&leds, i, Colour[2]); // orange
-                }else if (bd[i+8+16*barSelektor] && noteSelektor == 3){
-                setPixel(&leds, i, Colour[3]); // jaune
-                }else if (bd[i+8+16*barSelektor] && noteSelektor == 4){
-                setPixel(&leds, i, Colour[4]); // vert
-                }else if (bd[i+8+16*barSelektor] && noteSelektor == 5){
-                setPixel(&leds, i, Colour[5]); // bleu clair
-                }else if (bd[i+8+16*barSelektor] && noteSelektor == 6){
-                setPixel(&leds, i, Colour[6]); // bleu
-                }else if (bd[i+8+16*barSelektor] && noteSelektor == 7){
-                setPixel(&leds, i, Colour[7]); // mauve
+                } else if (bd[i+11+16*barSelektor]){
+                setPixel(&leds, i, Colour[noteSelektor]);           
                 }
 		}
         renderLEDs();
@@ -478,85 +464,85 @@ static void tp_example_read_task(void *pvParameter)
                 if(s_pad_activated[2] && s_pad_activated[4]){
                     ESP_LOGI(TAG, "piton 1");
                     selektor = 0;
-                    bd[8+0+16*barSelektor] = !bd[8+0+16*barSelektor]; // 8 est le offset ds le tableau
+                    bd[11+0+16*barSelektor] = !bd[11+0+16*barSelektor]; // 8 est le offset ds le tableau
                         }
                 if(s_pad_activated[0] && s_pad_activated[4]){
                     ESP_LOGI(TAG, "piton 2");
                     selektor = 1;
-                    bd[8+1+16*barSelektor] = !bd[8+1+16*barSelektor];
+                    bd[11+1+16*barSelektor] = !bd[11+1+16*barSelektor];
                         }
                 if(s_pad_activated[3] && s_pad_activated[4]){
                     ESP_LOGI(TAG, "piton 3");
                     selektor = 2;
-                    bd[8+2+16*barSelektor] = !bd[8+2+16*barSelektor];
+                    bd[11+2+16*barSelektor] = !bd[11+2+16*barSelektor];
                         }
                 if(s_pad_activated[9] && s_pad_activated[4]){
                     ESP_LOGI(TAG, "piton 4");
                     selektor = 3;
-                    bd[8+3+16*barSelektor] = !bd[8+3+16*barSelektor];
+                    bd[11+3+16*barSelektor] = !bd[11+3+16*barSelektor];
                         }
                 /////// 5-8
                 if(s_pad_activated[2] && s_pad_activated[5]){
                             ESP_LOGI(TAG, "piton 5");
                             selektor = 4;
-                            bd[8+4+16*barSelektor] = !bd[8+4+16*barSelektor];
+                            bd[11+4+16*barSelektor] = !bd[11+4+16*barSelektor];
                                 }
                 if(s_pad_activated[0] && s_pad_activated[5]){
                             ESP_LOGI(TAG, "piton 6");
                             selektor = 5;
-                            bd[8+5+16*barSelektor] = !bd[8+5+16*barSelektor];
+                            bd[11+5+16*barSelektor] = !bd[11+5+16*barSelektor];
                                 }
                 if(s_pad_activated[3] && s_pad_activated[5]){
                             ESP_LOGI(TAG, "piton 7");
                             selektor = 6;
-                            bd[8+6+16*barSelektor] = !bd[8+6+16*barSelektor];
+                            bd[11+6+16*barSelektor] = !bd[11+6+16*barSelektor];
                                 }
                 if(s_pad_activated[9] && s_pad_activated[5]){
                             ESP_LOGI(TAG, "piton 8");
                             selektor = 7;
-                            bd[8+7+16*barSelektor] = !bd[8+7+16*barSelektor];
+                            bd[11+7+16*barSelektor] = !bd[11+7+16*barSelektor];
                                 }
                 /////// 9-12
                 if(s_pad_activated[2] && s_pad_activated[6]){
                         ESP_LOGI(TAG, "piton 9");
                         selektor = 8;
-                        bd[8+8+16*barSelektor] = !bd[8+8+16*barSelektor];
+                        bd[11+8+16*barSelektor] = !bd[11+8+16*barSelektor];
                             }
                 if(s_pad_activated[0] && s_pad_activated[6]){
                         ESP_LOGI(TAG, "piton 10");
                         selektor = 9;
-                        bd[8+9+16*barSelektor] = !bd[8+9+16*barSelektor];
+                        bd[11+9+16*barSelektor] = !bd[11+9+16*barSelektor];
                             }
                 if(s_pad_activated[3] && s_pad_activated[6]){
                         ESP_LOGI(TAG, "piton 11");
                         selektor = 10;
-                        bd[8+10+16*barSelektor] = !bd[8+10+16*barSelektor];
+                        bd[11+10+16*barSelektor] = !bd[11+10+16*barSelektor];
                             }
                 if(s_pad_activated[9] && s_pad_activated[6]){
                         ESP_LOGI(TAG, "piton 12");
                         selektor = 11;
-                        bd[8+11+16*barSelektor] = !bd[8+11+16*barSelektor];
+                        bd[11+11+16*barSelektor] = !bd[11+11+16*barSelektor];
                             }
                 /////// 13-16
                 if(s_pad_activated[2] && s_pad_activated[7]){
                       ESP_LOGI(TAG, "piton 13");
                       selektor = 12;
-                      bd[8+12+16*barSelektor] = !bd[8+12+16*barSelektor];
+                      bd[11+12+16*barSelektor] = !bd[11+12+16*barSelektor];
                           }
                 if(s_pad_activated[0] && s_pad_activated[7]){
                       ESP_LOGI(TAG, "piton 14");
                       selektor = 13;
-                      bd[8+13+16*barSelektor] = !bd[8+13+16*barSelektor];
+                      bd[11+13+16*barSelektor] = !bd[11+13+16*barSelektor];
                           }
                 if(s_pad_activated[3] && s_pad_activated[7]){
                       ESP_LOGI(TAG, "piton 15");
                       selektor = 14;
-                      bd[8+14+16*barSelektor] = !bd[8+14+16*barSelektor];
+                      bd[11+14+16*barSelektor] = !bd[11+14+16*barSelektor];
                           }
                 if(s_pad_activated[9] && s_pad_activated[7]){
                       ESP_LOGI(TAG, "piton 16");
                       selektor = 15;
-                      bd[8+15+16*barSelektor] = !bd[8+15+16*barSelektor];
+                      bd[11+15+16*barSelektor] = !bd[11+15+16*barSelektor];
                           }
 
                     // ESP_LOGI(TAG, "T%d activated!", i);
@@ -572,8 +558,8 @@ static void tp_example_read_task(void *pvParameter)
                         if(modSelektor<8){ // change la valeur de note représentée par sa couleur
                           noteSelektor = modSelektor;  
                           ESP_LOGI(TAG, "noteSelektor %d", noteSelektor);
-                          // vider bd[]
-                          for(int i = 8; i < sizeof(bd) ; i++) {
+
+                          for(int i = 11; i < sizeof(bd) ; i++) {
                               bd[i] = 0;
                           }
                           convertInt2Bits(noteSelektor, 1); // écrit les valeurs de note en bits ds bd[]
@@ -581,10 +567,25 @@ static void tp_example_read_task(void *pvParameter)
 
                         else if(modSelektor>=8 && modSelektor<12){ // change le bar (1-16)(17-32)etc.
                             barSelektor= modSelektor-8;
-                            ESP_LOGI(TAG, "barSelektor %d", barSelektor);
+
+                            if(barSelektor == 0){
+                                bd[8] = false;
+                                bd[9] = false;
+                            } else if (barSelektor == 1){
+                                bd[8] = true;
+                                bd[9] = false;
+                            } else if (barSelektor == 2){
+                                bd[8] = false;
+                                bd[9] = true;
+                            } else { 
+                                bd[8] = true;
+                                bd[9] = true;
+                            }
+                            ESP_LOGI(TAG, "Bar : %d", barSelektor);
+
                         }
 
-                        else if( modSelektor == 13){ 
+                        else if( modSelektor == 12){ 
                             if (fourChan == 7){ // le max
                                 fourChan = 0; // loop it
                             }
@@ -593,7 +594,7 @@ static void tp_example_read_task(void *pvParameter)
                             ESP_LOGI(TAG, "Channel %i", fourChan);
                         }
                         
-                        else if( modSelektor == 14){
+                        else if( modSelektor == 13){
                             if (fourChan == 0){ // le min
                                 fourChan = 7; // loop it
                             }
@@ -601,10 +602,14 @@ static void tp_example_read_task(void *pvParameter)
                             convertInt2Bits(fourChan, 0); // écrit les valeurs de channel en bits ds bd[]
                             ESP_LOGI(TAG, "Channel %i", fourChan);  
                         }
+
+                        else if( modSelektor == 14){
+                            bd[10] = !bd[10];  // toggle mute
+                            ESP_LOGI(TAG, "mute : %i", bd[10]);  
+                        }
                         
-                        else if(modSelektor == 15){ // reset beat values
-                            size_t n = sizeof(bd)/sizeof(bd[0]);
-                            for(i=0;i<n;i++){ // reset tout
+                        else if(modSelektor == 15){ // reset values
+                            for( i = 0 ; i < sizeof(bd) ; i++ ){ // reset tout
                                 bd[i]=0;  
                             }
                             // ajouter un reset du côté de tdlf
