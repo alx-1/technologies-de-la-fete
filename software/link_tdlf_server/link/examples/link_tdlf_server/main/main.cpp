@@ -102,14 +102,16 @@ char MIDI_NOTE_ON_CH[] = {0x99,0x90}; // note on, channel 10, note on, channel 0
 bool mstr[75] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-9] (bar) // mstr[10] (mute) // mstr[11-74](steps)
 int channel; // 4 bits midi channel (0-7) -> (10,1,2,3,4,5,6,7) // drums + más
 int note; // 4 bits note info // 8 notes correspond to 8 colors // (0-7) -> (36,38,43,50,42,46,39,75),67,49 // más de 8 !
-int bar; // 2 bits, up to 4 bars?
-bool muteRecords = false; // 
+int bar[8] = {1,1,1,1,1,1,1,1}; // 2 bits, up to 4 bars?
+bool muteRecords[8] = {0,0,0,0,0,0,0,0}; // mute info per
+int stepsLength[8] = {16,16,16,16,16,16,16,16}; // varies per note 16-64
 
-int mtmstr[16][64]; // stock tte les infos. note et 'hit'
+int mtmstr[16][64]; // note // beats 
 
 int beat = 0; 
 int step = 0 ;
-int barCount = 0;
+int dubStep = 0;
+
 float oldstep;
 
 static void periodic_timer_callback(void* arg);
@@ -326,11 +328,11 @@ extern "C" {
             //mstr devrait être 75 valeurs;
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-            for (int i = 0; i < sizeof(mstr);i++){
-                ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
-            }
+            //for (int i = 0; i < sizeof(mstr);i++){
+            //    ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
+            //}
 
-            muteRecords = mst[10];
+            
 
             // Filter the array input and populate mtmstr
 
@@ -350,16 +352,30 @@ extern "C" {
             }
 
             note = tmpTotal; // only 8 note values for the moment
+
+            ESP_LOGI(SOCKET_TAG, "note : %i", note); 
+
+            // read in the bit value for mute and store 
+            muteRecords[note] = mstr[10]; 
+            muteRecords[note] = true; 
+
+            // read in bar value from mst[8] and mst[9] and save it as int for the corresponding note
+            if(mstr[8]==false && mstr[9]==false){bar[note] = 1;} 
+            else if(mstr[8]==true && mstr[9]==false){bar[note] = 2;} 
+            else if(mstr[8]==false && mstr[9]==true){bar[note] = 3;} 
+            else {bar[note] = 4;} // true && true 
+
+            ESP_LOGI(SOCKET_TAG, "bar[note] : %i", bar[note]); 
             
             for( int i=0; i<8; i++ ){
             
               if ( i == note ){ // write into the array at the correct note index
                   for( int j=0; j<64; j++ ) {
                     if(mstr[j+11]){ // 11 bit offset from the array
-                      mtmstr[note][j] = 1;
+                      mtmstr[note][j] = 1; 
                     }
                     else {
-                      mtmstr[note][j] = 0;
+                      mtmstr[note][j] = 0; 
                     }
                   }                   
               }
@@ -736,7 +752,7 @@ extern "C" {
         tmpTotal = tmpTotal + 4;
       }
     }
-      ESP_LOGI(TAG, "channel : %i", tmpTotal); 
+      // ESP_LOGI(TAG, "channel : %i", tmpTotal); 
       channel = tmpTotal;
   }
 
@@ -840,17 +856,8 @@ void tickTask(void* userParam)
             }
   
 
-        if(isPlaying){
-          //ESP_LOGI(TAG, "step %d", step); 
-          step++; // might be off to add '1' right away
-          }
-
-        if (step == 16){ // changer 16 pour la longueur des données dans le tableau 16-32-48-64
+        if (step == 64){ // max steps = 64
           step = 0;
-          barCount++; // +16*barCount
-          if( barCount == 4 ){
-            barCount = 0;
-            }
           }
 
         if(startStopCB){
@@ -878,15 +885,20 @@ void tickTask(void* userParam)
 
         if (startStopCB){ // isPlaying and did we send that note out? 
 
-          convertBits2Int(0); // get current channel // drums ou synths ?
-          convertBits2Int(1); // get int note
+          convertBits2Int(0); // get current channel // drums or synths ?
 
           // passe ds ttes les notes de mtmstr[] et sors ça...assez vite j'espère.
           for(int i = 0; i<8;i++){ // faut faire ça pour chaque valeur de note
                 
               // compteur de quel bar on est rendus pour les séquences plus longues...
+              stepsLength[i] = bar[i]*16; // correspond au nombre de bars pour la note
+              //ESP_LOGI(TAG, "stepsLength[i] : %i", stepsLength[i]);
+              dubStep = step%stepsLength[i]; // modulo 16 // ... 32 // ... 48 // ... 64
+              //ESP_LOGI(TAG, "nouveau dubStep : %i", dubStep);
 
-              if (mtmstr[i][step]+16*barCount == 1 && !muteRecords){ // send midi note out // mute to be implemented
+              //if (mtmstr[i][step] == 1 && !muteRecords[i]){ // send midi note out 
+              //ESP_LOGI(TAG, "mtmstr[i][step] : %i", i);
+              if (mtmstr[i][dubStep] == 1){ // send midi note out // mute to be implemented
                 
                 if (channel == 0){ // are we playing drumz ?
                   //ESP_LOGI(TAG, "drums : %i", i);
@@ -911,6 +923,12 @@ void tickTask(void* userParam)
                   
           }
         }
+
+        if(isPlaying){
+          // ESP_LOGI(TAG, "step : %d", step); 
+          step++; // might be off to add '1' right away
+          }
+
       }
 
     } // fin de if curr_beat_time is > prev_beat_time
