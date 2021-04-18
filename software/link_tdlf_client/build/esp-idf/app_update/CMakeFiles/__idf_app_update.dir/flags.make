@@ -8,5 +8,5 @@ C_INCLUDES = -I/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link
 
 C_FLAGS = -mlongcalls -Wno-frame-address -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -Wall -Werror=all -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -Wextra -Wno-unused-parameter -Wno-sign-compare -ggdb -Og -std=gnu99 -Wno-old-style-declaration -D_GNU_SOURCE -DIDF_VER=\"5ef1b3900-dirty\" -DESP_PLATFORM
 
-# Custom defines: esp-idf/app_update/CMakeFiles/__idf_app_update.dir/esp_app_desc.c.obj_DEFINES = PROJECT_VER="00b7c8a-dirty"; PROJECT_NAME="link_tdlf_client"
+# Custom defines: esp-idf/app_update/CMakeFiles/__idf_app_update.dir/esp_app_desc.c.obj_DEFINES = PROJECT_VER="bf47c69-dirty"; PROJECT_NAME="link_tdlf_client"
 

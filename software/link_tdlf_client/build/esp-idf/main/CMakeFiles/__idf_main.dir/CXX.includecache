@@ -647,6 +647,12 @@ esp_wifi.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/esp_wifi.h
 esp_event.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/esp_event.h
+esp_wpa2.h
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/esp_wpa2.h
+esp_netif.h
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/esp_netif.h
+esp_smartconfig.h
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/esp_smartconfig.h
 esp_log.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/esp_log.h
 
@@ -8578,6 +8584,16 @@ esp_event_base.h
 stdarg.h
 -
 
+/Users/alx/esp/esp-idf/components/esp_wifi/include/esp_smartconfig.h
+stdint.h
+-
+stdbool.h
+-
+esp_err.h
+/Users/alx/esp/esp-idf/components/esp_wifi/include/esp_err.h
+esp_event_base.h
+/Users/alx/esp/esp-idf/components/esp_wifi/include/esp_event_base.h
+
 /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_wifi.h
 stdint.h
 -
@@ -9533,6 +9549,12 @@ esp_netif_sta_list.h
 /Users/alx/esp/esp-idf/components/tcpip_adapter/include/esp_netif_sta_list.h
 
 /Users/alx/esp/esp-idf/components/vfs/include/sys/ioctl.h
+
+/Users/alx/esp/esp-idf/components/wpa_supplicant/include/esp_supplicant/esp_wpa2.h
+stdbool.h
+-
+esp_err.h
+/Users/alx/esp/esp-idf/components/wpa_supplicant/include/esp_supplicant/esp_err.h
 
 /Users/alx/esp/esp-idf/components/wpa_supplicant/port/include/byteswap.h
 machine/endian.h

@@ -559,6 +559,7 @@ esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/comp
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_private/esp_wifi_private.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_private/esp_wifi_types_private.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_private/wifi_os_adapter.h
+esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_smartconfig.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_wifi.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_wifi_crypto_types.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_wifi_default.h
@@ -677,6 +678,7 @@ esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/comp
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/tcpip_adapter/include/tcpip_adapter_types.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/vfs/include/sys/ioctl.h
+esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/wpa_supplicant/include/esp_supplicant/esp_wpa2.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/wpa_supplicant/port/include/byteswap.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/xtensa/esp32/include/xtensa/config/core-isa.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/xtensa/esp32/include/xtensa/config/core-matmap.h

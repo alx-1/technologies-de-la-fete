@@ -15,7 +15,6 @@
 #include <driver/timer.h>
 #include <stdio.h>
 #include "sdkconfig.h"
-
 #include "esp_timer.h"
 #include "esp_sleep.h"
 #include <chrono> // essai pour setTempo()
@@ -33,14 +32,17 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
-//#define HOST_IP_ADDR "192.168.0.101" // synth is using (will use) a static ip
-
-#define HOST_IP_ADDR "255.255.255.255" // trying to broadcast first
+#define HOST_IP_ADDR "255.255.255.255" // trying to broadcast first // //#define HOST_IP_ADDR "192.168.0.101"
 #define PORT 3333
-// #define SO_BROADCAST   0x0020
 
-////// sockette à rajouter /////
+extern "C" {
+static const char *SMART_TAG = "Smart config";
+static const char *NVS_TAG = "NVS";
+static const char *WIFI_TAG = "Wifi";
+static const char *TAG = "tdlf";
+}
 
+////// sockette /////
 char rx_buffer[128]; // 128
 char addr_str[128];
 int addr_family;    
@@ -83,14 +85,12 @@ unsigned char stepColour[3] = {13,8,13};
 unsigned char offColour[3] = {0,0,0};
 unsigned char inColour[3] = {14,14,14}; // init indicator (wifi, broadcast, server address received, ready to go)
 }
-
 /////// DELS //////
 
 
 /////// SEQ ///////
 
 bool bd[75] = {}; // bd[0-3] (channel) // bd[4-7] (note) // bd[8-9] (bar) // bd[10] (mute) // bd[11-74](steps) 
-
 bool cbd[75] = {1}; // to determine if we have a changed bd
 int step = 0;
 float oldstep;
@@ -115,59 +115,208 @@ extern "C"{
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
+#include "esp_wpa2.h"
+#include "esp_netif.h"
+#include "esp_smartconfig.h"
 #include "esp_log.h"
-//#include "nvs_flash.h"
-//#include "lwip/err.h"
-//#include "lwip/sys.h"
 }
 
+/// SMART CONFIG /// WIFI STA ///
 extern "C" { 
-#define EXAMPLE_ESP_WIFI_SSID      "link"
-#define EXAMPLE_ESP_WIFI_PASS      "nidieunimaitre"
 #define EXAMPLE_ESP_MAXIMUM_RETRY  2
-
+char ssid[33]; 
+char password[65];
+char str_ip[16] ="192.168.0.42"; // send IP to clients !! // stand in ip necessary for memory space?
 static EventGroupHandle_t s_wifi_event_group;
-
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
-static const char *TAG = "tdlf client";
-
 static int s_retry_num = 0;
+bool skipNVSRead = false; // there is a check in app_main()
 }
+
+bool goSMART = false;
+bool goLINK = false;
+static EventGroupHandle_t s_smartcfg_event_group; /* FreeRTOS event group to signal when smart config is done*/
+TaskHandle_t xHandle;
+static const int CONNECTED_BIT      = BIT0;  // est-ce nécessaire ?
+static const int ESPTOUCH_DONE_BIT  = BIT1;  // depuis smart_config static const int ESPTOUCH_DONE_BIT = BIT1;
+
+extern "C" {
+  static void smartconfig_example_task(void * parm);
+  } // depuis smart_config
+
 
 extern "C" { 
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
-                                {
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+{
+
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START && goSMART == false) {
+        ESP_LOGI(SMART_TAG,"Tente une connection avec les crédentials en mémoire");
+
+        /// NVS READ CREDENTIALS ///
+        nvs_handle wificfg_nvs_handler;
+        size_t len;
+        nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
+
+        nvs_get_str(wificfg_nvs_handler, "wifi_ssid", NULL, &len);
+        char* lssid = (char*)malloc(len); // (char*)malloc(len) compiles but crashes
+        nvs_get_str(wificfg_nvs_handler, "wifi_ssid", lssid, &len);
+
+        nvs_get_str(wificfg_nvs_handler, "wifi_password", NULL, &len);
+        char* lpassword = (char*)malloc(len); // (char*)malloc(len) compiles but crashes
+        nvs_get_str(wificfg_nvs_handler, "wifi_password", lpassword, &len); // esp_err_t nvs_get_str(nvs_handle_thandle, const char *key, char *out_value, size_t *length)
+
+        nvs_close(wificfg_nvs_handler);
+   
+        wifi_config_t wifi_config = { }; // when declaring wifi_config_t structure, do not forget to set all fields to zero.
+     
+        memcpy(wifi_config.sta.ssid, lssid, 33);
+        memcpy(wifi_config.sta.password, lpassword, 65);
+
+        ESP_LOGI(NVS_TAG,"wifi_config.sta.ssid NVS :%s",wifi_config.sta.ssid); 
+        ESP_LOGI(NVS_TAG,"wifi_config.sta.ssid NVS :%s",wifi_config.sta.password); 
+
+        ESP_ERROR_CHECK( esp_wifi_disconnect() );
+        ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
         esp_wifi_connect();
-    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && goSMART == false) {
         if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY) {
             esp_wifi_connect();
             s_retry_num++;
-            ESP_LOGI(TAG, "retry to connect to the AP");
+            ESP_LOGI(WIFI_TAG, "retry to connect to the AP");
         } else {
             xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
         }
-        ESP_LOGI(TAG,"connect to the AP fail");
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ESP_LOGI(WIFI_TAG,"connect to the AP failed");
+
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP && goSMART == false) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
-        // LEDinDicator(4); // grr not declared in this scope
+
+        ESP_LOGI(WIFI_TAG, "Got IP: %d.%d.%d.%d", IP2STR(&event->ip_info.ip));
+	    esp_ip4addr_ntoa(&event->ip_info.ip, str_ip, IP4ADDR_STRLEN_MAX);
+	    ESP_LOGI(WIFI_TAG, "I have a connection and my IP is %s!", str_ip); 
+
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+        // LEDinDicator(4); // grr not declared in this scope
     }
-}
+    /////////
+    else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && goSMART == true) {
+        esp_wifi_connect();
+        xEventGroupClearBits(s_smartcfg_event_group, CONNECTED_BIT);
+
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && goSMART == true) {
+        ESP_LOGI(SMART_TAG, "on a de quoi !");
+        esp_wifi_connect();
+        xEventGroupClearBits(s_smartcfg_event_group, CONNECTED_BIT);
+
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP && goSMART == true) {
+        ESP_LOGI(SMART_TAG, "on a de nouveau de quoi !");
+        xEventGroupSetBits(s_smartcfg_event_group, CONNECTED_BIT);
+
+    } else if (event_base == SC_EVENT && event_id == SC_EVENT_SCAN_DONE && goSMART == true) {
+        ESP_LOGI(SMART_TAG, "Scan done");
+
+    } else if (event_base == SC_EVENT && event_id == SC_EVENT_FOUND_CHANNEL && goSMART == true) {
+        ESP_LOGI(SMART_TAG, "Found channel");
+
+    } else if (event_base == SC_EVENT && event_id == SC_EVENT_GOT_SSID_PSWD && goSMART == true) {
+
+      ESP_LOGI(SMART_TAG, "Got SSID and password");
+
+      smartconfig_event_got_ssid_pswd_t *evt = (smartconfig_event_got_ssid_pswd_t *)event_data;
+
+      wifi_config_t wifi_config;
+      bzero(&wifi_config, sizeof(wifi_config_t)); // ... or wifi_config_t wifi_config = { }; // when declaring wifi_config_t structure, do not forget to set all fields to zero.
+      
+      memcpy(wifi_config.sta.ssid, evt->ssid, sizeof(wifi_config.sta.ssid));
+      memcpy(wifi_config.sta.password, evt->password, sizeof(wifi_config.sta.password));
+      
+      wifi_config.sta.bssid_set = evt->bssid_set;
+
+      if (wifi_config.sta.bssid_set == true) {
+        ESP_LOGI(SMART_TAG, "bssid_set is true so normally we copy the credentials in memory");
+        memcpy(wifi_config.sta.bssid, evt->bssid, sizeof(wifi_config.sta.bssid));
+        }
+
+      memcpy(ssid, evt->ssid, sizeof(evt->ssid)); 
+      memcpy(password, evt->password, sizeof(evt->password));
+
+      ESP_LOGI(SMART_TAG, "MEMCPY SSID:%s", ssid);
+      ESP_LOGI(SMART_TAG, "MEMCPY PASSWORD:%s", password);
+
+      //////// WRITING TO NVS // EVENTUALLY USE THIS TO SAVE mtmstr[] //////
+      nvs_handle wificfg_nvs_handler;
+      nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
+      nvs_set_str(wificfg_nvs_handler,"wifi_ssid",ssid);
+      nvs_set_str(wificfg_nvs_handler,"wifi_password",password);
+      nvs_commit(wificfg_nvs_handler); 
+      nvs_close(wificfg_nvs_handler); 
+      ////// END NVS ///// 
+
+      /*///// TEST READ FROM NVS /////
+      size_t len;
+      nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
+      nvs_get_str(wificfg_nvs_handler, "wifi_ssid", NULL, &len);
+      char* ssidtest = (char*)malloc(len);
+      nvs_get_str(wificfg_nvs_handler,"wifi_ssid", ssidtest, &len);
+      nvs_close(wificfg_nvs_handler); 
+      ESP_LOGI(NVS_TAG,"TEST READ NVS SSID:%s",ssidtest);
+      ////////////////////*/
+
+      ESP_ERROR_CHECK( esp_wifi_disconnect() );
+      ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+      ESP_ERROR_CHECK( esp_wifi_connect() );
+
+    } // end of writing ssid + password to nvs from smartcfg
+    
+    else if (event_base == SC_EVENT && event_id == SC_EVENT_SEND_ACK_DONE) {
+        ESP_LOGI(SMART_TAG, "ESPTOUCH DONE!");
+        xEventGroupSetBits(s_smartcfg_event_group, ESPTOUCH_DONE_BIT);
+        }
+    } // fin event handler
+
 } // fin de extern "C"
 
-extern "C" {
+extern "C" { static void smartconfig_example_task(void * parm)
+{
+    EventBits_t uxBits;
+    ESP_ERROR_CHECK( esp_smartconfig_set_type(SC_TYPE_ESPTOUCH) );
+    smartconfig_start_config_t smtcfg = SMARTCONFIG_START_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK( esp_smartconfig_start(&smtcfg) );
+    ESP_LOGI(SMART_TAG,"normalement on a démarré le smartconfig");
 
-    void wifi_init_sta(void) {
+    // LED INDICATOR CODE HERE 
+
+    while (1) {
+ 
+      vTaskDelay(1000 / portTICK_PERIOD_MS); // 35000 // 15000 
+      uxBits = xEventGroupWaitBits(s_smartcfg_event_group, CONNECTED_BIT | ESPTOUCH_DONE_BIT, true, false, portMAX_DELAY);
+        
+      if(uxBits & CONNECTED_BIT) {
+          ESP_LOGI(SMART_TAG, "WiFi Connected to ap");
+        }
+
+      if(uxBits & ESPTOUCH_DONE_BIT) {
+        ESP_LOGI(SMART_TAG, "smartconfig over");
+        goLINK = true;
+        esp_smartconfig_stop();
+        vTaskDelete( xHandle ); // tente de fermer le task correctement
+        //vTaskGetRunTimeStats( xHandle );
+        }
+        }
+    } 
+} // fin extern "C"
+
+extern "C" { void wifi_init_sta(void) 
+{
     
     s_wifi_event_group = xEventGroupCreate();
+    s_smartcfg_event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
-
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     esp_netif_create_default_wifi_sta();
 
@@ -176,13 +325,29 @@ extern "C" {
 
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(SC_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL) );
 
-    
-    ////
-    wifi_config_t wifi_config = { // whatever parce que C, c'est pas C++
-      { EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS }
-      };
-    /////
+    /*if (skipNVSRead == false){
+    /// NVS READ CREDENTIALS ///
+    nvs_handle wificfg_nvs_handler;
+    size_t len;
+    nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
+
+    nvs_get_str(wificfg_nvs_handler, "wifi_ssid", NULL, &len);
+    char* lssid = (char*)malloc(len); // (char*)malloc(len) compiles but crashes
+    nvs_get_str(wificfg_nvs_handler, "wifi_ssid", lssid, &len);
+
+    nvs_get_str(wificfg_nvs_handler, "wifi_password", NULL, &len);
+    char* lpassword = (char*)malloc(len); // (char*)malloc(len) compiles but crashes
+    nvs_get_str(wificfg_nvs_handler, "wifi_password", lpassword, &len); // esp_err_tnvs_get_str(nvs_handle_thandle, const char *key, char *out_value, size_t *length)
+
+    nvs_close(wificfg_nvs_handler);
+    }
+   
+    ESP_LOGI(NVS_TAG,"WIFI_STA ssid :%s",lssid); 
+    ESP_LOGI(NVS_TAG,"WIFI_STA password :%s",lpassword); 
+    */
+    wifi_config_t wifi_config;
  
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
@@ -201,26 +366,25 @@ extern "C" {
     /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
      * happened. */
     if (bits & WIFI_CONNECTED_BIT) {
-        ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
-        EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+        ESP_LOGI(TAG, "connected to WiFI");
+        
         //LEDinDicator(4); // we have wifi
 
     } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
-                 EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+        ESP_LOGE(WIFI_TAG, "Failed to connect to SSID:%s, password:%s",
+        wifi_config.sta.ssid, wifi_config.sta.password);
+        goSMART = true; // pour la suite des choses
     } else {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
-
     /* The event will not be processed after unregister */
     //ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip));
     //ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id));
     //vEventGroupDelete(s_wifi_event_group);
+    
     }
 } // fin de extern "C"
 
-
-///// fin station example
 
 #define TOUCH_THRESH_NO_USE   (0)
 #define TOUCH_THRESH_PERCENT  (90)
@@ -240,7 +404,6 @@ void LEDinDicator(int lvl){
 	}
     renderLEDs();
 	vTaskDelay(10 / portTICK_PERIOD_MS); // 50
-
 }
 
 
@@ -795,12 +958,61 @@ extern "C" void app_main()
     }
     ESP_ERROR_CHECK(ret);
 
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
+    /// Error check NVS credentials ///
+
+    esp_err_t err;
+	size_t len;
+	// Open
+	    nvs_handle wificfg_nvs_handler;
+	    err = nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
+        
+	    
+        if (err != ESP_OK) {
+            printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+            skipNVSRead = true;
+        } else {
+	        nvs_get_str(wificfg_nvs_handler, "wifi_ssid", NULL, &len);
+            char* lssid = (char*)malloc(len); // (char*)malloc(len) compiles but crashes
+            err = nvs_get_str(wificfg_nvs_handler, "wifi_ssid", lssid, &len);
+	        switch (err) {
+	            case ESP_OK:
+	                break;
+	            case ESP_ERR_NVS_NOT_FOUND:
+	                printf("Key wifi_ssid is not initialized yet!\n");
+                    skipNVSRead = true;
+	                break;
+	            default :
+	                printf("Error (%s) reading wifi_ssid size!\n", esp_err_to_name(err));
+	                skipNVSRead = true;
+                    break;
+	        }
+        }
+        nvs_close(wificfg_nvs_handler);
+
+
+    if(skipNVSRead){
+      //////// WRITING TO NVS // EVENTUALLY USE THIS TO SAVE mtmstr[] //////
+      nvs_handle wificfg_nvs_handler;
+      nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
+      nvs_set_str(wificfg_nvs_handler,"wifi_ssid","testing");
+      nvs_set_str(wificfg_nvs_handler,"wifi_password","onetwo");
+      nvs_commit(wificfg_nvs_handler); 
+      nvs_close(wificfg_nvs_handler); 
+      ////// END NVS ///// 
+    }
+
+    ESP_LOGI(WIFI_TAG, "ESP_WIFI_MODE_STA");
     wifi_init_sta();
+
+    if (goSMART == true){
+        //ESP_ERROR_CHECK(esp_wifi_stop());
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        //ESP_LOGI(WIFI_TAG, "STOP STA");
+        xTaskCreate(smartconfig_example_task, "smartconfig_example_task", 4096, NULL, 3, &xHandle);
+    }
 
   	//esp_wifi_set_ps(WIFI_PS_NONE);
 
-	// LEDSTRIP.init(16); // arg est le nombre de LEDs
 
     //// LEDS /////
     printf("\r\n\r\n\r\nHello Pixels!\n");

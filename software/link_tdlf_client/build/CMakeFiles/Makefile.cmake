@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/HEAD"
-  "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/packed-refs"
+  "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/refs/heads/master"
   "../CMakeLists.txt"
   "CMakeFiles/3.18.4/CMakeASMCompiler.cmake"
   "CMakeFiles/3.18.4/CMakeCCompiler.cmake"
@@ -211,7 +211,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "CMakeFiles/git-data/head-ref"
   "CMakeFiles/git-data/HEAD"
   "CMakeFiles/git-data/grabRef.cmake"
-  "CMakeFiles/git-data/packed-refs"
+  "CMakeFiles/git-data/head-ref"
   "config.env"
   "bootloader-prefix/tmp/bootloader-cfgcmd.txt"
   "project_description.json"
