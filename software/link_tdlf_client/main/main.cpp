@@ -536,6 +536,8 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
 
+        LEDinDicator(4); 
+        
         // udp_client // sockette
         xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, NULL);
         ESP_LOGI(SOCKET_TAG, "udp_client started from IP_EVENT_STA_GOT_IP"); 
@@ -546,7 +548,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         xTaskCreate(tickTask, "tick", 8192, tickSemphr, 1, nullptr); // : error: 'timerGroup0Init' was not declared in this scope
 	    ESP_LOGI(TAG, "link task started from IP_EVENT_STA_GOT_IP ");
         
-        // LEDinDicator(4); // no se porque pero craaash!
+        
         
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && goSMART == true) {
         esp_wifi_connect();
@@ -1069,18 +1071,6 @@ extern "C" void app_main()
       ////// END NVS ///// 
     }
 
-    ESP_LOGI(WIFI_TAG, "ESP_WIFI_MODE_STA");
-    wifi_init_sta();
-
-    if (goSMART == true){
-        //ESP_ERROR_CHECK(esp_wifi_stop());
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        //ESP_LOGI(WIFI_TAG, "STOP STA");
-        xTaskCreate(smartconfig_example_task, "smartconfig_example_task", 4096, NULL, 3, &xHandle);
-    }
-
-  	//esp_wifi_set_ps(WIFI_PS_NONE);
-
     //// LEDS /////
     printf("\r\n\r\nHello Pixels!\n");
 	//Set up SPI
@@ -1100,8 +1090,19 @@ extern "C" void app_main()
 	spi_device_queue_trans(spi, &spiTransObject, portMAX_DELAY);
 	printf("Pixels Cleared!\r\n");
     //// LEDS /////
-	
 
+    ESP_LOGI(WIFI_TAG, "ESP_WIFI_MODE_STA");
+    wifi_init_sta();
+
+    if (goSMART == true){
+        //ESP_ERROR_CHECK(esp_wifi_stop());
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        //ESP_LOGI(WIFI_TAG, "STOP STA");
+        xTaskCreate(smartconfig_example_task, "smartconfig_example_task", 4096, NULL, 3, &xHandle);
+    }
+
+  	//esp_wifi_set_ps(WIFI_PS_NONE);
+	
 	/////// TOUCH INIT ////////
 	ESP_LOGI(TAG, "Initializing touch pad");
 	touch_pad_init(); // Initialize touch pad peripheral, it will start a timer to run a filter
@@ -1116,34 +1117,7 @@ extern "C" void app_main()
 	xTaskCreate(&tp_example_read_task, "touch_pad_read_task", 2048, NULL, 5, NULL); // n'importe quelle core
 	///////// FIN TOUCH /////////
 
-
-/* // moving
-	///// SOCKETTE TASK //////
-	// upd init + timer
-	dest_addr.sin_addr.s_addr = inet_addr(HOST_IP_ADDR); //  "192.168.0.255"
-	dest_addr.sin_family = AF_INET;
-	dest_addr.sin_port = htons(PORT); // "3333"	
-	addr_family = AF_INET;
-	ip_protocol = IPPROTO_IP;
-  	inet_ntoa_r(dest_addr.sin_addr, addr_str, sizeof(addr_str) - 1);
-
-    // Trying to send a broadcast message, not sure it works :/
-    int enabled = 1;
-    setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled));
-
- 	sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
-
-
-  	if (sock < 0) {
-    	ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
-  		}
-
-  	ESP_LOGI(TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR, PORT);
-	
-    ///// FIN SOCKETTE /////
-		*/
-
-    // link is started within the event handler
+    // link + udp task are started within the event handler as we need to wait for IP_EVENT_STA_GOT_IP
 
 	vTaskDelete(nullptr);
 
