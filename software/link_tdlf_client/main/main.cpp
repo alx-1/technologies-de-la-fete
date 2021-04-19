@@ -36,6 +36,7 @@
 #define PORT 3333
 
 extern "C" {
+static const char *SOCKET_TAG = "Socket";
 static const char *SMART_TAG = "Smart config";
 static const char *NVS_TAG = "NVS";
 static const char *WIFI_TAG = "Wifi";
@@ -128,15 +129,18 @@ char ssid[33];
 char password[65];
 char str_ip[16] ="192.168.0.42"; // send IP to clients !! // stand in ip necessary for memory space?
 static EventGroupHandle_t s_wifi_event_group;
+
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 static int s_retry_num = 0;
 bool skipNVSRead = false; // there is a check in app_main()
+bool gotIP = false; // try to get link task "tick" and udp task "socket" to wait until we have a valip IP 
 }
 
 bool goSMART = false;
 bool goLINK = false;
 static EventGroupHandle_t s_smartcfg_event_group; /* FreeRTOS event group to signal when smart config is done*/
+
 TaskHandle_t xHandle;
 static const int CONNECTED_BIT      = BIT0;  // est-ce nécessaire ?
 static const int ESPTOUCH_DONE_BIT  = BIT1;  // depuis smart_config static const int ESPTOUCH_DONE_BIT = BIT1;
@@ -144,6 +148,338 @@ static const int ESPTOUCH_DONE_BIT  = BIT1;  // depuis smart_config static const
 extern "C" {
   static void smartconfig_example_task(void * parm);
   } // depuis smart_config
+
+
+////// LEDS ///////
+extern "C"{
+void renderLEDs()
+{
+	spi_device_queue_trans(spi, &spiTransObject, portMAX_DELAY);
+}
+
+int setupSPI()
+{
+	//Set up the Bus Config struct
+	buscfg.miso_io_num=-1;
+	buscfg.mosi_io_num=PIN_NUM_MOSI;
+	buscfg.sclk_io_num=PIN_NUM_CLK;
+	buscfg.quadwp_io_num=-1;
+	buscfg.quadhd_io_num=-1;
+	buscfg.max_transfer_sz=maxSPIFrameInBytes;
+	
+	//Set up the SPI Device Configuration Struct
+	devcfg.clock_speed_hz=maxSPIFrequency;
+	devcfg.mode=0;                        
+	devcfg.spics_io_num=-1;             
+	devcfg.queue_size=1;
+
+	//Initialize the SPI driver
+	ret=spi_bus_initialize(VSPI_HOST, &buscfg, 1);
+    ESP_ERROR_CHECK(ret);	
+	//Add SPI port to bus
+	ret=spi_bus_add_device(VSPI_HOST, &devcfg, &spi);
+	ESP_ERROR_CHECK(ret);
+	return ret;
+}
+
+void LEDinDicator(int lvl){
+    
+    for(int i = 0;i<lvl;i++){
+        setPixel(&leds, i, inColour); // plus clair
+	}
+    renderLEDs();
+	vTaskDelay(10 / portTICK_PERIOD_MS); // 50
+}
+
+
+void TurnLedOn(int step){  //ESP32APA102Driver
+
+        // ESP_LOGI(TAG, "step : %i",step);
+ 
+    	for (int i = 0; i < 16; i++){ 
+			setPixel(&leds, i, offColour); // turn LED off
+            if(i == step && currentBar == barSelektor){ // sélecteur d'affichage de bar
+                if (bd[i+11+16*barSelektor]){
+                    setPixel(&leds, i, beatStepColour);    
+                    }else{
+                    setPixel(&leds, i, stepColour); 
+                    }
+                } else if (bd[i+11+16*barSelektor]){
+                setPixel(&leds, i, Colour[noteSelektor]);           
+                }
+		}
+        renderLEDs();
+	vTaskDelay(10 / portTICK_PERIOD_MS); // 50
+    }
+}
+
+
+void IRAM_ATTR timer_group0_isr(void* userParam)
+{
+  static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  TIMERG0.int_clr_timers.t0 = 1;
+  TIMERG0.hw_timer[0].config.alarm_en = 1;
+
+  xSemaphoreGiveFromISR(userParam, &xHigherPriorityTaskWoken);
+  if (xHigherPriorityTaskWoken)
+  {
+    portYIELD_FROM_ISR();
+  }
+}
+
+void timerGroup0Init(int timerPeriodUS, void* userParam)
+{
+  timer_config_t config = {.alarm_en = TIMER_ALARM_EN,
+    .counter_en = TIMER_PAUSE,
+    .intr_type = TIMER_INTR_LEVEL,
+    .counter_dir = TIMER_COUNT_UP,
+    .auto_reload = TIMER_AUTORELOAD_EN,
+    .divider = 80};
+
+  timer_init(TIMER_GROUP_0, TIMER_0, &config);
+  timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
+  timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, timerPeriodUS);
+  timer_enable_intr(TIMER_GROUP_0, TIMER_0);
+  timer_isr_register(TIMER_GROUP_0, TIMER_0, &timer_group0_isr, userParam, 0, nullptr);
+
+  timer_start(TIMER_GROUP_0, TIMER_0);
+}
+
+void startStopChanged(bool state) {   // received as soon as sent, we can get the state of 'isPlaying' and use that
+  startStopCB = state;  // need to wait for phase to be 0 (and deal with latency...)
+  ESP_LOGI(TAG, "StartStopCB : %d", startStopCB);
+}
+
+void tickTask(void* userParam)
+{
+
+    // connect link
+    ableton::Link link(120.0f);
+    link.enable(true);
+    link.enableStartStopSync(true); // if not no callback for start/stop
+    // ESP_LOGI(TAG, "link enabled ! ");
+    
+    // callbacks
+    // link.setTempoCallback(tempoChanged);
+    link.setStartStopCallback(startStopChanged);
+    
+    while (true)
+    { // while (true)
+        xSemaphoreTake(userParam, portMAX_DELAY);
+
+        const auto state = link.captureAudioSessionState();
+        isPlaying = state.isPlaying();
+        //  ESP_LOGI(TAG, "isPlaying : , %i", isPlaying);  
+        curr_beat_time = state.beatAtTime(link.clock().micros(), 4); 
+        const double curr_phase = fmod(curr_beat_time, 4); 
+
+        if (curr_beat_time > prev_beat_time && isPlaying) {
+
+            const double prev_phase = fmod(prev_beat_time, 4);
+            const double prev_step = floor(prev_phase * 4);
+            const double curr_step = floor(curr_phase * 4);
+            
+            // https://github.com/libpd/abl_link/blob/930e8c0781b8afe9fc68321fe64c32d6e92dc113/external/abl_link~.cpp#L84
+            if (abs(curr_step - prev_step) > 4 / 2 || prev_step != curr_step) {  // quantum divisé par 2
+
+                if( curr_step == 0 && isPlaying ){ 
+                    
+                    if(startStopCB) { // on recommence à zéro si on a reçu un message de départ
+                        step = 0; // reset le compteur
+                        currentBar = 0; // reset du bar
+                        startStopCB = !startStopCB;
+                    }    
+                }   
+                //ESP_LOGI(TAG, "step : %d", step);  
+                
+                if(isPlaying){
+                    // ESP_LOGI(TAG, "step : %i", step);
+                    TurnLedOn(step); // allumer les DELs
+                    step++; 
+                }
+                
+                if (step == 16){ // il n'y a que 16 DELs
+                    step = 0;
+                    if( currentBar < barSelektor ){ 
+                        currentBar = currentBar + 1;
+                        }
+                    else{
+                        currentBar = 0;
+                    }
+                }
+
+            }    
+        }
+
+    prev_beat_time = curr_beat_time;
+
+    portYIELD(); // --- > vTaskDelay(20 / portTICK_PERIOD_MS);
+ 
+    } // fin du while true
+  // } // fin de la condition à la noix
+
+} // fin de tickTask
+
+////////// UDP SOCKETTE ////////
+// extern "C" {
+static void udp_client_task(void *pvParameters)
+{
+
+    ///// SOCKETTE TASK //////
+	// upd init + timer
+	dest_addr.sin_addr.s_addr = inet_addr(HOST_IP_ADDR); //  "192.168.0.255"
+	dest_addr.sin_family = AF_INET;
+	dest_addr.sin_port = htons(PORT); // "3333"	
+	addr_family = AF_INET;
+	ip_protocol = IPPROTO_IP;
+  	inet_ntoa_r(dest_addr.sin_addr, addr_str, sizeof(addr_str) - 1);
+
+    // Trying to send a broadcast message :/
+    int enabled = 1;
+    setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled));
+
+ 	sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
+
+  	if (sock < 0) {
+    	ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
+  		}
+
+  	ESP_LOGI(SOCKET_TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR, PORT);
+	
+    ///// FIN SOCKETTE /////
+    while (1) {
+        while (1) { // bdChanged est un flag si bd[] a changé
+
+            for(int i = 0; i<sizeof(bd); i++){
+                    if (bd[i] != cbd[i]){
+                        ESP_LOGI(SOCKET_TAG, "bd changed!");
+                        bdChanged = true;
+                    }
+            }
+
+            if(!mstrpckIP){ 
+            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)); // peut envoyer une string au lieu du tableau vide
+  
+                if (err < 0) {
+                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                    break;
+                }
+            ESP_LOGI(SOCKET_TAG, "Message sent");
+
+            struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
+            socklen_t socklen = sizeof(source_addr);
+            //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
+
+            // Error occurred during receiving
+            if (len < 0) {
+                ESP_LOGE(SOCKET_TAG, "recvfrom failed : errno %d", errno);
+                break;
+            } else { // Data received
+                rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
+                
+                ESP_LOGI(SOCKET_TAG, "Received %d bytes from : %s", len, addr_str);
+                ESP_LOGI(SOCKET_TAG, "tdlfServerIP : %s", rx_buffer);
+
+                if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
+                    ESP_LOGI(SOCKET_TAG, "succès UDP on ferme la sockette pour en réouvrir une autre avec la bonne adresse IP");
+                    //(close socket)
+                    shutdown(sock, 0);
+                    close(sock);
+                    mstrpckIP = true;
+                    LEDinDicator(8);
+                } 
+            }
+
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+
+        } // end if (mstrpck)
+
+        else if (mstrpckIP && !nouvSockette){
+	        
+            // upd init + timer
+	        dest_addr.sin_addr.s_addr = inet_addr(rx_buffer); //  on tente vrt de changer l'adresse!!
+	        dest_addr.sin_family = AF_INET;
+	        dest_addr.sin_port = htons(PORT); // "3333"	
+	        addr_family = AF_INET;
+	        ip_protocol = IPPROTO_IP;
+  	        inet_ntoa_r(dest_addr.sin_addr, addr_str, sizeof(addr_str) - 1);
+
+         	sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
+
+            if (sock < 0) {
+    	        ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
+  		    }
+
+  	        ESP_LOGI(SOCKET_TAG, "La Socket created, sending to %s:%d", rx_buffer, PORT);
+
+            nouvSockette = true;
+            LEDinDicator(16);
+
+        } // fin de !nouvSockette
+
+        else if (mstrpckIP && nouvSockette && bdChanged){
+
+            // ESP_LOGI(TAG, "tente d'envoyer");
+
+            //for (int i = 0; i < sizeof(bd);i++){
+            //    ESP_LOGE(TAG, "bd : %i,  %i", i, bd[i]);
+            //}
+
+            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+
+             for(int i = 0; i<sizeof(bd); i++){ // copy bd[] to cbd[] (changed bd)
+                    cbd[i] = bd[i];
+                    }
+
+            if (err < 0) {
+                ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                 break;
+            }
+            
+            ESP_LOGI(SOCKET_TAG, "Message sent");
+
+            struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
+            socklen_t socklen = sizeof(source_addr);
+            //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
+
+            // Error occurred during receiving
+            if (len < 0) {
+                ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
+                break;
+            } else { // Data received
+                rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
+                
+                ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
+
+                ESP_LOGI(SOCKET_TAG, "2e confirmation mstrpckIP  : ");
+                //HOST_IP_ADDR = rx_buffer;
+                ESP_LOGI(SOCKET_TAG, "%s", rx_buffer); 
+
+                if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
+                    ESP_LOGI(SOCKET_TAG, "succès UDP");
+                } 
+
+            }
+            vTaskDelay(500 / portTICK_PERIOD_MS);
+
+            bdChanged = false;
+        } // fin nouvelle sockette
+        
+        }
+
+        if (sock != -1) {
+            ESP_LOGE(TAG, "Shutting down socket and restarting...");
+            shutdown(sock, 0);
+            close(sock);
+        }
+
+    }
+    vTaskDelete(NULL); 
+}
+
+// } // fin extern "C"
 
 
 extern "C" { 
@@ -191,19 +527,28 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         }
         ESP_LOGI(WIFI_TAG,"connect to the AP failed");
 
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP && goSMART == false) {
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP && goSMART == false) {  // do you things here
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
 
         ESP_LOGI(WIFI_TAG, "Got IP: %d.%d.%d.%d", IP2STR(&event->ip_info.ip));
 	    esp_ip4addr_ntoa(&event->ip_info.ip, str_ip, IP4ADDR_STRLEN_MAX);
 	    ESP_LOGI(WIFI_TAG, "I have a connection and my IP is %s!", str_ip); 
-
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-        // LEDinDicator(4); // grr not declared in this scope
-    }
-    /////////
-    else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && goSMART == true) {
+
+        // udp_client // sockette
+        xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, NULL);
+        ESP_LOGI(SOCKET_TAG, "udp_client started from IP_EVENT_STA_GOT_IP"); 
+        
+        // link
+        SemaphoreHandle_t tickSemphr = xSemaphoreCreateBinary();
+        timerGroup0Init(1000, tickSemphr); // error: 'timerGroup0Init' was not declared in this scope
+        xTaskCreate(tickTask, "tick", 8192, tickSemphr, 1, nullptr); // : error: 'timerGroup0Init' was not declared in this scope
+	    ESP_LOGI(TAG, "link task started from IP_EVENT_STA_GOT_IP ");
+        
+        // LEDinDicator(4); // no se porque pero craaash!
+        
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && goSMART == true) {
         esp_wifi_connect();
         xEventGroupClearBits(s_smartcfg_event_group, CONNECTED_BIT);
 
@@ -215,6 +560,18 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP && goSMART == true) {
         ESP_LOGI(SMART_TAG, "on a de nouveau de quoi !");
         xEventGroupSetBits(s_smartcfg_event_group, CONNECTED_BIT);
+
+        // or do you things here after smart config gets us an IP  
+
+        // udp_client // sockette
+        xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, NULL);
+        ESP_LOGI(SOCKET_TAG, "udp_client started from IP_EVENT_STA_GOT_IP from SMART CONFIG"); 
+
+        // link timer - phase
+        SemaphoreHandle_t tickSemphr = xSemaphoreCreateBinary();
+        timerGroup0Init(1000, tickSemphr); // error: 'timerGroup0Init' was not declared in this scope
+        xTaskCreate(tickTask, "tick", 8192, tickSemphr, 1, nullptr); // : error: 'timerGroup0Init' was not declared in this scope
+	    ESP_LOGI(TAG, "link task started from IP_EVENT_STA_GOT_IP from SMART CONFIG");
 
     } else if (event_base == SC_EVENT && event_id == SC_EVENT_SCAN_DONE && goSMART == true) {
         ESP_LOGI(SMART_TAG, "Scan done");
@@ -237,7 +594,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
       wifi_config.sta.bssid_set = evt->bssid_set;
 
       if (wifi_config.sta.bssid_set == true) {
-        ESP_LOGI(SMART_TAG, "bssid_set is true so normally we copy the credentials in memory");
+        // ESP_LOGI(SMART_TAG, "bssid_set is true so normally we copy the credentials in memory");
         memcpy(wifi_config.sta.bssid, evt->bssid, sizeof(wifi_config.sta.bssid));
         }
 
@@ -288,11 +645,14 @@ extern "C" { static void smartconfig_example_task(void * parm)
     ESP_ERROR_CHECK( esp_smartconfig_start(&smtcfg) );
     ESP_LOGI(SMART_TAG,"normalement on a démarré le smartconfig");
 
+    //void vTaskList(char *pcWriteBuffer)
+    //vTaskSuspendAll (); // produces a vTaskDelay error
+
     // LED INDICATOR CODE HERE 
 
     while (1) {
  
-      vTaskDelay(1000 / portTICK_PERIOD_MS); // 35000 // 15000 
+      vTaskDelay(1000 / portTICK_PERIOD_MS); // 15000 
       uxBits = xEventGroupWaitBits(s_smartcfg_event_group, CONNECTED_BIT | ESPTOUCH_DONE_BIT, true, false, portMAX_DELAY);
         
       if(uxBits & CONNECTED_BIT) {
@@ -367,8 +727,8 @@ extern "C" { void wifi_init_sta(void)
      * happened. */
     if (bits & WIFI_CONNECTED_BIT) {
         ESP_LOGI(TAG, "connected to WiFI");
-        
-        //LEDinDicator(4); // we have wifi
+
+        // LEDinDicator(4); // we have wifi
 
     } else if (bits & WIFI_FAIL_BIT) {
         ESP_LOGE(WIFI_TAG, "Failed to connect to SSID:%s, password:%s",
@@ -392,41 +752,10 @@ extern "C" { void wifi_init_sta(void)
 
 static bool s_pad_activated[TOUCH_PAD_MAX];
 static uint32_t s_pad_init_val[TOUCH_PAD_MAX];
-////////////// TOUCH /////////
+////// TOUCH //////
 
 
 extern "C" {
-
-void LEDinDicator(int lvl){
-    
-    for(int i = 0;i<lvl;i++){
-        setPixel(&leds, i, inColour); // plus clair
-	}
-    renderLEDs();
-	vTaskDelay(10 / portTICK_PERIOD_MS); // 50
-}
-
-
-void TurnLedOn(int step){  //ESP32APA102Driver
-
-        // ESP_LOGI(TAG, "step : %i",step);
- 
-    	for (int i = 0; i < 16; i++){ 
-			setPixel(&leds, i, offColour); // turn LED off
-            if(i == step && currentBar == barSelektor){ // sélecteur d'affichage de bar
-                if (bd[i+11+16*barSelektor]){
-                    setPixel(&leds, i, beatStepColour);    
-                    }else{
-                    setPixel(&leds, i, stepColour); 
-                    }
-                } else if (bd[i+11+16*barSelektor]){
-                setPixel(&leds, i, Colour[noteSelektor]);           
-                }
-		}
-        renderLEDs();
-	vTaskDelay(10 / portTICK_PERIOD_MS); // 50
-}
-
 
 void convertInt2Bits(int monInt, int monOffset){
     // monInt à convertir, monOffset pour l'écrire au bon endroit
@@ -450,151 +779,10 @@ void convertInt2Bits(int monInt, int monOffset){
         }
         ESP_LOGI(TAG, "noteSelektor %i", monInt);
     } // fin converter
-
-////////// UDP SOCKETTE ////////
-
-static void udp_client_task(void *pvParameters)
-{
-    while (1) {
-
-        while (1) { // bdChanged est un flag si bd[] a changé
-
-            for(int i = 0; i<sizeof(bd); i++){
-                    if (bd[i] != cbd[i]){
-                        ESP_LOGE(TAG, "bd changed!");
-                        bdChanged = true;
-                    }
-
-            }
-
-            if(!mstrpckIP){ 
-            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)); // peut envoyer une string au lieu du tableau vide
-  
-                if (err < 0) {
-                    ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-                    break;
-                }
-            ESP_LOGI(TAG, "Message sent");
-
-            struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
-            socklen_t socklen = sizeof(source_addr);
-            //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
-            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
-
-            // Error occurred during receiving
-            if (len < 0) {
-                ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
-                break;
-            } else { // Data received
-                rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
-                
-                ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
-
-                ESP_LOGI(TAG, "mstrpckIP : ");
-                //HOST_IP_ADDR = rx_buffer;
-                ESP_LOGI(TAG, "%s", rx_buffer);
-
-                if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
-                    ESP_LOGI(TAG, "succès UDP on ferme la sockette pour en réouvrir une autre avec la bonne adresse IP");
-                    //(close socket)
-                    shutdown(sock, 0);
-                    close(sock);
-                    mstrpckIP = true;
-                    LEDinDicator(8);
-                } 
-            }
-
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-
-        } // end if (mstrpck)
-
-        else if (mstrpckIP && !nouvSockette){
-            ///// SOCKETTE TASK //////
-	        // upd init + timer
-
-	        dest_addr.sin_addr.s_addr = inet_addr(rx_buffer); //  on tente vrt de changer l'adresse!!
-	        dest_addr.sin_family = AF_INET;
-	        dest_addr.sin_port = htons(PORT); // "3333"	
-	        addr_family = AF_INET;
-	        ip_protocol = IPPROTO_IP;
-  	        inet_ntoa_r(dest_addr.sin_addr, addr_str, sizeof(addr_str) - 1);
-
-         	sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
-
-            if (sock < 0) {
-    	        ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
-  		    }
-
-  	        ESP_LOGI(TAG, "Socket created, sending to %s:%d", rx_buffer, PORT);
-
-            nouvSockette = true;
-            LEDinDicator(16);
-
-	        ///// FIN SOCKETTE /////
-
-        } // fin de !nouvSockette
-
-        else if (mstrpckIP && nouvSockette && bdChanged){
-
-            // ESP_LOGI(TAG, "tente d'envoyer");
-
-            //for (int i = 0; i < sizeof(bd);i++){
-            //    ESP_LOGE(TAG, "bd : %i,  %i", i, bd[i]);
-            //}
-
-            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
-
-             for(int i = 0; i<sizeof(bd); i++){ // copy bd[] to cbd[] (changed bd)
-                    cbd[i] = bd[i];
-                    }
-
-            if (err < 0) {
-                ESP_LOGE(TAG, "Error occurred during sending: errno %d", errno);
-                 break;
-            }
-            
-            ESP_LOGI(TAG, "Message sent");
-
-            struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
-            socklen_t socklen = sizeof(source_addr);
-            //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
-            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
-
-            // Error occurred during receiving
-            if (len < 0) {
-                ESP_LOGE(TAG, "recvfrom failed: errno %d", errno);
-                break;
-            } else { // Data received
-                rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
-                
-                ESP_LOGI(TAG, "Received %d bytes from %s:", len, addr_str);
-
-                ESP_LOGI(TAG, "2e confirmation mstrpckIP  : ");
-                //HOST_IP_ADDR = rx_buffer;
-                ESP_LOGI(TAG, "%s", rx_buffer); 
-
-                if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
-                    ESP_LOGI(TAG, "succès UDP");
-                } 
-
-            }
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-
-            bdChanged = false;
-        } // fin nouvelle sockette
-
-        }
-
-        if (sock != -1) {
-            ESP_LOGE(TAG, "Shutting down socket and restarting...");
-            shutdown(sock, 0);
-            close(sock);
-        }
-    }
-    vTaskDelete(NULL); 
 }
 
 
+extern "C" {
 ////////// TOUCH ///////////
 static void tp_example_set_thresholds(void)
 {
@@ -612,12 +800,8 @@ static void tp_example_set_thresholds(void)
 
 static void tp_example_read_task(void *pvParameter)
 {
-    static int show_message;
-    int change_mode = 0;
-    int filter_mode = 0;
-
     while (1) {
-        if (filter_mode == 0) {  
+       
             touch_pad_intr_enable(); //interrupt mode, enable touch interrupt
             
             for (int i = 0; i < TOUCH_PAD_MAX; i++) {
@@ -785,10 +969,9 @@ static void tp_example_read_task(void *pvParameter)
                     
                     vTaskDelay(100 / portTICK_PERIOD_MS); // Wait a while for the pad being released
                     s_pad_activated[i] = false; // Clear information on pad activation
-                    show_message = 1;  /// // Reset the counter triggering a message that application is running
+                    // show_message = 1;  /// // Reset the counter triggering a message that application is running
                 }
             }
-        }
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
 
@@ -832,121 +1015,6 @@ char* if_indextoname(unsigned int ifindex, char* ifname)
 {
   return nullptr;
 }
-
-void IRAM_ATTR timer_group0_isr(void* userParam)
-{
-  static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  TIMERG0.int_clr_timers.t0 = 1;
-  TIMERG0.hw_timer[0].config.alarm_en = 1;
-
-  xSemaphoreGiveFromISR(userParam, &xHigherPriorityTaskWoken);
-  if (xHigherPriorityTaskWoken)
-  {
-    portYIELD_FROM_ISR();
-  }
-}
-
-void timerGroup0Init(int timerPeriodUS, void* userParam)
-{
-  timer_config_t config = {.alarm_en = TIMER_ALARM_EN,
-    .counter_en = TIMER_PAUSE,
-    .intr_type = TIMER_INTR_LEVEL,
-    .counter_dir = TIMER_COUNT_UP,
-    .auto_reload = TIMER_AUTORELOAD_EN,
-    .divider = 80};
-
-  timer_init(TIMER_GROUP_0, TIMER_0, &config);
-  timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
-  timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, timerPeriodUS);
-  timer_enable_intr(TIMER_GROUP_0, TIMER_0);
-  timer_isr_register(TIMER_GROUP_0, TIMER_0, &timer_group0_isr, userParam, 0, nullptr);
-
-  timer_start(TIMER_GROUP_0, TIMER_0);
-}
-
-// callbacks 
-/*
-void tempoChanged(double tempo) {
-    ESP_LOGI(TAG, "tempochanged");
-    double midiClockMicroSecond = ((60000 / tempo) / 24) * 1000;
-    esp_timer_handle_t periodic_timer_handle = (esp_timer_handle_t) periodic_timer;
-    ESP_ERROR_CHECK(esp_timer_stop(periodic_timer_handle));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer_handle, midiClockMicroSecond));
-// }
-*/
-
-void startStopChanged(bool state) {   // received as soon as sent, we can get the state of 'isPlaying' and use that
-  startStopCB = state;  // need to wait for phase to be 0 (and deal with latency...)
-  ESP_LOGI(TAG, "StartStopCB : %d", startStopCB);
-}
-
-void tickTask(void* userParam)
-{
-    // connect link
-    ableton::Link link(120.0f);
-    link.enable(true);
-    link.enableStartStopSync(true); // if not no callback for start/stop
-    // ESP_LOGI(TAG, "on se rend ici link enabled ! ");
-    
-    // callbacks
-    // link.setTempoCallback(tempoChanged);
-    link.setStartStopCallback(startStopChanged);
-    
-    while (true)
-    {
-        xSemaphoreTake(userParam, portMAX_DELAY);
-
-        const auto state = link.captureAudioSessionState();
-        isPlaying = state.isPlaying();
-        //  ESP_LOGI(TAG, "isPlaying : , %i", isPlaying);  
-        curr_beat_time = state.beatAtTime(link.clock().micros(), 4); 
-        const double curr_phase = fmod(curr_beat_time, 4); 
-
-        if (curr_beat_time > prev_beat_time && isPlaying) {
-
-            const double prev_phase = fmod(prev_beat_time, 4);
-            const double prev_step = floor(prev_phase * 4);
-            const double curr_step = floor(curr_phase * 4);
-            
-            // https://github.com/libpd/abl_link/blob/930e8c0781b8afe9fc68321fe64c32d6e92dc113/external/abl_link~.cpp#L84
-            if (abs(curr_step - prev_step) > 4 / 2 || prev_step != curr_step) {  // quantum divisé par 2
-
-                if( curr_step == 0 && isPlaying ){ 
-                    
-                    if(startStopCB) { // on recommence à zéro si on a reçu un message de départ
-                        step = 0; // reset le compteur
-                        currentBar = 0; // reset du bar
-                        startStopCB = !startStopCB;
-                    }    
-                }   
-                //ESP_LOGI(TAG, "step : %d", step);  
-                
-                if(isPlaying){
-                    // ESP_LOGI(TAG, "step : %i", step);
-                    TurnLedOn(step); // allumer les DELs
-                    step++; 
-                }
-                
-                if (step == 16){ // il n'y a que 16 DELs
-                    step = 0;
-                    if( currentBar < barSelektor ){ 
-                        currentBar = currentBar + 1;
-                        }
-                    else{
-                        currentBar = 0;
-                    }
-                }
-
-            }    
-        }
-
-    prev_beat_time = curr_beat_time;
-
-    portYIELD(); // --- > vTaskDelay(20 / portTICK_PERIOD_MS);
- 
-    } // fin du while true
-
-} // fin de tickTask
 
 
 extern "C" void app_main()
@@ -1013,9 +1081,8 @@ extern "C" void app_main()
 
   	//esp_wifi_set_ps(WIFI_PS_NONE);
 
-
     //// LEDS /////
-    printf("\r\n\r\n\r\nHello Pixels!\n");
+    printf("\r\n\r\nHello Pixels!\n");
 	//Set up SPI
 	printf("Setting up SPI now\t[%d]\r\n", setupSPI());
 	//set up LED object
@@ -1036,7 +1103,6 @@ extern "C" void app_main()
 	
 
 	/////// TOUCH INIT ////////
-
 	ESP_LOGI(TAG, "Initializing touch pad");
 	touch_pad_init(); // Initialize touch pad peripheral, it will start a timer to run a filter
 	touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER); // If use interrupt trigger mode, should set touch sensor FSM mode at 'TOUCH_FSM_MODE_TIMER'.
@@ -1050,10 +1116,10 @@ extern "C" void app_main()
 	xTaskCreate(&tp_example_read_task, "touch_pad_read_task", 2048, NULL, 5, NULL); // n'importe quelle core
 	///////// FIN TOUCH /////////
 
-	
+
+/* // moving
 	///// SOCKETTE TASK //////
 	// upd init + timer
-
 	dest_addr.sin_addr.s_addr = inet_addr(HOST_IP_ADDR); //  "192.168.0.255"
 	dest_addr.sin_family = AF_INET;
 	dest_addr.sin_port = htons(PORT); // "3333"	
@@ -1073,51 +1139,12 @@ extern "C" void app_main()
   		}
 
   	ESP_LOGI(TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR, PORT);
-
-	xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, NULL);
-	///// FIN SOCKETTE /////
 	
-	// ---> TaskCreatePinnedToCore(link_task, "link_task", 8192, nullptr, 10, nullptr, 0);  // core 0
-	
-     // link timer - phase
-    SemaphoreHandle_t tickSemphr = xSemaphoreCreateBinary();
-    timerGroup0Init(1000, tickSemphr);
-    xTaskCreate(tickTask, "tick", 8192, tickSemphr, 1, nullptr);
+    ///// FIN SOCKETTE /////
+		*/
 
-	ESP_LOGI(TAG, "on se rend ici, après link task ! ");
+    // link is started within the event handler
 
 	vTaskDelete(nullptr);
 
 } // fin du extern "C"
-
-extern "C"{
-void renderLEDs()
-{
-	spi_device_queue_trans(spi, &spiTransObject, portMAX_DELAY);
-}
-
-int setupSPI()
-{
-	//Set up the Bus Config struct
-	buscfg.miso_io_num=-1;
-	buscfg.mosi_io_num=PIN_NUM_MOSI;
-	buscfg.sclk_io_num=PIN_NUM_CLK;
-	buscfg.quadwp_io_num=-1;
-	buscfg.quadhd_io_num=-1;
-	buscfg.max_transfer_sz=maxSPIFrameInBytes;
-	
-	//Set up the SPI Device Configuration Struct
-	devcfg.clock_speed_hz=maxSPIFrequency;
-	devcfg.mode=0;                        
-	devcfg.spics_io_num=-1;             
-	devcfg.queue_size=1;
-
-	//Initialize the SPI driver
-	ret=spi_bus_initialize(VSPI_HOST, &buscfg, 1);
-    ESP_ERROR_CHECK(ret);	
-	//Add SPI port to bus
-	ret=spi_bus_add_device(VSPI_HOST, &devcfg, &spi);
-	ESP_ERROR_CHECK(ret);
-	return ret;
-}
-}

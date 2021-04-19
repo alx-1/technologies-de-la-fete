@@ -136,7 +136,7 @@ double curr_beat_time;
 double prev_beat_time;
 
 bool connektMode = true; // flag pour envoyer l'adresse IP aux clients
-char str_ip[16] ="192.168.0.42"; // send IP to clients !! // stand in ip necessary for memory space?
+char str_ip[16] ="192.168.0.66"; // send IP to clients !! // stand in ip necessary for memory space?
 
 /////////////////// I2C Display //////////////////
 #if defined USE_I2C_DISPLAY
