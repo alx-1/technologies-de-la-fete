@@ -353,7 +353,8 @@ extern "C" {
             ESP_LOGI(SOCKET_TAG, "note : %i", note); 
 
             // read in the bit value for mute and store 
-            muteRecords[note] = mstr[10]; 
+            muteRecords[note] = mstr[10];
+            ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
             muteRecords[note] = true; 
 
             // read in bar value from mst[8] and mst[9] and save it as int for the corresponding note
@@ -789,7 +790,7 @@ extern "C" {
         tmpTotal = tmpTotal + 4;
       }
     }
-      // ESP_LOGI(SOCKET_TAG, "channel : %i", tmpTotal); 
+      ESP_LOGI(SOCKET_TAG, "channel : %i", tmpTotal); 
       channel = tmpTotal;
   }
 
@@ -946,6 +947,7 @@ void tickTask(void* userParam)
                 }
                 else if (channel == 1){ // premier jeu de notes
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme midi channel channel 0 
+                  ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", MIDI_NOTE_ON_CH[channel]);
                   uart_write_bytes(UART_NUM_1, zedata1, 1);                 
                   char zedata2[] = {zeDark[i]}; // tableau de valeurs de notes hexadécimales 
                   uart_write_bytes(UART_NUM_1, zedata2, 1); 
