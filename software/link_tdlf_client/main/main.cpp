@@ -188,7 +188,7 @@ void LEDinDicator(int lvl){
         setPixel(&leds, i, inColour); // plus clair
 	}
     renderLEDs();
-	vTaskDelay(10 / portTICK_PERIOD_MS); // 50
+	vTaskDelay(5 / portTICK_PERIOD_MS); // 10
 }
 
 
@@ -247,7 +247,7 @@ void timerGroup0Init(int timerPeriodUS, void* userParam)
 
 void startStopChanged(bool state) {   // received as soon as sent, we can get the state of 'isPlaying' and use that
   startStopCB = state;  // need to wait for phase to be 0 (and deal with latency...)
-  ESP_LOGI(TAG, "StartStopCB : %d", startStopCB);
+  ESP_LOGI(TAG, "StartStopCB : %d", startStopCB); 
 }
 
 void tickTask(void* userParam)
@@ -313,8 +313,8 @@ void tickTask(void* userParam)
 
     prev_beat_time = curr_beat_time;
 
-    portYIELD(); // --- > vTaskDelay(20 / portTICK_PERIOD_MS);
- 
+    vTaskDelay(20 / portTICK_PERIOD_MS); // //portYIELD(); 
+
     } // fin du while true
   // } // fin de la condition à la noix
 
@@ -391,7 +391,7 @@ static void udp_client_task(void *pvParameters)
                 } 
             }
 
-            vTaskDelay(500 / portTICK_PERIOD_MS);
+            vTaskDelay(100 / portTICK_PERIOD_MS); // 500 
 
         } // end if (mstrpck)
 
@@ -462,7 +462,7 @@ static void udp_client_task(void *pvParameters)
                 } 
 
             }
-            vTaskDelay(500 / portTICK_PERIOD_MS);
+            vTaskDelay(100 / portTICK_PERIOD_MS); // 500
 
             bdChanged = false;
         } // fin nouvelle sockette
@@ -537,7 +537,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
 
         LEDinDicator(4); 
-        
+
         // udp_client // sockette
         xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, NULL);
         ESP_LOGI(SOCKET_TAG, "udp_client started from IP_EVENT_STA_GOT_IP"); 
@@ -654,7 +654,7 @@ extern "C" { static void smartconfig_example_task(void * parm)
 
     while (1) {
  
-      vTaskDelay(1000 / portTICK_PERIOD_MS); // 15000 
+      vTaskDelay(500 / portTICK_PERIOD_MS); // // 1000 
       uxBits = xEventGroupWaitBits(s_smartcfg_event_group, CONNECTED_BIT | ESPTOUCH_DONE_BIT, true, false, portMAX_DELAY);
         
       if(uxBits & CONNECTED_BIT) {
@@ -975,7 +975,7 @@ static void tp_example_read_task(void *pvParameter)
                 }
             }
 
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS); // 10 
 
     }
 }
