@@ -188,7 +188,7 @@ void LEDinDicator(int lvl){
         setPixel(&leds, i, inColour); // plus clair
 	}
     renderLEDs();
-	vTaskDelay(5 / portTICK_PERIOD_MS); // 10
+	vTaskDelay(50 / portTICK_PERIOD_MS); // 10
 }
 
 
@@ -209,7 +209,7 @@ void TurnLedOn(int step){  //ESP32APA102Driver
                 }
 		}
         renderLEDs();
-	vTaskDelay(10 / portTICK_PERIOD_MS); // 50
+	//vTaskDelay(1 / portTICK_PERIOD_MS); // 2 better //10
     }
 }
 
@@ -282,24 +282,29 @@ void tickTask(void* userParam)
             // https://github.com/libpd/abl_link/blob/930e8c0781b8afe9fc68321fe64c32d6e92dc113/external/abl_link~.cpp#L84
             if (abs(curr_step - prev_step) > 4 / 2 || prev_step != curr_step) {  // quantum divisé par 2
 
+                //ESP_LOGI(TAG, "curr_step : , %f", curr_step);  
+                //ESP_LOGI(TAG, "step : , %i", step);  
+                //ESP_LOGI(TAG, " ");  
+                step = int(curr_step);
+                //ESP_LOGI(TAG, "step : , %i", step);  
+                //ESP_LOGI(TAG, " ");  
+
                 if( curr_step == 0 && isPlaying ){ 
-                    
-                    if(startStopCB) { // on recommence à zéro si on a reçu un message de départ
+                  
+                   if(startStopCB) { // on recommence à zéro si on a reçu un message de départ
                         step = 0; // reset le compteur
                         currentBar = 0; // reset du bar
                         startStopCB = !startStopCB;
-                    }    
+                        }    
                 }   
-                //ESP_LOGI(TAG, "step : %d", step);  
-                
+
                 if(isPlaying){
-                    // ESP_LOGI(TAG, "step : %i", step);
                     TurnLedOn(step); // allumer les DELs
-                    step++; 
+                    //step++; 
                 }
                 
-                if (step == 16){ // il n'y a que 16 DELs
-                    step = 0;
+                if (step == 15){ // il n'y a que 16 DELs et on compte de 0
+                    // step = 0;
                     if( currentBar < barSelektor ){ 
                         currentBar = currentBar + 1;
                         }
@@ -313,10 +318,10 @@ void tickTask(void* userParam)
 
     prev_beat_time = curr_beat_time;
 
-    vTaskDelay(20 / portTICK_PERIOD_MS); // //portYIELD(); 
+    //portYIELD();  
+    vTaskDelay(2 / portTICK_PERIOD_MS); // 2 // 5 // 10 // 20 
 
     } // fin du while true
-  // } // fin de la condition à la noix
 
 } // fin de tickTask
 
@@ -462,7 +467,7 @@ static void udp_client_task(void *pvParameters)
                 } 
 
             }
-            vTaskDelay(100 / portTICK_PERIOD_MS); // 500
+            vTaskDelay(10 / portTICK_PERIOD_MS); // 500
 
             bdChanged = false;
         } // fin nouvelle sockette
@@ -975,7 +980,7 @@ static void tp_example_read_task(void *pvParameter)
                 }
             }
 
-        vTaskDelay(10 / portTICK_PERIOD_MS); // 10 
+        vTaskDelay(10 / portTICK_PERIOD_MS); // 10 since 5 triggers watchdog
 
     }
 }
