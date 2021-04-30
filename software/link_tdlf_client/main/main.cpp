@@ -88,6 +88,13 @@ unsigned char inColour[3] = {14,14,14}; // init indicator (wifi, broadcast, serv
 }
 /////// DELS //////
 
+/////// TIMER //////
+
+int oldTime = 0;
+int interval = 0; 
+int intervalButton = 0;
+int lastButtonUpdate = 0;
+
 
 /////// SEQ ///////
 
@@ -299,12 +306,10 @@ void tickTask(void* userParam)
                 }   
 
                 if(isPlaying){
-                    TurnLedOn(step); // allumer les DELs
-                    //step++; 
+                    TurnLedOn(step); // allumer les DELs 
                 }
                 
-                if (step == 15){ // il n'y a que 16 DELs et on compte de 0
-                    // step = 0;
+                if (step == 15){ //
                     if( currentBar < barSelektor ){ 
                         currentBar = currentBar + 1;
                         }
@@ -798,7 +803,7 @@ static void tp_example_set_thresholds(void)
         //read filtered value
         touch_pad_read_filtered((touch_pad_t)i, &touch_value);
         s_pad_init_val[i] = touch_value;
-        ESP_LOGI(TAG, "test init: touch pad [%d] val is %d", i, touch_value);
+        ESP_LOGI(TAG, "Init: touch pad [%d] val is %d", i, touch_value);
         //set interrupt threshold.
         ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)i, touch_value * 2 / 3));
     }
@@ -812,102 +817,170 @@ static void tp_example_read_task(void *pvParameter)
             touch_pad_intr_enable(); //interrupt mode, enable touch interrupt
             
             for (int i = 0; i < TOUCH_PAD_MAX; i++) {
-                if (s_pad_activated[i] == true) {
 
-                /// logique ici
-                if(s_pad_activated[2] && s_pad_activated[4]){
-                    ESP_LOGI(TAG, "piton 1");
-                    selektor = 0;
-                    bd[11+0+16*barSelektor] = !bd[11+0+16*barSelektor]; // 8 est le offset ds le tableau
+                if (s_pad_activated[i] == true) {
+                //ESP_LOGI(TAG, "esp_timer_get_time(), %lld us", esp_timer_get_time());
+                // démarrer un timer // peut-être un tableau des valeurs d'activation pour garder une mémoire
+                interval = esp_timer_get_time() - oldTime;
+                //ESP_LOGI(TAG, "Interval, %i us", interval);
+                oldTime = esp_timer_get_time();
+
+
+                if ( interval < 150000 ) {  // we might have a continuous press
+                    press++; 
+                    }
+
+                else { 
+                    press = 0; 
+                    }
+
+                //ESP_LOGI(TAG, "press : %d",press);
+
+                //ESP_LOGI(TAG, "T%d activated!", i);
+                //ESP_LOGI(TAG, " ");
+
+
+                    intervalButton = esp_timer_get_time() - lastButtonUpdate; // so as not to oscillate button states too quickly
+
+                    if(s_pad_activated[2] && s_pad_activated[4]){
+                        ESP_LOGI(TAG, "piton 1");
+                        selektor = 0;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+0+16*barSelektor] = !bd[11+0+16*barSelektor]; // 11 bit offset in the array
+                            }
                         }
-                if(s_pad_activated[0] && s_pad_activated[4]){
-                    ESP_LOGI(TAG, "piton 2");
-                    selektor = 1;
-                    bd[11+1+16*barSelektor] = !bd[11+1+16*barSelektor];
+                    if(s_pad_activated[0] && s_pad_activated[4]){
+                        ESP_LOGI(TAG, "piton 2");
+                        selektor = 1;
+                         if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+1+16*barSelektor] = !bd[11+1+16*barSelektor];
+                            }
                         }
-                if(s_pad_activated[3] && s_pad_activated[4]){
-                    ESP_LOGI(TAG, "piton 3");
-                    selektor = 2;
-                    bd[11+2+16*barSelektor] = !bd[11+2+16*barSelektor];
+                    if(s_pad_activated[3] && s_pad_activated[4]){
+                        ESP_LOGI(TAG, "piton 3");
+                        selektor = 2;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+2+16*barSelektor] = !bd[11+2+16*barSelektor];
+                            }
                         }
-                if(s_pad_activated[9] && s_pad_activated[4]){
-                    ESP_LOGI(TAG, "piton 4");
-                    selektor = 3;
-                    bd[11+3+16*barSelektor] = !bd[11+3+16*barSelektor];
+                    if(s_pad_activated[9] && s_pad_activated[4]){
+                        ESP_LOGI(TAG, "piton 4");
+                        selektor = 3;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+3+16*barSelektor] = !bd[11+3+16*barSelektor];
+                            }
                         }
-                /////// 5-8
-                if(s_pad_activated[2] && s_pad_activated[5]){
-                            ESP_LOGI(TAG, "piton 5");
-                            selektor = 4;
+                    /////// 5-8
+                    if(s_pad_activated[2] && s_pad_activated[5]){
+                        ESP_LOGI(TAG, "piton 5");
+                        selektor = 4;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
                             bd[11+4+16*barSelektor] = !bd[11+4+16*barSelektor];
-                                }
-                if(s_pad_activated[0] && s_pad_activated[5]){
-                            ESP_LOGI(TAG, "piton 6");
-                            selektor = 5;
+                            }
+                        }
+                    if(s_pad_activated[0] && s_pad_activated[5]){
+                        ESP_LOGI(TAG, "piton 6");
+                        selektor = 5;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
                             bd[11+5+16*barSelektor] = !bd[11+5+16*barSelektor];
-                                }
-                if(s_pad_activated[3] && s_pad_activated[5]){
-                            ESP_LOGI(TAG, "piton 7");
-                            selektor = 6;
+                            }
+                        }
+                    if(s_pad_activated[3] && s_pad_activated[5]){
+                        ESP_LOGI(TAG, "piton 7");
+                        selektor = 6;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
                             bd[11+6+16*barSelektor] = !bd[11+6+16*barSelektor];
-                                }
-                if(s_pad_activated[9] && s_pad_activated[5]){
-                            ESP_LOGI(TAG, "piton 8");
-                            selektor = 7;
+                            }
+                        }
+                    if(s_pad_activated[9] && s_pad_activated[5]){
+                        ESP_LOGI(TAG, "piton 8");
+                        selektor = 7;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
                             bd[11+7+16*barSelektor] = !bd[11+7+16*barSelektor];
-                                }
-                /////// 9-12
-                if(s_pad_activated[2] && s_pad_activated[6]){
+                            }
+                        }
+                    /////// 9-12
+                    if(s_pad_activated[2] && s_pad_activated[6]){
                         ESP_LOGI(TAG, "piton 9");
                         selektor = 8;
-                        bd[11+8+16*barSelektor] = !bd[11+8+16*barSelektor];
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+8+16*barSelektor] = !bd[11+8+16*barSelektor];
                             }
-                if(s_pad_activated[0] && s_pad_activated[6]){
+                        }
+                    if(s_pad_activated[0] && s_pad_activated[6]){
                         ESP_LOGI(TAG, "piton 10");
                         selektor = 9;
-                        bd[11+9+16*barSelektor] = !bd[11+9+16*barSelektor];
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+9+16*barSelektor] = !bd[11+9+16*barSelektor];
                             }
-                if(s_pad_activated[3] && s_pad_activated[6]){
+                        }
+                    if(s_pad_activated[3] && s_pad_activated[6]){
                         ESP_LOGI(TAG, "piton 11");
                         selektor = 10;
-                        bd[11+10+16*barSelektor] = !bd[11+10+16*barSelektor];
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+10+16*barSelektor] = !bd[11+10+16*barSelektor];
                             }
-                if(s_pad_activated[9] && s_pad_activated[6]){
+                        }
+                    if(s_pad_activated[9] && s_pad_activated[6]){
                         ESP_LOGI(TAG, "piton 12");
                         selektor = 11;
-                        bd[11+11+16*barSelektor] = !bd[11+11+16*barSelektor];
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+11+16*barSelektor] = !bd[11+11+16*barSelektor];
                             }
-                /////// 13-16
-                if(s_pad_activated[2] && s_pad_activated[7]){
-                      ESP_LOGI(TAG, "piton 13");
-                      selektor = 12;
-                      bd[11+12+16*barSelektor] = !bd[11+12+16*barSelektor];
-                          }
-                if(s_pad_activated[0] && s_pad_activated[7]){
-                      ESP_LOGI(TAG, "piton 14");
-                      selektor = 13;
-                      bd[11+13+16*barSelektor] = !bd[11+13+16*barSelektor];
-                          }
-                if(s_pad_activated[3] && s_pad_activated[7]){
-                      ESP_LOGI(TAG, "piton 15");
-                      selektor = 14;
-                      bd[11+14+16*barSelektor] = !bd[11+14+16*barSelektor];
-                          }
-                if(s_pad_activated[9] && s_pad_activated[7]){
-                      ESP_LOGI(TAG, "piton 16");
-                      selektor = 15;
-                      bd[11+15+16*barSelektor] = !bd[11+15+16*barSelektor];
-                          }
+                        }
+                    /////// 13-16
+                    if(s_pad_activated[2] && s_pad_activated[7]){
+                        ESP_LOGI(TAG, "piton 13");
+                        selektor = 12;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+12+16*barSelektor] = !bd[11+12+16*barSelektor];
+                            }
+                        }
+                    if(s_pad_activated[0] && s_pad_activated[7]){
+                        ESP_LOGI(TAG, "piton 14");
+                        selektor = 13;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+13+16*barSelektor] = !bd[11+13+16*barSelektor];
+                            }
+                        }
+                    if(s_pad_activated[3] && s_pad_activated[7]){
+                        ESP_LOGI(TAG, "piton 15");
+                        selektor = 14;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+14+16*barSelektor] = !bd[11+14+16*barSelektor];
+                            }
+                        }
+                    if(s_pad_activated[9] && s_pad_activated[7]){
+                        ESP_LOGI(TAG, "piton 16");
+                        selektor = 15;
+                        if (intervalButton > 500000){  // 500 ms delay between registering presses
+                            lastButtonUpdate = esp_timer_get_time();
+                            bd[11+15+16*barSelektor] = !bd[11+15+16*barSelektor];
+                            }
+                        }
+                    
 
-                    // ESP_LOGI(TAG, "T%d activated!", i);
-					// genre de timer pour détecter les longs press// 
-                    press++;
-
-                    if(press >= 50){ // pause
+                    if(press >= 15){ // 20 // 50
 
                         modSelektor = selektor;
 
                         ESP_LOGI(TAG, "modSelektor %d",modSelektor);
+                        ESP_LOGI(TAG, " ");
 
                         if(modSelektor<8){ // change la valeur de note représentée par sa couleur
                           noteSelektor = modSelektor;  

@@ -111,7 +111,7 @@ int bar[8] = {1,1,1,1,1,1,1,1}; // 2 bits, up to 4 bars?
 bool muteRecords[8] = {0,0,0,0,0,0,0,0}; // mute info per
 int stepsLength[8] = {16,16,16,16,16,16,16,16}; // varies per note 16-64
 
-int mtmstr[16][64]; // note // beats 
+int mtmstr[16][64]; // note // beats (save this for retrieval, add button to select and load them)
 
 int beat = 0; 
 int step = 0 ;
@@ -328,8 +328,6 @@ extern "C" {
             //for (int i = 0; i < sizeof(mstr);i++){
             //    ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
             //}
-
-            
 
             // Filter the array input and populate mtmstr
 
@@ -940,7 +938,7 @@ void tickTask(void* userParam)
                 
                 if (channel == 0){ // are we playing drumz ?
                   //ESP_LOGI(LINK_TAG, "drums : %i", i);
-                  char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme 10 pour l'instant mais dois pouvoir changer
+                  char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
                   char zedata2[] = {zeDrums[i]};      
                   uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
