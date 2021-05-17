@@ -112,6 +112,7 @@ bool muteRecords[8] = {0,0,0,0,0,0,0,0}; // mute info per
 int stepsLength[8] = {16,16,16,16,16,16,16,16}; // varies per note 16-64
 
 int mtmstr[16][64]; // note // beats (save this for retrieval, add button to select and load them)
+bool mtmss[1200]; // géant et flat
 
 int beat = 0; 
 int step = 0 ;
@@ -131,6 +132,7 @@ bool changePiton = false;
 bool changeLink = false;
 bool tempoINC = false; // si le tempo doit être augmenté
 bool tempoDEC = false; // si le tempo doit être réduit
+bool saveSeq = false; // nvs save the sequecne to start
 double newBPM; // pour tenter d'envoyer à setTempo();
 double curr_beat_time;
 double prev_beat_time;
@@ -232,6 +234,7 @@ static void tp_example_read_task(void *pvParameter) {
         } else if (s_pad_activated[7] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 7);  
         tempoDEC = true; 
+        saveSeq = true;
         vTaskDelay(300 / portTICK_PERIOD_MS);  
         s_pad_activated[7] = false; 
 
@@ -329,9 +332,28 @@ extern "C" {
             //    ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
             //}
 
-            // Filter the array input and populate mtmstr
+            // Filter the array input and populate mtmss
 
-            int tmpTotal = 0; // reset before counting
+            channel = 0; // reset avant de recompter
+            int tmpTotal = 0;
+
+            for(int i=0;i<4;i++){ // up to 8 channels, could hold 16 values
+
+              if(i==3 && mstr[3] == true){
+                tmpTotal = tmpTotal+1;
+              }
+              else if(i==2 && mstr[2] == true){
+                tmpTotal = tmpTotal + 2;
+              }
+              else if(i==1 && mstr[1] == true){
+                tmpTotal = tmpTotal + 4;
+              }
+            }
+      
+            channel = tmpTotal;
+            ESP_LOGI(SOCKET_TAG, "channel8 : %i", channel); 
+  
+            tmpTotal = 0; // reset before counting
 
             for(int i=0;i<4;i++){ // 
 
@@ -347,14 +369,12 @@ extern "C" {
             }
 
             note = tmpTotal; // only 8 note values for the moment
-
             ESP_LOGI(SOCKET_TAG, "note : %i", note); 
 
             // read in the bit value for mute and store 
             muteRecords[note] = mstr[10];
             ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
-            muteRecords[note] = true; 
-
+         
             // read in bar value from mst[8] and mst[9] and save it as int for the corresponding note
             if(mstr[8]==false && mstr[9]==false){bar[note] = 1;} 
             else if(mstr[8]==true && mstr[9]==false){bar[note] = 2;} 
@@ -362,21 +382,21 @@ extern "C" {
             else {bar[note] = 4;} // true && true 
 
             ESP_LOGI(SOCKET_TAG, "bar[note] : %i", bar[note]); 
-            
-            for( int i=0; i<8; i++ ){
-            
-              if ( i == note ){ // write into the array at the correct note index
-                  for( int j=0; j<64; j++ ) {
-                    if(mstr[j+11]){ // 11 bit offset from the array
-                      mtmstr[note][j] = 1; 
-                    }
-                    else {
-                      mtmstr[note][j] = 0; 
-                    }
-                  }                   
-              }
+
+            // copy into mtmss offset = channel * 75 + note * 75...
+            // calcul de l'offset 
+
+            int offset = channel * 75 + note * 75;
+
+            ESP_LOGI(SOCKET_TAG, "offset: %i", offset); 
+
+
+            for( int i=0; i<75; i++ ){
+              mtmss[i+offset] = mstr[i]; // copy into mtmss
             }
 
+            // ESP_LOGI(SOCKET_TAG, "note %i : ", note);
+          
 
             // Error occurred during receiving
             if (len < 0) {
@@ -389,7 +409,7 @@ extern "C" {
                 }
                 
                 ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
-              
+
                 ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
                 int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
 
@@ -537,7 +557,7 @@ extern "C" {
       ESP_LOGI(SMART_TAG, "MEMCPY SSID:%s", ssid);
       ESP_LOGI(SMART_TAG, "MEMCPY PASSWORD:%s", password);
 
-      //////// WRITING TO NVS // EVENTUALLY USE THIS TO SAVE mtmstr[] //////
+      //////// WRITING TO NVS //////
       nvs_handle wificfg_nvs_handler;
       nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
       nvs_set_str(wificfg_nvs_handler,"wifi_ssid",ssid);
@@ -768,7 +788,7 @@ void startStopChanged(bool state) {
 }
 
 
-extern "C" {
+/*extern "C" {
 
   void convertBits2Int(int sel){
     //ESP_LOGI(SOCKET_TAG, "conversion");  
@@ -792,7 +812,7 @@ extern "C" {
       channel = tmpTotal;
   }
 
-}
+}*/
 
 void tickTask(void* userParam)
 {
@@ -816,6 +836,47 @@ void tickTask(void* userParam)
     //const auto phase = state.phaseAtTime(link.clock().micros(), 1); 
     //ESP_LOGI(LINK_TAG, "tempoINC : %i", tempoINC);
     //ESP_LOGI(LINK_TAG, "tempoDEC : %i", tempoDEC);
+    //ESP_LOGI(LINK_TAG, "saveSeq : %i", saveSeq);
+
+    if ( saveSeq == true ) {
+
+      /////// WRITING mtmstr[] TO NVS //////
+      nvs_handle wificfg_nvs_handler;
+      nvs_open("mtmstr", NVS_READWRITE, &wificfg_nvs_handler);
+      //nvs_set_str(wificfg_nvs_handler,"sequence",mstr);
+      //nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,80);
+      //nvs_set_blob(wificfg_nvs_handler,"sequence",mtmstr,80);
+      nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,80);
+    
+      nvs_commit(wificfg_nvs_handler); 
+      nvs_close(wificfg_nvs_handler); 
+      ////// END NVS ///// 
+      
+      ESP_LOGI(NVS_TAG, "Sequence saved");
+
+      /// NVS READ CREDENTIALS ///
+      //nvs_handle wificfg_nvs_handler;
+      size_t len;
+      nvs_open("mtmstr", NVS_READWRITE, &wificfg_nvs_handler);
+
+      //nvs_get_str(wificfg_nvs_handler, "sequence", NULL, &len);
+      nvs_get_blob(wificfg_nvs_handler, "sequence", NULL, &len);
+      char* mySeq = (char*)malloc(len); 
+      //nvs_get_str(wificfg_nvs_handler, "sequence", mySeq, &len);
+      nvs_get_blob(wificfg_nvs_handler, "sequence", mySeq, &len);
+    
+
+      nvs_close(wificfg_nvs_handler);
+
+      for (int i = 0; i < 80; i++) {
+            printf("%i: %i\n", i + 1, mySeq[i]);
+        }
+    
+      ESP_LOGI(NVS_TAG,"mySeq :%s",mySeq); 
+
+      saveSeq = false;
+      
+    }
 
     if ( tempoINC == true ) {
       const auto tempo = state.tempo(); // quelle est la valeur de tempo?
@@ -921,7 +982,7 @@ void tickTask(void* userParam)
 
         if (startStopCB){ // isPlaying and did we send that note out? 
 
-          convertBits2Int(0); // get current channel // drums or synths ?
+          //convertBits2Int(0); // get current channel // drums or synths ?
 
           // passe ds ttes les notes de mtmstr[] et sors ça...assez vite j'espère.
           for(int i = 0; i<8;i++){ // faut faire ça pour chaque valeur de note
@@ -1027,7 +1088,7 @@ extern "C" { void app_main()
 
   
     if(skipNVSRead){
-      //////// WRITING TO NVS // EVENTUALLY USE THIS TO SAVE mtmstr[] //////
+      //////// WRITING DUMMY VALUES TO NVS FROM CLEAN SHEET //////
       // nvs_handle wificfg_nvs_handler;
       nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
       nvs_set_str(wificfg_nvs_handler,"wifi_ssid","testing");

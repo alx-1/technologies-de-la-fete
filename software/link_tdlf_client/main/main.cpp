@@ -374,7 +374,7 @@ static void udp_client_task(void *pvParameters)
                     ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
                     break;
                 }
-            ESP_LOGI(SOCKET_TAG, "Message sent");
+            // ESP_LOGI(SOCKET_TAG, "Message sent");
 
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
@@ -447,7 +447,7 @@ static void udp_client_task(void *pvParameters)
                  break;
             }
             
-            ESP_LOGI(SOCKET_TAG, "Message sent");
+           // ESP_LOGI(SOCKET_TAG, "Message sent");
 
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
@@ -461,14 +461,14 @@ static void udp_client_task(void *pvParameters)
             } else { // Data received
                 rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
                 
-                ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
+                //ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
 
-                ESP_LOGI(SOCKET_TAG, "2e confirmation mstrpckIP  : ");
+                //ESP_LOGI(SOCKET_TAG, "2e confirmation mstrpckIP  : ");
                 //HOST_IP_ADDR = rx_buffer;
-                ESP_LOGI(SOCKET_TAG, "%s", rx_buffer); 
+                //ESP_LOGI(SOCKET_TAG, "%s", rx_buffer); 
 
                 if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
-                    ESP_LOGI(SOCKET_TAG, "succès UDP");
+                   // ESP_LOGI(SOCKET_TAG, "succès UDP");
                 } 
 
             }
