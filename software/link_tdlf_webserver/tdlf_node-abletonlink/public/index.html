@@ -1,0 +1,192 @@
+<html>
+    <head>
+    </head>
+<body>
+   
+    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="http://code.jquery.com/color/jquery.color-2.1.2.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@0.5.2/lib/p5.min.js" type="text/javascript"></script>
+    <script src ="https://unpkg.com/p5.touchgui@0.5.2/lib/p5.touchgui.js"></script>
+    <script>
+        
+        var gui; // p5.touchgui
+
+        let img;
+  
+        let plus;
+        let minus;
+
+        var socket = io();
+        var myBeat = 42;
+        var myBPM = 66.6;
+        var myPhase = 0;
+        var numUsers = 0;
+        let step = 0;
+        let sx = 40;
+        let sy = 40;
+        let off = 22;
+        let boff = 60 // button offset
+        let trowy = 140;
+        let browy = 200;
+        let bsize = 50;
+        var myPlayState;
+
+        let base = 40;
+    
+        var output;
+    
+        //var bd = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        var bd = [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
+        let pitons = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"];
+
+        function touchMoved() { // prevent scrolling on mobile devices
+            // do some stuff
+            return false;
+        }
+        
+        function setup() {
+            createCanvas(windowWidth,windowHeight);
+
+            img = loadImage('freeliner.jpg'); // Load the image
+           
+            gui = createGui();
+            gui.loadStyle("Rose");
+            gui.setStrokeWeight(4);
+            
+            a = createButton("0",base+0*boff,trowy, bsize, bsize);
+            b = createButton("1",base+1*boff,trowy, bsize, bsize);
+            c = createButton("2",base+2*boff,trowy, bsize, bsize);
+            d = createButton("3",base+3*boff,trowy, bsize, bsize);
+            e = createButton("4",base+4*boff,trowy, bsize, bsize);
+            f = createButton("5",base+5*boff,trowy, bsize, bsize);
+            g = createButton("6",base+6*boff,trowy, bsize, bsize);
+            h = createButton("7",base+7*boff,trowy, bsize, bsize);
+
+            i = createButton("8",base+0*boff,browy, bsize, bsize);
+            j = createButton("9",base+1*boff,browy, bsize, bsize);
+            k = createButton("10",base+2*boff,browy, bsize, bsize);
+            l = createButton("11",base+3*boff,browy, bsize, bsize);
+            m = createButton("12",base+4*boff,browy, bsize, bsize);
+            n = createButton("13",base+5*boff,browy, bsize, bsize);
+            o = createButton("14",base+6*boff,browy, bsize, bsize);
+            p = createButton("15",base+7*boff,browy, bsize, bsize);
+
+            minus = createButton("-", sx+350, sy+2*off-16, 20, 20);
+            plus = createButton("+", sx+430, sy+2*off-16, 20, 20);
+
+            // Callbacks can also be assigned to existing, user-defined functions.
+            for(x = 0; x < 16 ; x++){
+                eval(pitons[x]).onRelease = nouvCol;  
+                }
+
+            let noLabelStyle = { 
+                fillLabel: color(230, 145, 0),
+                fillLabelHover: color(250,145,250),
+                fillLabelActive: color(250, 210, 250)
+            };
+
+            for(x = 0; x < 16 ; x++){
+                eval(pitons[x]).setStyle(noLabelStyle); 
+                }
+
+            background(25);
+            noLoop(); // don't update draw
+        }
+
+        function nouvCol() {
+            print(this.label + " is pressed.");
+            bd[this.label] = !bd[this.label] ;
+            console.log(bd);
+        }
+
+        socket.on('numUsers', function(data) {
+            numUsers = data.numUsers;
+        });
+    
+        socket.on('test', function(data) { // trying to get the playState
+        myPlayState = data.test;
+        //console.log("test : "+myPlayState);
+        });
+    
+
+        // handle the event sent with socket.send()
+        socket.on("message", (data) => {
+            //console.log(data);
+            step = data;
+            // change border color fo the active button
+            
+
+          for(x = 0; x < 16 ; x++){
+            if(bd[x]==true){
+                eval(pitons[x]).setStyle("fillBg", color(250, 210, 250)); 
+                eval(pitons[x]).setStyle("fillLabel", color(240, 210, 250));
+
+            }
+            else{
+            eval(pitons[x]).setStyle("fillBg", color("#DD8806")); 
+            eval(pitons[x]).setStyle("fillLabel", color("#DD8810"));
+
+        }
+     
+        }
+        
+           eval(pitons[step]).setStyle("fillBg", color(255, 255, 255));
+           eval(pitons[step]).setStyle("fillLabel", color(253, 250, 253));
+      
+
+            redraw();
+        });
+
+        socket.on('beat', function(data) {
+            //console.log("data : "+data);
+            myBeat = data.beat;
+            //console.log("myBeat : "+myBeat);
+            myBPM = data.bpm;
+            myBPM = myBPM.toFixed(2);
+            myPhase = data.phase;
+            myPhase = myPhase.toFixed(1);
+            
+            redraw();
+        });
+    
+            
+        function draw(){ // simple interface done in p5.js
+            clear();
+            background(70,50,70);
+            //image(img, 0, 0);
+            fill("#111111");
+            rect(20,20,510,265, 20);
+            drawGui();
+          
+            fill("#DDBB44");
+            textSize(16);
+            text('technologies de la fête', sx, sy+off);
+            text('beat :        '+myBeat, sx, sy+2*off);
+            text('phase :     '+round(myPhase), sx, sy+3*off);
+            
+            text('clients :     '+numUsers, sx+300, sy+off);
+            text('BPM :       '+myBPM, sx+300, sy+2*off);
+            text('step :        '+step, sx+300, sy+3*off);
+  
+            if (minus.isPressed) {
+            // Print a message when Button is pressed.
+            print(minus.label + " pressed.");
+            var data =  { bpm:-1 };
+                socket.emit('chBPM', data);
+            }
+            if (plus.isPressed) {
+            // Print a message when Button is pressed.
+            print(plus.label + " pressed.");
+            var data =  { bpm:1 };
+           // var data =  { isPlaying:false };
+           socket.emit('chBPM', data);
+            }
+
+
+
+            } // fin de draw
+
+    </script>
+</body>
+</html>
