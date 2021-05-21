@@ -1,8 +1,14 @@
 const path = require('path');
 
-const app = require('express')();
+//const app = require('express')();
+
+const express = require('express');
+const app = express();
+app.use(express.static('public'));
+
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+//const p5 = require('p5')(server);
 
 
 function fmod(a, b){
@@ -48,7 +54,7 @@ link.on('playState', (playState) => console.log("playState", playState));
             curr_step = prev_step;
             //io.emit('step', { curr_step });
             io.send(curr_step);
-            console.log("curr_step : "+curr_step);
+            //console.log("curr_step : "+curr_step);
 
         }
 
@@ -71,7 +77,10 @@ link.on('playState', (playState) => console.log("playState", playState));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
+    //res.sendFile(path.join(__dirname, "public", "libraries","p5.min.js"));
 });
+
+// app.use("/public", express.static(__dirname + "/public"));
 
 
 io.on('connection', (socket) => {  // start listening from events from the socket upon connection
@@ -89,6 +98,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         });
     });
 
-server.listen(8080, "192.168.0.128", () => {
-    console.log("access to http://192.168.0.128:8080 !!");
+server.listen(8080, "192.168.0.102", () => {
+//server.listen(8080, "172.20.10.2", () => {
+    console.log("access to http://192.168.0.102:8080 !!");
 });

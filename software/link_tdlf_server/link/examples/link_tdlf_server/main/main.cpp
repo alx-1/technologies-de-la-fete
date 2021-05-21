@@ -70,7 +70,7 @@ static const char *LINK_TAG = "Link";
 // Serial midi
 #define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
 #define ECHO_TEST_CTS (UART_PIN_NO_CHANGE)
-#define ECHO_TEST_TXD  (GPIO_NUM_13) // TTGO pin 4 // 13 ?
+#define ECHO_TEST_TXD  (GPIO_NUM_13) // TTGO touch pin 4 // 13 // change for GPIO_NUM_17
 #define ECHO_TEST_RXD  (GPIO_NUM_5)
 #define BUF_SIZE (1024)
 #define MIDI_TIMING_CLOCK 0xF8
@@ -108,11 +108,12 @@ bool mstr[75] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-9] (bar
 int channel; // 4 bits midi channel (0-7) -> (10,1,2,3,4,5,6,7) // drums + más
 int note; // 4 bits note info // 8 notes correspond to 8 colors // (0-7) -> (36,38,43,50,42,46,39,75),67,49 // más de 8 !
 int bar[8] = {1,1,1,1,1,1,1,1}; // 2 bits, up to 4 bars?
+int myBar = 0; 
 bool muteRecords[8] = {0,0,0,0,0,0,0,0}; // mute info per
-int stepsLength[8] = {16,16,16,16,16,16,16,16}; // varies per note 16-64
+int stepsLength[4] = {16,32,48,64}; // varies per note 16-64
 
-int mtmstr[16][64]; // note // beats (save this for retrieval, add button to select and load them)
-bool mtmss[1200]; // géant et flat
+//int mtmstr[16][64]; // note // beats 
+bool mtmss[1200] = {0}; // 75 x 16 géant et flat (save this for retrieval, add button to select and load them)
 
 int beat = 0; 
 int step = 0 ;
@@ -211,7 +212,7 @@ static uint32_t s_pad_init_val[16];
 static void tp_example_set_thresholds(void)
 {
     uint16_t touch_value;
-     for (int i = 5; i < 10; i=i+2) {
+     for (int i = 5; i < 10; i=i+2) { // add TOUCH2, TOUCH3, TOUCH4 GPIO 2, 15, 13
         touch_pad_read_filtered((touch_pad_t)i, &touch_value);
         s_pad_init_val[i] = touch_value;
         ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", i, touch_value); //set interrupt threshold.
@@ -224,7 +225,7 @@ static void tp_example_read_task(void *pvParameter) {
  while (1) {
      
     touch_pad_intr_enable();
-    for (int i = 5; i < 10; i=i+2) {
+    for (int i = 5; i < 10; i=i+2) { // add TOUCH2, TOUCH3, TOUCH4 GPIO 2, 15, 13
         if (s_pad_activated[5] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 5);  // Wait a while for the pad being released
         tempoINC = true; // pour que le audio loop le prenne en compte
@@ -234,7 +235,7 @@ static void tp_example_read_task(void *pvParameter) {
         } else if (s_pad_activated[7] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 7);  
         tempoDEC = true; 
-        saveSeq = true;
+        //saveSeq = true;
         vTaskDelay(300 / portTICK_PERIOD_MS);  
         s_pad_activated[7] = false; 
 
@@ -328,9 +329,9 @@ extern "C" {
             //mstr devrait être 75 valeurs;
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-            //for (int i = 0; i < sizeof(mstr);i++){
-            //    ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
-            //}
+            for (int i = 0; i < sizeof(mstr);i++){
+                ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
+            }
 
             // Filter the array input and populate mtmss
 
@@ -842,11 +843,12 @@ void tickTask(void* userParam)
 
       /////// WRITING mtmstr[] TO NVS //////
       nvs_handle wificfg_nvs_handler;
-      nvs_open("mtmstr", NVS_READWRITE, &wificfg_nvs_handler);
+      nvs_open("mtmss", NVS_READWRITE, &wificfg_nvs_handler);
       //nvs_set_str(wificfg_nvs_handler,"sequence",mstr);
       //nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,80);
       //nvs_set_blob(wificfg_nvs_handler,"sequence",mtmstr,80);
-      nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,80);
+      //nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,80);
+      nvs_set_blob(wificfg_nvs_handler,"sequence",mtmss,1200);
     
       nvs_commit(wificfg_nvs_handler); 
       nvs_close(wificfg_nvs_handler); 
@@ -857,7 +859,7 @@ void tickTask(void* userParam)
       /// NVS READ CREDENTIALS ///
       //nvs_handle wificfg_nvs_handler;
       size_t len;
-      nvs_open("mtmstr", NVS_READWRITE, &wificfg_nvs_handler);
+      nvs_open("mtmss", NVS_READWRITE, &wificfg_nvs_handler);
 
       //nvs_get_str(wificfg_nvs_handler, "sequence", NULL, &len);
       nvs_get_blob(wificfg_nvs_handler, "sequence", NULL, &len);
@@ -868,7 +870,7 @@ void tickTask(void* userParam)
 
       nvs_close(wificfg_nvs_handler);
 
-      for (int i = 0; i < 80; i++) {
+      for (int i = 0; i < 150; i++) {
             printf("%i: %i\n", i + 1, mySeq[i]);
         }
     
@@ -984,24 +986,31 @@ void tickTask(void* userParam)
 
           //convertBits2Int(0); // get current channel // drums or synths ?
 
-          // passe ds ttes les notes de mtmstr[] et sors ça...assez vite j'espère.
-          for(int i = 0; i<8;i++){ // faut faire ça pour chaque valeur de note
-                
-              // compteur de quel bar on est rendus pour les séquences plus longues...
-              stepsLength[i] = bar[i]*16; // correspond au nombre de bars pour la note
-              //ESP_LOGI(LINK_TAG, "stepsLength[i] : %i", stepsLength[i]);
-              dubStep = step%stepsLength[i]; // modulo 16 // ... 32 // ... 48 // ... 64
-              //ESP_LOGI(LINK_TAG, "nouveau dubStep : %i", dubStep);
+          // passe ds ttes les notes de mtmss[] fast
 
-              //if (mtmstr[i][step] == 1 && !muteRecords[i]){ // send midi note out 
-              //ESP_LOGI(LINK_TAG, "mtmstr[i][step] : %i", i);
-              if (mtmstr[i][dubStep] == 1){ // send midi note out // mute to be implemented
-                
+          ESP_LOGI(LINK_TAG, "step : %i", step);
+
+          // ESP_LOGI(LINK_TAG, "sizeof mtmss : %i", sizeof(mtmss));
+
+          for(int i = 0; i<8;i++){ // 8 x 75 = 600 faut faire ça pour chaque valeur de note
+
+                            
+              myBar =  mtmss[i*75+8] + (mtmss[i*75+9])*2; // 0, 1, 2 3 bars // how many bars for this note?
+              
+              ESP_LOGI(LINK_TAG, "myBar : %i", myBar);
+              ESP_LOGI(LINK_TAG, "stepsLength[myBar] : %i", stepsLength[myBar]);
+              dubStep = step%stepsLength[myBar]; // modulo 16 // 32 // 48 // 64
+              ESP_LOGI(LINK_TAG, "nouveau 'dub'Step : %i", dubStep);
+           
+
+              if (mtmss[i*75 + dubStep + 10] == 1){ // send midi note out // mute to be implemented // && !muteRecords[i]){ // send midi note out 
+                // trouver commbien de bars sont présents pour chaque note !?
                 if (channel == 0){ // are we playing drumz ?
-                  //ESP_LOGI(LINK_TAG, "drums : %i", i);
+                  // ESP_LOGI(LINK_TAG, "drums : %i", mtmss[i*75 + dubStep + 11);
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
-                  char zedata2[] = {zeDrums[i]};      
+                  
+                  char zedata2[] = {zeDrums[i]};      // arriver de 0-8
                   uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
                 }
                 else if (channel == 1){ // premier jeu de notes
@@ -1011,7 +1020,9 @@ void tickTask(void* userParam)
                   char zedata2[] = {zeDark[i]}; // tableau de valeurs de notes hexadécimales 
                   uart_write_bytes(UART_NUM_1, zedata2, 1); 
                 }
-                else{} // ajouter d'autres gammes (scales)
+                else{
+                  // ESP_LOGI(LINK_TAG, "hello?");
+                } // ajouter d'autres gammes (scales)
                 
                 char zedata3[] = { MIDI_NOTE_VEL };
                 uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
@@ -1020,6 +1031,8 @@ void tickTask(void* userParam)
               }
                   
           }
+            ESP_LOGI(LINK_TAG, "");
+            ESP_LOGI(LINK_TAG, "");
         }
 
         if(isPlaying){
