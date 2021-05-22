@@ -38,7 +38,7 @@ extern "C" {
 #include "esp_log.h"
 }
 
-#define USE_TOUCH_PADS // touch_pad_5 (GPIO_NUM_12), touch_pad_7 (GPIO_NUM_27), touch_pad_9 (GPIO_NUM_32)
+#define USE_TOUCH_PADS // touch_pad_2 (GPIO_NUM_2), touch_pad_3 (GPIO_NUM_15), touch_pad_4 (GPIO_NUM_14), touch_pad_5 (GPIO_NUM_12), touch_pad_7 (GPIO_NUM_27), touch_pad_9 (GPIO_NUM_32)
 #define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1)
 #define USE_SOCKETS // we receive data from the seq clients
 
@@ -70,7 +70,7 @@ static const char *LINK_TAG = "Link";
 // Serial midi
 #define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
 #define ECHO_TEST_CTS (UART_PIN_NO_CHANGE)
-#define ECHO_TEST_TXD  (GPIO_NUM_13) // TTGO touch pin 4 // 13 // change for GPIO_NUM_17
+#define ECHO_TEST_TXD  (GPIO_NUM_17) // was TTGO touch pin 4 (GPIO_NUM_17) // 13 // change for GPIO_NUM_17
 #define ECHO_TEST_RXD  (GPIO_NUM_5)
 #define BUF_SIZE (1024)
 #define MIDI_TIMING_CLOCK 0xF8
@@ -212,12 +212,20 @@ static uint32_t s_pad_init_val[16];
 static void tp_example_set_thresholds(void)
 {
     uint16_t touch_value;
-     for (int i = 5; i < 10; i=i+2) { // add TOUCH2, TOUCH3, TOUCH4 GPIO 2, 15, 13
-        touch_pad_read_filtered((touch_pad_t)i, &touch_value);
-        s_pad_init_val[i] = touch_value;
-        ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", i, touch_value); //set interrupt threshold.
-        ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)i, touch_value * 2 / 3));
-     }
+
+    for (int i = 2; i <5; i++) { // adding TOUCH2, TOUCH3, TOUCH4
+      touch_pad_read_filtered((touch_pad_t)i, &touch_value);
+      s_pad_init_val[i] = touch_value;
+      ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", i, touch_value); //set interrupt threshold.
+      ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)i, touch_value * 2 / 3));
+    }
+
+    for (int i = 5; i < 10; i=i+2) { // add TOUCH2, TOUCH3, TOUCH4 GPIO 2, 15, 13
+      touch_pad_read_filtered((touch_pad_t)i, &touch_value);
+      s_pad_init_val[i] = touch_value;
+      ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", i, touch_value); //set interrupt threshold.
+      ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)i, touch_value * 2 / 3));
+    }
 }
 static void tp_example_read_task(void *pvParameter) {
     
@@ -225,6 +233,27 @@ static void tp_example_read_task(void *pvParameter) {
  while (1) {
      
     touch_pad_intr_enable();
+    for (int i = 2; i <5; i++) { // adding TOUCH2, TOUCH3, TOUCH4
+        if (s_pad_activated[2] == true) {
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 2);  // Wait a while for the pad being released
+        // do stg
+        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
+        s_pad_activated[2] = false; // Reset the counter triggering a message // that application is running
+        
+        } else if(s_pad_activated[3] == true) {
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 3);  // Wait a while for the pad being released
+        // do stg
+        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
+        s_pad_activated[3] = false; // Reset the counter triggering a message // that application is running
+        
+        }else if(s_pad_activated[4] == true) {
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 4);  // Wait a while for the pad being released
+        // do stg
+        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
+        s_pad_activated[4] = false; // Reset the counter triggering a message // that application is running
+        }
+    }
+
     for (int i = 5; i < 10; i=i+2) { // add TOUCH2, TOUCH3, TOUCH4 GPIO 2, 15, 13
         if (s_pad_activated[5] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 5);  // Wait a while for the pad being released
@@ -259,6 +288,13 @@ static void tp_example_read_task(void *pvParameter) {
 static void tp_example_rtc_intr(void *arg) { //  Handle an interrupt triggered when a pad is touched. Recognize what pad has been touched and save it in a table.
     uint32_t pad_intr = touch_pad_get_status();
     touch_pad_clear_status(); //clear interrupt
+
+      for (int i = 2; i < 5; i++) {
+        if ((pad_intr >> i) & 0x01) {
+            s_pad_activated[i] = true;
+        }
+      }
+
     for (int i = 5; i < 10; i = i+2) {
     //for (int i = 7; i < 8; i++) { // juste touch 7
         if ((pad_intr >> i) & 0x01) {
@@ -269,6 +305,10 @@ static void tp_example_rtc_intr(void *arg) { //  Handle an interrupt triggered w
 
 
 static void tp_example_touch_pad_init(void) { // Before reading touch pad, we need to initialize the RTC IO.
+    for (int i = 2; i < 5; i++) {   
+        touch_pad_config((touch_pad_t)i, TOUCH_THRESH_NO_USE); //init RTC IO and mode for touch pad.
+    }
+    
     for (int i = 5; i < 10; i = i+2) {   
         touch_pad_config((touch_pad_t)i, TOUCH_THRESH_NO_USE); //init RTC IO and mode for touch pad.
     }
