@@ -1,3 +1,4 @@
+//// 08/16/2021
 //// tdlf client // 16 touch pads // 16 leds // envoi des données de un array au client
 //// dois ajouter une sélection automatique du point d'accès lorsque l'IP change
 
@@ -60,6 +61,7 @@ int selektor; // couleur rose par défaut
 int modSelektor = 0;
 int fourChan = 0; // channel à stocker ds les premiers 0-3 bits de bd[]
 int noteSelektor = 0; // note à stocker dans les bits 4-7 de bd[]
+int noteDuration = 0; // length of note stored in bits 8-11 of bd[] 
 int barSelektor = 0; // à stocker
 int currentBar = 0; // pour l'affichage
 
@@ -98,8 +100,8 @@ int lastButtonUpdate = 0;
 
 /////// SEQ ///////
 
-bool bd[75] = {}; // bd[0-3] (channel) // bd[4-7] (note) // bd[8-9] (bar) // bd[10] (mute) // bd[11-74](steps) 
-bool cbd[75] = {1}; // to determine if we have a changed bd
+bool bd[79] = {}; // bd[0-3] (channel) // bd[4-7] (note) // bd[8-11] (note duration) // bd[12-13] (bar) // bd[14] (mute) // bd[15-79](steps) 
+bool cbd[79] = {1}; // to determine if we have a changed bd
 int step = 0;
 float oldstep;
 
@@ -206,12 +208,12 @@ void TurnLedOn(int step){  //ESP32APA102Driver
     	for (int i = 0; i < 16; i++){ 
 			setPixel(&leds, i, offColour); // turn LED off
             if(i == step && currentBar == barSelektor){ // sélecteur d'affichage de bar
-                if (bd[i+11+16*barSelektor]){
+                if (bd[i+15+16*barSelektor]){
                     setPixel(&leds, i, beatStepColour);    
                     }else{
                     setPixel(&leds, i, stepColour); 
                     }
-                } else if (bd[i+11+16*barSelektor]){
+                } else if (bd[i+15+16*barSelektor]){
                 setPixel(&leds, i, Colour[noteSelektor]);           
                 }
 		}
@@ -475,6 +477,7 @@ static void udp_client_task(void *pvParameters)
             vTaskDelay(10 / portTICK_PERIOD_MS); // 500
 
             bdChanged = false;
+            // bdCha||ged = false;
         } // fin nouvelle sockette
         
         }
@@ -773,7 +776,7 @@ void convertInt2Bits(int monInt, int monOffset){
     // monInt à convertir, monOffset pour l'écrire au bon endroit
 
     for(int i=0;i<4;i++){ // reset avant de ré-écrire les valeurs
-        bd[i+4*monOffset]= false;
+        bd[i+4*monOffset] = false;
     }
     
     if(monInt == 0){
@@ -847,7 +850,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 0;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+0+16*barSelektor] = !bd[11+0+16*barSelektor]; // 11 bit offset in the array
+                            bd[15+0+16*barSelektor] = !bd[15+0+16*barSelektor]; // 15 bit offset in the array
                             }
                         }
                     if(s_pad_activated[0] && s_pad_activated[4]){
@@ -855,7 +858,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 1;
                          if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+1+16*barSelektor] = !bd[11+1+16*barSelektor];
+                            bd[15+1+16*barSelektor] = !bd[15+1+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[3] && s_pad_activated[4]){
@@ -863,7 +866,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 2;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+2+16*barSelektor] = !bd[11+2+16*barSelektor];
+                            bd[15+2+16*barSelektor] = !bd[15+2+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[9] && s_pad_activated[4]){
@@ -871,7 +874,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 3;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+3+16*barSelektor] = !bd[11+3+16*barSelektor];
+                            bd[15+3+16*barSelektor] = !bd[15+3+16*barSelektor];
                             }
                         }
                     /////// 5-8
@@ -880,7 +883,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 4;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+4+16*barSelektor] = !bd[11+4+16*barSelektor];
+                            bd[15+4+16*barSelektor] = !bd[15+4+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[0] && s_pad_activated[5]){
@@ -888,7 +891,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 5;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+5+16*barSelektor] = !bd[11+5+16*barSelektor];
+                            bd[15+5+16*barSelektor] = !bd[15+5+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[3] && s_pad_activated[5]){
@@ -896,7 +899,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 6;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+6+16*barSelektor] = !bd[11+6+16*barSelektor];
+                            bd[15+6+16*barSelektor] = !bd[15+6+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[9] && s_pad_activated[5]){
@@ -904,7 +907,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 7;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+7+16*barSelektor] = !bd[11+7+16*barSelektor];
+                            bd[15+7+16*barSelektor] = !bd[15+7+16*barSelektor];
                             }
                         }
                     /////// 9-12
@@ -913,7 +916,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 8;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+8+16*barSelektor] = !bd[11+8+16*barSelektor];
+                            bd[15+8+16*barSelektor] = !bd[15+8+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[0] && s_pad_activated[6]){
@@ -921,7 +924,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 9;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+9+16*barSelektor] = !bd[11+9+16*barSelektor];
+                            bd[15+9+16*barSelektor] = !bd[15+9+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[3] && s_pad_activated[6]){
@@ -929,7 +932,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 10;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+10+16*barSelektor] = !bd[11+10+16*barSelektor];
+                            bd[15+10+16*barSelektor] = !bd[15+10+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[9] && s_pad_activated[6]){
@@ -937,7 +940,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 11;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+11+16*barSelektor] = !bd[11+11+16*barSelektor];
+                            bd[15+11+16*barSelektor] = !bd[15+11+16*barSelektor];
                             }
                         }
                     /////// 13-16
@@ -946,7 +949,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 12;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+12+16*barSelektor] = !bd[11+12+16*barSelektor];
+                            bd[15+12+16*barSelektor] = !bd[15+12+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[0] && s_pad_activated[7]){
@@ -954,7 +957,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 13;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+13+16*barSelektor] = !bd[11+13+16*barSelektor];
+                            bd[15+13+16*barSelektor] = !bd[15+13+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[3] && s_pad_activated[7]){
@@ -962,7 +965,7 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 14;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+14+16*barSelektor] = !bd[11+14+16*barSelektor];
+                            bd[15+14+16*barSelektor] = !bd[15+14+16*barSelektor];
                             }
                         }
                     if(s_pad_activated[9] && s_pad_activated[7]){
@@ -970,12 +973,12 @@ static void tp_example_read_task(void *pvParameter)
                         selektor = 15;
                         if (intervalButton > 500000){  // 500 ms delay between registering presses
                             lastButtonUpdate = esp_timer_get_time();
-                            bd[11+15+16*barSelektor] = !bd[11+15+16*barSelektor];
+                            bd[15+15+16*barSelektor] = !bd[15+15+16*barSelektor];
                             }
                         }
                     
 
-                    if(press >= 15){ // 20 // 50
+                    if(press >= 15){ // number of 'presses' depends on length of press
 
                         modSelektor = selektor;
 
@@ -986,9 +989,9 @@ static void tp_example_read_task(void *pvParameter)
                           noteSelektor = modSelektor;  
                           ESP_LOGI(TAG, "noteSelektor %d", noteSelektor);
 
-                          for(int i = 11; i < sizeof(bd) ; i++) {
-                              bd[i] = 0;
-                          }
+                          //for(int i = 15; i < sizeof(bd) ; i++) {
+                          //    bd[i] = 0;
+                          //}
                           convertInt2Bits(noteSelektor, 1); // écrit les valeurs de note en bits ds bd[]
                         }
 
@@ -996,17 +999,17 @@ static void tp_example_read_task(void *pvParameter)
                             barSelektor= modSelektor-8;
 
                             if(barSelektor == 0){
-                                bd[8] = false;
-                                bd[9] = false;
+                                bd[12] = false;
+                                bd[13] = false;
                             } else if (barSelektor == 1){
-                                bd[8] = true;
-                                bd[9] = false;
+                                bd[12] = true;
+                                bd[13] = false;
                             } else if (barSelektor == 2){
-                                bd[8] = false;
-                                bd[9] = true;
+                                bd[12] = false;
+                                bd[13] = true;
                             } else { 
-                                bd[8] = true;
-                                bd[9] = true;
+                                bd[12] = true;
+                                bd[13] = true;
                             }
                             ESP_LOGI(TAG, "Bar : %d", barSelektor);
 
@@ -1014,24 +1017,23 @@ static void tp_example_read_task(void *pvParameter)
 
                         else if( modSelektor == 12){ 
                             if (fourChan == 7){ // le max
-                                fourChan = 0; // loop it
+                                fourChan = -1; // loop it
                             }
                             fourChan = fourChan+1 ; // à considérer un 'enter' pour rendre les modifs actives à ce moment uniquement
                             convertInt2Bits(fourChan, 0); // écrit les valeurs de channel en bits ds bd[]
-                            ESP_LOGI(TAG, "Channel %i", fourChan);
+                            ESP_LOGI(TAG, "Midi channel %i", fourChan);
                         }
                         
                         else if( modSelektor == 13){
-                            if (fourChan == 0){ // le min
-                                fourChan = 7; // loop it
+                            if (noteDuration == 7) {
+                                noteDuration = -1;
                             }
-                            fourChan = fourChan-1;
-                            convertInt2Bits(fourChan, 0); // écrit les valeurs de channel en bits ds bd[]
-                            ESP_LOGI(TAG, "Channel %i", fourChan);  
+                            noteDuration = noteDuration + 1;
+                            convertInt2Bits(noteDuration, 2);
                         }
 
                         else if( modSelektor == 14){
-                            bd[10] = !bd[10];  // toggle mute
+                            bd[14] = !bd[14];  // toggle mute
                             ESP_LOGI(TAG, "mute : %i", bd[10]);  
                         }
                         
@@ -1163,7 +1165,7 @@ extern "C" void app_main()
 	memset(&spiTransObject, 0, sizeof(spiTransObject));
 	spiTransObject.length = leds._frameLength*8;
 	spiTransObject.tx_buffer = leds.LEDs;
-	printf("SPI Object Initilized...\r\n");
+	printf("SPI Object Initialized...\r\n");
 	printf("Sending SPI data block to clear all pixels....\r\n");
 	spi_device_queue_trans(spi, &spiTransObject, portMAX_DELAY);
 	printf("Pixels Cleared!\r\n");

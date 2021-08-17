@@ -15,22 +15,22 @@
 #include <protocol_examples_common.h>
 #include "driver/uart.h"
 #include <stdio.h>
-#include "esp_timer.h"
+#include "esp_timer.h" // for tap tempo
 #include "esp_sleep.h"
 
-#include <chrono> // essai pour setTempo()
+#include <chrono> // for setTempo()
 
 extern "C" {
-#include <string.h> // De l'exemple station_example_main
+#include <string.h> // from the station_example_main example
 #include "freertos/event_groups.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include <stdbool.h> 
 #include "lwip/err.h"
 #include "lwip/sys.h"
-#include "lwip/inet.h" // inet.pton() ??
+#include "lwip/inet.h" // inet.pton() 
 
-#include <stdlib.h> // De l'exemple smart_config
+#include <stdlib.h> // from the smart_config example
 #include "esp_wpa2.h"
 #include "esp_netif.h"
 #include "esp_smartconfig.h"
@@ -49,6 +49,8 @@ static const char *SMART_TAG = "Smart config";
 static const char *NVS_TAG = "NVS";
 static const char *WIFI_TAG = "Wifi";
 static const char *LINK_TAG = "Link";
+static const char *TAP_TAG = "Tap";
+static const char *MIDI_TAG = "Midi";
 }
 
 /////// sockette server ///////
@@ -70,14 +72,20 @@ static const char *LINK_TAG = "Link";
 // Serial midi
 #define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
 #define ECHO_TEST_CTS (UART_PIN_NO_CHANGE)
-#define ECHO_TEST_TXD  (GPIO_NUM_17) // was TTGO touch pin 4 (GPIO_NUM_17) // 13 // change for GPIO_NUM_17
+#define ECHO_TEST_TXD  (GPIO_NUM_26) // was TTGO touch  pin 4 (GPIO_NUM_17) // 13 // change for GPIO_NUM_17 // GPIO_NUM_26
+//#define ECHO_TEST_TXD  (GPIO_NUM_17) // was TTGO touch  pin 4 (GPIO_NUM_17) // 13 // change for GPIO_NUM_17 // GPIO_NUM_26
+
 #define ECHO_TEST_RXD  (GPIO_NUM_5)
 #define BUF_SIZE (1024)
 #define MIDI_TIMING_CLOCK 0xF8
+#define MIDI_NOTE_OFF 0x80 // 10000000 // 128
 #define MIDI_START 0xFA // 11111010 // 250
 #define MIDI_STOP 0xFC // 11111100 // 252
 
 char MIDI_NOTE_ON_CH[] = {0x99,0x90}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
+
+char MIDI_NOTES[16]; // keep notes in memory along with interval at which to trigger the note off message
+int MIDI_NOTES_DELAYED_OFF[16] = {0};
 // char zeDrums[] = {0x24,0x26,0x2B,0x32,0x2A,0x2E,0x27,0x4B,0x43,0x31}; // midi drum notes in hexadecimal format
 // char zeDark[] = {0x3D,0x3F,0x40,0x41,0x42,0x44,0x46,0x47}; // A#(70)(0x46), B(71)(0x47), C#(61)(0x3D), D#(63)(0x3F), E(64)(0x40), F(65)(0x41), F#(66)(0x42), G#(68)(0x44)
 
@@ -100,26 +108,29 @@ char MIDI_NOTE_ON_CH[] = {0x99,0x90}; // note on, channel 10, note on, channel 0
 // est-ce que l'utilisateur peut transposer d'octave...sans doute
 
 #define MIDI_NOTE_VEL 0x64 // 1100100 // 100 // note on,  // data
+#define MIDI_NOTE_VEL_OFF 0x00 // 0 // note off
 #define MIDI_SONG_POSITION_POINTER 0xF2
 
 ///// seq /////
 
-bool mstr[75] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-9] (bar) // mstr[10] (mute) // mstr[11-74](steps)
+// bool mstr[75] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-9] (bar) // mstr[10] (mute) // mstr[11-74](steps)
+bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
+bool mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
+
 int channel; // 4 bits midi channel (0-7) -> (10,1,2,3,4,5,6,7) // drums + más
 int note; // 4 bits note info // 8 notes correspond to 8 colors // (0-7) -> (36,38,43,50,42,46,39,75),67,49 // más de 8 !
+float duration[8] = {0.25,0.5,1,2,4,8,16,64}; // 4 bits note duration (0-7) -> (64,16,8,4,2,1,1/2,1/4)
+float noteDuration; 
 int bar[8] = {1,1,1,1,1,1,1,1}; // 2 bits, up to 4 bars?
 int myBar = 0; 
 bool muteRecords[8] = {0,0,0,0,0,0,0,0}; // mute info per
 int stepsLength[4] = {16,32,48,64}; // varies per note 16-64
 
-//int mtmstr[16][64]; // note // beats 
-bool mtmss[1200] = {0}; // 75 x 16 géant et flat (save this for retrieval, add button to select and load them)
-
 int beat = 0; 
 int step = 0 ;
 int dubStep = 0;
-
 float oldstep;
+int currStep = 0;
 
 static void periodic_timer_callback(void* arg);
 esp_timer_handle_t periodic_timer;
@@ -133,15 +144,44 @@ bool changePiton = false;
 bool changeLink = false;
 bool tempoINC = false; // si le tempo doit être augmenté
 bool tempoDEC = false; // si le tempo doit être réduit
-bool saveSeq = false; // nvs save the sequecne to start
-double newBPM; // pour tenter d'envoyer à setTempo();
+bool saveSeq = false; // nvs save the sequence to start
+double newBPM; // send to setTempo();
 double curr_beat_time;
 double prev_beat_time;
 
 bool connektMode = true; // flag pour envoyer l'adresse IP aux clients
 char str_ip[16] ="192.168.0.66"; // send IP to clients !! // stand in ip necessary for memory space?
 
-/////////////////// I2C Display //////////////////
+
+///////////// INTERACTIONS ///////////
+///
+/// save (Touch pad 2)
+bool tapeArch = false; // flag for saving
+bool saveBPM = false; 
+bool saveDelay = false; // for when to remove the save options after an interaction
+int delset = 0;
+
+///////////// TAP TEMPO //////////////
+/// from : https://github.com/DieterVDW/arduino-midi-clock/blob/master/MIDI-Clock.ino
+
+int foisTapped = 0;
+bool toTapped = false;
+
+int tapped = 0;
+int lastTapTime = 0;
+int tapInterval = 0;
+int tapArray[5] = {0};
+int tapTotal = 0;
+
+//long intervalMicroSeconds;
+int bpm;  // BPM in tenths of a BPM!!
+
+int tappedBPM = 0;
+int minimumTapInterval = 50;
+int maximumTapInterval = 1500;
+
+
+///////////// I2C Display ////////////
 #if defined USE_I2C_DISPLAY
 extern "C" {
 #include "ssd1306.h"
@@ -151,7 +191,7 @@ extern "C" {
 
 char buf[20]; // BPM display
 char compte[8];
-char current_phase_step[4];
+char current_phase_step[20]; // 4
 
 static const int I2CDisplayAddress = 0x3C;
 static const int I2CDisplayWidth = 128; // wemos oled screen width and height
@@ -210,20 +250,29 @@ static bool s_pad_activated[16];
 static uint32_t s_pad_init_val[16];
 
 static void tp_example_set_thresholds(void)
+
 {
     uint16_t touch_value;
 
-    for (int i = 2; i <5; i++) { // adding TOUCH2, TOUCH3, TOUCH4
-      touch_pad_read_filtered((touch_pad_t)i, &touch_value);
-      s_pad_init_val[i] = touch_value;
-      ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", i, touch_value); //set interrupt threshold.
-      ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)i, touch_value * 2 / 3));
-    }
+      touch_pad_read_filtered((touch_pad_t)0, &touch_value);
+      s_pad_init_val[0] = touch_value;
+      ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", 0, touch_value); //set interrupt threshold.
+      ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)0, touch_value * 2 / 3));
 
-    for (int i = 5; i < 10; i=i+2) { // add TOUCH2, TOUCH3, TOUCH4 GPIO 2, 15, 13
+      touch_pad_read_filtered((touch_pad_t)2, &touch_value);
+      s_pad_init_val[2] = touch_value;
+      ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", 2, touch_value); 
+      ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)2, touch_value * 2 / 3));
+  
+      touch_pad_read_filtered((touch_pad_t)3, &touch_value);
+      s_pad_init_val[3] = touch_value;
+      ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", 3, touch_value); 
+      ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)3, touch_value * 2 / 3));
+
+    for (int i = 5; i < 10; i=i+2) { 
       touch_pad_read_filtered((touch_pad_t)i, &touch_value);
       s_pad_init_val[i] = touch_value;
-      ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", i, touch_value); //set interrupt threshold.
+      ESP_LOGI(TOUCH_TAG, "test init: touch pad [%d] val is %d", i, touch_value);
       ESP_ERROR_CHECK(touch_pad_set_thresh((touch_pad_t)i, touch_value * 2 / 3));
     }
 }
@@ -233,34 +282,35 @@ static void tp_example_read_task(void *pvParameter) {
  while (1) {
      
     touch_pad_intr_enable();
-    for (int i = 2; i <5; i++) { // adding TOUCH2, TOUCH3, TOUCH4
-        if (s_pad_activated[2] == true) {
+
+        if (s_pad_activated[0] == true) {
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 0);  // Wait a while for the pad being released
+
+        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
+        s_pad_activated[0] = false; // Reset the counter triggering a message // that application is running
+   
+        } else if (s_pad_activated[2] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 2);  // Wait a while for the pad being released
-        // do stg
+        tapeArch = true; // flag for saving 
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
         s_pad_activated[2] = false; // Reset the counter triggering a message // that application is running
         
-        } else if(s_pad_activated[3] == true) {
+        } else if (s_pad_activated[3] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 3);  // Wait a while for the pad being released
-        // do stg
+        //ESP_LOGI(TOUCH_TAG, "TAP!");
+        toTapped = true;
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
         s_pad_activated[3] = false; // Reset the counter triggering a message // that application is running
+
+        } else if (s_pad_activated[5] == true) {
+        ESP_LOGI(TOUCH_TAG, "T%d piton!", 5);  
+        startStopState = !startStopState; 
+        changePiton = true;
+        ESP_LOGI(TOUCH_TAG, "startStopState : %i ", startStopState);
+        ESP_LOGI(TOUCH_TAG, "changePiton : %i ", changePiton);
+        vTaskDelay(300 / portTICK_PERIOD_MS);  
+        s_pad_activated[5] = false;  
         
-        }else if(s_pad_activated[4] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d activated!", 4);  // Wait a while for the pad being released
-        // do stg
-        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
-        s_pad_activated[4] = false; // Reset the counter triggering a message // that application is running
-        }
-    }
-
-    for (int i = 5; i < 10; i=i+2) { // add TOUCH2, TOUCH3, TOUCH4 GPIO 2, 15, 13
-        if (s_pad_activated[5] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d activated!", 5);  // Wait a while for the pad being released
-        tempoINC = true; // pour que le audio loop le prenne en compte
-        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
-        s_pad_activated[5] = false; // Reset the counter triggering a message // that application is running
-
         } else if (s_pad_activated[7] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 7);  
         tempoDEC = true; 
@@ -269,15 +319,11 @@ static void tp_example_read_task(void *pvParameter) {
         s_pad_activated[7] = false; 
 
         } else if (s_pad_activated[9] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d piton!", 9);  
-        startStopState = !startStopState; 
-        changePiton = true;
-        ESP_LOGI(TOUCH_TAG, "startStopState : %i ", startStopState);
-        ESP_LOGI(TOUCH_TAG, "changePiton : %i ", changePiton);
-        vTaskDelay(300 / portTICK_PERIOD_MS);  
-        s_pad_activated[9] = false;  
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 9);  // Wait a while for the pad being released
+        tempoINC = true; // pour que le audio loop le prenne en compte
+        vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
+        s_pad_activated[9] = false; // Reset the counter triggering a message // that application is running
         }
-    }
         
     vTaskDelay(10 / portTICK_PERIOD_MS);
      
@@ -289,14 +335,18 @@ static void tp_example_rtc_intr(void *arg) { //  Handle an interrupt triggered w
     uint32_t pad_intr = touch_pad_get_status();
     touch_pad_clear_status(); //clear interrupt
 
-      for (int i = 2; i < 5; i++) {
-        if ((pad_intr >> i) & 0x01) {
-            s_pad_activated[i] = true;
+     
+        if ((pad_intr >> 0) & 0x01) {
+            s_pad_activated[0] = true;
         }
-      }
+        else if  ((pad_intr >> 2) & 0x01){
+            s_pad_activated[2] = true;
+        }
+        else if  ((pad_intr >> 3) & 0x01){
+            s_pad_activated[3] = true;
+        }
 
     for (int i = 5; i < 10; i = i+2) {
-    //for (int i = 7; i < 8; i++) { // juste touch 7
         if ((pad_intr >> i) & 0x01) {
             s_pad_activated[i] = true;
         }
@@ -305,10 +355,10 @@ static void tp_example_rtc_intr(void *arg) { //  Handle an interrupt triggered w
 
 
 static void tp_example_touch_pad_init(void) { // Before reading touch pad, we need to initialize the RTC IO.
-    for (int i = 2; i < 5; i++) {   
-        touch_pad_config((touch_pad_t)i, TOUCH_THRESH_NO_USE); //init RTC IO and mode for touch pad.
-    }
-    
+  
+    touch_pad_config((touch_pad_t)0, TOUCH_THRESH_NO_USE); 
+    touch_pad_config((touch_pad_t)2, TOUCH_THRESH_NO_USE); 
+    touch_pad_config((touch_pad_t)3, TOUCH_THRESH_NO_USE); 
     for (int i = 5; i < 10; i = i+2) {   
         touch_pad_config((touch_pad_t)i, TOUCH_THRESH_NO_USE); //init RTC IO and mode for touch pad.
     }
@@ -366,15 +416,17 @@ extern "C" {
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
             
-            //mstr devrait être 75 valeurs;
+            //mstr devrait être 79 valeurs;
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
             for (int i = 0; i < sizeof(mstr);i++){
                 ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
             }
+            ESP_LOGE(SOCKET_TAG, " "); // new line
 
             // Filter the array input and populate mtmss
 
+            /////// midi channel ////////
             channel = 0; // reset avant de recompter
             int tmpTotal = 0;
 
@@ -392,8 +444,9 @@ extern "C" {
             }
       
             channel = tmpTotal;
-            ESP_LOGI(SOCKET_TAG, "channel8 : %i", channel); 
+            ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
   
+            ////// note ///////
             tmpTotal = 0; // reset before counting
 
             for(int i=0;i<4;i++){ // 
@@ -412,29 +465,53 @@ extern "C" {
             note = tmpTotal; // only 8 note values for the moment
             ESP_LOGI(SOCKET_TAG, "note : %i", note); 
 
-            // read in the bit value for mute and store 
-            muteRecords[note] = mstr[10];
-            ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
-         
+
+            ////// noteDuration ///////
+            tmpTotal = 0; // reset before counting
+
+            for(int i=0;i<4;i++){ // 
+
+              if(i==3 && mstr[3+8] == true){
+                tmpTotal = tmpTotal+1;
+                }
+              else if(i==2 && mstr[2+8] == true){
+                tmpTotal = tmpTotal + 2;
+                }
+              else if(i==1 && mstr[1+8] == true){
+                tmpTotal = tmpTotal + 4;
+                }  
+            }
+            noteDuration = duration[tmpTotal]; // only 8 noteDuration values for the moment
+
+            ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
+          
+
+
             // read in bar value from mst[8] and mst[9] and save it as int for the corresponding note
-            if(mstr[8]==false && mstr[9]==false){bar[note] = 1;} 
-            else if(mstr[8]==true && mstr[9]==false){bar[note] = 2;} 
-            else if(mstr[8]==false && mstr[9]==true){bar[note] = 3;} 
+            if(mstr[12]==false && mstr[13]==false){bar[note] = 1;} 
+            else if(mstr[12]==true && mstr[13]==false){bar[note] = 2;} 
+            else if(mstr[12]==false && mstr[13]==true){bar[note] = 3;} 
             else {bar[note] = 4;} // true && true 
 
             ESP_LOGI(SOCKET_TAG, "bar[note] : %i", bar[note]); 
 
-            // copy into mtmss offset = channel * 75 + note * 75...
+            // read in the bit value for mute and store 
+            muteRecords[note] = mstr[14];
+            ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
+         
+
             // calcul de l'offset 
 
-            int offset = channel * 75 + note * 75;
+            int offset = channel * 79 + note * 79; // no comprendo? // copy into mtmss offset = channel * 79 + note * 79...
+
 
             ESP_LOGI(SOCKET_TAG, "offset: %i", offset); 
 
 
-            for( int i=0; i<75; i++ ){
+            for( int i=0; i<79; i++ ){
               mtmss[i+offset] = mstr[i]; // copy into mtmss
-            }
+            //  ESP_LOGI(SOCKET_TAG, "mtmss %i : %i ", i, mtmss[i]);
+            } 
 
             // ESP_LOGI(SOCKET_TAG, "note %i : ", note);
           
@@ -448,6 +525,8 @@ extern "C" {
             else {   // Data received
                     inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
                 }
+
+                // keep a list of the distinct addresses using addr_str
                 
                 ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
 
@@ -456,7 +535,7 @@ extern "C" {
 
                 if (err < 0) {
                     ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-                    break;
+                   break;
                 }
        
         }
@@ -671,11 +750,14 @@ extern "C" { void wifi_init_sta(void)
 
   #if defined USE_I2C_DISPLAY   
         if ( DefaultBusInit( ) == true ) {
+
         printf( "BUS Init lookin good...\n" );
        
         SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
         SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Technologies", SSD_COLOR_WHITE );
         SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "de la fete", SSD_COLOR_WHITE );
+        SSD1306_SetVFlip( &I2CDisplay, 1 ); 
+        SSD1306_SetHFlip( &I2CDisplay, 1 ); //void SSD1306_SetHFlip( struct SSD1306_Device* DeviceHandle, bool On );
         SSD1306_Update( &I2CDisplay );  
 
    }
@@ -803,15 +885,15 @@ void tempoChanged(double tempo) {
     ESP_LOGI(LINK_TAG, "tempochanged");
     double midiClockMicroSecond = ((60000 / tempo) / 24) * 1000;
 
-#if defined USE_I2C_DISPLAY
+/* #if defined USE_I2C_DISPLAY
     char buf[10];
     snprintf(buf, 10 , "%i", (int) round( tempo ) );
     SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
-    SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24);
-    SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "BPM", SSD_COLOR_WHITE );
+    SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24); // &Font_droid_sans_mono_7x13
+    SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, " BPM", SSD_COLOR_WHITE );
     SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, buf, SSD_COLOR_WHITE );
     SSD1306_Update( &I2CDisplay );   
-#endif
+#endif */
 
     esp_timer_handle_t periodic_timer_handle = (esp_timer_handle_t) periodic_timer;
     ESP_ERROR_CHECK(esp_timer_stop(periodic_timer_handle));
@@ -829,31 +911,13 @@ void startStopChanged(bool state) {
 }
 
 
-/*extern "C" {
 
-  void convertBits2Int(int sel){
-    //ESP_LOGI(SOCKET_TAG, "conversion");  
-    channel = 0; // reset avant de recompter
-    // note = 0; // note is calculated when the array is received
-    int tmpTotal = 0;
+void delayer(int del) {
 
-    for(int i=0;i<4;i++){ // up to 8 channels, could hold 16 values
+  delset = esp_timer_get_time()+del;
+  ESP_LOGI(TAP_TAG, "delaying until : %i", delset); 
 
-      if(i==3 && mstr[3+4*sel] == true){
-        tmpTotal = tmpTotal+1;
-      }
-      else if(i==2 && mstr[2+4*sel] == true){
-        tmpTotal = tmpTotal + 2;
-      }
-      else if(i==1 && mstr[1+4*sel] == true){
-        tmpTotal = tmpTotal + 4;
-      }
-    }
-      ESP_LOGI(SOCKET_TAG, "channel : %i", tmpTotal); 
-      channel = tmpTotal;
-  }
-
-}*/
+}
 
 void tickTask(void* userParam)
 {
@@ -878,17 +942,38 @@ void tickTask(void* userParam)
     //ESP_LOGI(LINK_TAG, "tempoINC : %i", tempoINC);
     //ESP_LOGI(LINK_TAG, "tempoDEC : %i", tempoDEC);
     //ESP_LOGI(LINK_TAG, "saveSeq : %i", saveSeq);
+    //ESP_LOGI(LINK_TAG, "toTapped : %i", toTapped );
+
+
+    //// shut off the midi notes that need to be ////
+    int monTemps = int(esp_timer_get_time()/1000);
+    //ESP_LOGI(MIDI_TAG, "Mon Temps, %i", monTemps);
+      //for( int i = 0; i < 16; i++ ) {
+        if( MIDI_NOTES_DELAYED_OFF[0] > 0 && MIDI_NOTES_DELAYED_OFF[0] < monTemps ) {
+        //  ESP_LOGI(MIDI_TAG, "Should attempt to turn this off : %i", i);
+        // ESP_LOGI(MIDI_TAG, "Should attempt to turn this off ");
+
+          //char zedata0[] = {MIDI_NOTE_OFF};
+          //uart_write_bytes(UART_NUM_1,zedata0,1); // note off before anything
+          char zedata1[] = { MIDI_NOTE_ON_CH[1] }; // défini comme midi channel 1 (testing)
+          //uart_write_bytes(UART_NUM_1, zedata1, 1); 
+          uart_write_bytes(UART_NUM_1, "0x90", 1); 
+          //char zedata2[] = {MIDI_NOTES[i]}; // tableau de valeurs de notes hexadécimales 
+          char zedata2[] = {MIDI_NOTES[0]}; // tableau de valeurs de notes hexadécimales 
+          uart_write_bytes(UART_NUM_1, zedata2, 1); 
+          char zedata3[] = {MIDI_NOTE_VEL_OFF};
+          uart_write_bytes(UART_NUM_1,zedata3, 1); // velocité à 0
+        }
+    //} // end midi note off
 
     if ( saveSeq == true ) {
 
-      /////// WRITING mtmstr[] TO NVS //////
+      /////// WRITING mtmss[] TO NVS //////
       nvs_handle wificfg_nvs_handler;
       nvs_open("mtmss", NVS_READWRITE, &wificfg_nvs_handler);
       //nvs_set_str(wificfg_nvs_handler,"sequence",mstr);
-      //nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,80);
-      //nvs_set_blob(wificfg_nvs_handler,"sequence",mtmstr,80);
-      //nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,80);
-      nvs_set_blob(wificfg_nvs_handler,"sequence",mtmss,1200);
+      //nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,79);
+      nvs_set_blob(wificfg_nvs_handler,"sequence",mtmss,1264);
     
       nvs_commit(wificfg_nvs_handler); 
       nvs_close(wificfg_nvs_handler); 
@@ -929,6 +1014,7 @@ void tickTask(void* userParam)
       mySession.setTempo(newBPM,timez); // setTempo()'s second arg format is : const std::chrono::microseconds atTime
       link.commitAppSessionState(mySession); // le problème est que l'instruction de changer le tempo nous revient
       tempoINC = false;
+      saveBPM = false; // as changing the BPM here implies not wanting to tap the tempo in
       //ESP_LOGI(LINK_TAG, "tempoINC : %i", tempoINC);
     }
 
@@ -941,6 +1027,7 @@ void tickTask(void* userParam)
       mySession.setTempo(newBPM,timez); // setTempo()'s second arg format is : const std::chrono::microseconds atTime
       link.commitAppSessionState(mySession);
       tempoDEC = false;
+      saveBPM = false;
     }
 
     ////////// test start stop send to other clients /////////
@@ -957,6 +1044,71 @@ void tickTask(void* userParam)
     if ( changeLink && startStopState != startStopCB ){ // if CB state is different to the local startStopState then resync the latter to the former
        startStopState = startStopCB; // resync 
       }
+
+    if( toTapped == true ){
+
+      tapped = esp_timer_get_time()/1000;
+      tapInterval = tapped - lastTapTime;
+
+      // ESP_LOGI(TAP_TAG, "Time at tap: %ld ", tapped);
+      ESP_LOGI(TAP_TAG, "Time at tap: %i ", tapped);
+      ESP_LOGI(TAP_TAG, "Interval between taps n: %i ", tapInterval );
+
+      if(tapInterval > maximumTapInterval){ // reset tapCounter to zero
+        foisTapped = 0;
+      }
+
+      if(minimumTapInterval < tapInterval && tapInterval < maximumTapInterval){ // only add a tap if we are within the tempo bounds
+        
+        foisTapped = foisTapped + 1;
+   
+        ESP_LOGI(TAP_TAG, "foisTapped %i", foisTapped);
+
+        // add a tapInterval to the sliding values array
+
+        tapArray[foisTapped%5] = tapInterval;
+
+      }
+      
+      if(foisTapped > 5){  // calculate BPM from tapInterval
+
+        for(int i = 0; i<6; i++){
+          tapTotal = tapArray[i] + tapTotal;
+          ESP_LOGI(TAP_TAG, "tapped interval at %i, %i", i, tapArray[i]);
+
+        }
+        tapTotal = tapTotal / 6;
+
+        tappedBPM = 60L * 1000 / tapTotal;
+
+        ESP_LOGI(TAP_TAG, "tapped BPM %i", tappedBPM);
+
+        tapTotal = 0;
+        saveBPM = true;
+        saveDelay = true; // appeler une fonction pour remettre les variables à false après un moment
+        delayer(6000000);
+      }
+
+      lastTapTime = tapped;
+
+      toTapped = false;
+
+    }
+
+    if (esp_timer_get_time() > delset ){
+     saveBPM = false;
+   }
+
+    if ( saveBPM == true && tapeArch == true ) {
+      
+      auto mySession = link.captureAppSessionState();
+      const auto timez = link.clock().micros();
+      mySession.setTempo(tappedBPM,timez); // setTempo()'s second arg format is : const std::chrono::microseconds atTime
+      link.commitAppSessionState(mySession);
+      saveBPM = false;
+      tapeArch = false;
+
+    }
 
     //ESP_LOGI(LINK_TAG, "POST startStopState is :  %i", startStopState);  
     //ESP_LOGI(LINK_TAG, "POST startStopCB is :  %i", startStopCB); 
@@ -1012,57 +1164,120 @@ void tickTask(void* userParam)
         const int tmpOH = (int) round( state.tempo() );
         // ESP_LOGI(LINK_TAG, "tempo %i", tmpOH); 
 
-        char tmpOHbuf[20];
+        char phases[5] = "TDLF";
 
-        snprintf(tmpOHbuf, 20 , "%i", tmpOH );     /////// display BPM + Phase + Step /////////
-        snprintf(current_phase_step, 8, "   %i %i", halo_welt, step);
+        char tmpOHbuf[20];
+        char top[20];
+        
+        if (saveBPM == false){
+          snprintf(tmpOHbuf, 20 , "%i BPM", tmpOH );     /////// display BPM + Phase + Step /////////
+        }
+        
+        else if (saveBPM == true){ // we have a tapped BPM ready to switch?
+          snprintf(tmpOHbuf, 20 , "%i BPM?", tappedBPM ); 
+        }
+
+
+        if (step < 10){
+          snprintf(current_phase_step, 20, " 0%i STP", step);
+
+        }
+        else {
+          snprintf(current_phase_step, 20, " %i STP", step);
+        }
+
+      //ESP_LOGI(LINK_TAG, "%i", halo_welt); 
+      switch (halo_welt)
+      {
+        case 0:
+        strcpy(phases, "X000");
+        break;
+        case 1:
+        strcpy(phases, "XX00");
+        break;
+        case 2:
+        strcpy(phases, "XXX0"); 
+        break;
+        case 3:
+        strcpy(phases, "XXXX");
+        break;
+        default:
+        ESP_LOGI(LINK_TAG, "phases not assigned correctly"); 
+      }
+
+        snprintf(top, 20, "%s", phases);
+        
         SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
-        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24); // &Font_droid_sans_fallback_15x17
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, tmpOHbuf, SSD_COLOR_WHITE );
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_West, current_phase_step, SSD_COLOR_WHITE );
+
+        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, top, SSD_COLOR_WHITE ); 
+
+        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24); // &Font_droid_sans_mono_13x24 // &Font_droid_sans_fallback_15x17
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, tmpOHbuf, SSD_COLOR_WHITE );
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_South, current_phase_step, SSD_COLOR_WHITE );
         SSD1306_Update( &I2CDisplay );  
 
         if (startStopCB){ // isPlaying and did we send that note out? 
 
-          //convertBits2Int(0); // get current channel // drums or synths ?
-
-          // passe ds ttes les notes de mtmss[] fast
-
-          ESP_LOGI(LINK_TAG, "step : %i", step);
-
+          // ESP_LOGI(LINK_TAG, "step : %i", step);
           // ESP_LOGI(LINK_TAG, "sizeof mtmss : %i", sizeof(mtmss));
 
-          for(int i = 0; i<8;i++){ // 8 x 75 = 600 faut faire ça pour chaque valeur de note
-
-                            
-              myBar =  mtmss[i*75+8] + (mtmss[i*75+9])*2; // 0, 1, 2 3 bars // how many bars for this note?
-              
-              ESP_LOGI(LINK_TAG, "myBar : %i", myBar);
-              ESP_LOGI(LINK_TAG, "stepsLength[myBar] : %i", stepsLength[myBar]);
-              dubStep = step%stepsLength[myBar]; // modulo 16 // 32 // 48 // 64
-              ESP_LOGI(LINK_TAG, "nouveau 'dub'Step : %i", dubStep);
+          for(int i = 0; i<8;i++){ // 8 x 79 = 632 faut faire ça pour chaque valeur de note
            
+              myBar =  mtmss[i*79+12] + (mtmss[i*79+13])*2; // 0, 1, 2, 3 bars // how many bars for this note?
+              
+              //ESP_LOGI(LINK_TAG, "myBar : %i", myBar);
+              //ESP_LOGI(LINK_TAG, "stepsLength[myBar] : %i", stepsLength[myBar]);
+              dubStep = step%stepsLength[myBar]; // modulo 16 // 32 // 48 // 64
+              
+              //ESP_LOGI(LINK_TAG, "nouveau 'dub'Step : %i", dubStep);
 
-              if (mtmss[i*75 + dubStep + 10] == 1){ // send midi note out // mute to be implemented // && !muteRecords[i]){ // send midi note out 
-                // trouver commbien de bars sont présents pour chaque note !?
+              currStep = (i*79)+dubStep+15; // 15 is where the step info starts
+              //ESP_LOGI(LINK_TAG, "currStep : %i", currStep);
+
+               //for(int j = 0; j<79;j++){
+               //     ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
+               //}
+
+              // if (mtmss[i*79 + dubStep + 10] == 1){ 
+              if (mtmss[currStep] == 1){ // send midi note out // mute to be implemented // && !muteRecords[i]){ 
+                // ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
                 if (channel == 0){ // are we playing drumz ?
-                  // ESP_LOGI(LINK_TAG, "drums : %i", mtmss[i*75 + dubStep + 11);
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
-                  
                   char zedata2[] = {zeDrums[i]};      // arriver de 0-8
                   uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
                 }
-                else if (channel == 1){ // premier jeu de notes
+                else if (channel == 1){ // synth, here channel 1 is midi channel '0' per the channel array 'char MIDI_NOTE_ON_CH[] = {0x99,0x90};'
+
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme midi channel channel 0 
-                  ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", MIDI_NOTE_ON_CH[channel]);
-                  uart_write_bytes(UART_NUM_1, zedata1, 1);                 
+                  // ESP_LOGI(MIDI_TAG, "MIDI_NOTE_ON_CH, %i", MIDI_NOTE_ON_CH[channel]);
+                  uart_write_bytes(UART_NUM_1, zedata1, 1); 
+
                   char zedata2[] = {zeDark[i]}; // tableau de valeurs de notes hexadécimales 
                   uart_write_bytes(UART_NUM_1, zedata2, 1); 
+                  
+                  // calculate noteDuration as a function of BPM
+                  // 60 BPM * 4 steps per beat = 240 steps per minute
+                  // 60 seconds / 240 steps = 0,25 secs or 250 milliseconds per step
+
+                  // ((60 seconds / (BPM * 4 steps per beat))*1000 ms)*noteDuration
+                  const auto tempo = state.tempo(); // quelle est la valeur de tempo?
+                  float myNoteDuration = ((60/(tempo*4))*1000)*noteDuration;
+               
+                  MIDI_NOTES[0] = zeDark[i];
+                  // MIDI_NOTES_DELAYED_OFF[0] = int((esp_timer_get_time()/1000)+40); // arbitrary duration
+                  MIDI_NOTES_DELAYED_OFF[0] = int((esp_timer_get_time()/1000)+myNoteDuration); // duration
+
+                  ESP_LOGI(MIDI_TAG, "MIDI NOTE, %i", MIDI_NOTES[0]);
+                  ESP_LOGI(MIDI_TAG, " "); // new line
+                  // ESP_LOGI(MIDI_TAG, "MIDI TIME, %i", MIDI_NOTES_DELAYED_OFF[0]);
+
                 }
+
                 else{
-                  // ESP_LOGI(LINK_TAG, "hello?");
-                } // ajouter d'autres gammes (scales)
+                  // ajouter d'autres gammes (scales)
+                  } 
                 
                 char zedata3[] = { MIDI_NOTE_VEL };
                 uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
@@ -1071,8 +1286,7 @@ void tickTask(void* userParam)
               }
                   
           }
-            ESP_LOGI(LINK_TAG, "");
-            ESP_LOGI(LINK_TAG, "");
+           // ESP_LOGI(LINK_TAG, "");
         }
 
         if(isPlaying){

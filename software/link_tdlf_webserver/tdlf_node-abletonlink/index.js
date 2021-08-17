@@ -98,7 +98,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         });
     });
 
-server.listen(8080, "192.168.0.102", () => {
+server.listen(8080, "192.168.0.128", () => {
 //server.listen(8080, "172.20.10.2", () => {
-    console.log("access to http://192.168.0.102:8080 !!");
+    console.log("access to http://192.168.0.128:8080 !!");
 });
