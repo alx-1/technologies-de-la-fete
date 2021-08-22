@@ -42,6 +42,7 @@ static const char *SMART_TAG = "Smart config";
 static const char *NVS_TAG = "NVS";
 static const char *WIFI_TAG = "Wifi";
 static const char *TAG = "tdlf";
+static const char *SPACE_TAG = "";
 }
 
 ////// sockette /////
@@ -87,16 +88,9 @@ unsigned char beatStepColour[3] = {13,13,5};
 unsigned char stepColour[3] = {13,8,13};
 unsigned char offColour[3] = {0,0,0};
 unsigned char inColour[3] = {14,14,14}; // init indicator (wifi, broadcast, server address received, ready to go)
+unsigned char selektorColour[10][3] = {{6,6,6},{7,7,7},{8,8,8},{9,9,9},{10,10,10},{11,11,11},{12,12,12},{13,13,13},{14,14,14},{15,15,15}}; // for feedback until knowing if it is a short or long touch
 }
-/////// DELS //////
-
-/////// TIMER //////
-
-int oldTime = 0;
-int interval = 0; 
-int intervalButton = 0;
-int lastButtonUpdate = 0;
-
+/////// END DELS //////
 
 /////// SEQ ///////
 
@@ -105,8 +99,9 @@ bool cbd[79] = {1}; // to determine if we have a changed bd
 int step = 0;
 float oldstep;
 
-static void periodic_timer_callback(void* arg);
-esp_timer_handle_t periodic_timer;
+//static void periodic_timer_callback(void* arg);
+//esp_timer_handle_t periodic_timer;
+
 // 
 bool startStopCB = false; // l'état du callback 
 bool startStopState = false; // l'état local
@@ -115,6 +110,41 @@ bool isPlaying = true;
 
 double curr_beat_time;
 double prev_beat_time;
+
+
+/////// TIMER + button state//////
+
+//static void oneshot_timer_callback(void* arg);
+// https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_timer.html?highlight=hardware%20timer High Resoultion Timer API
+
+esp_timer_handle_t oneshot_timer;
+
+bool origButtonState; // to store button value, restore to it if we had a long press
+bool currTouch; // to store if button is currently touched
+bool continuousPress = false;
+
+static void oneshot_timer_callback(void* arg)
+{
+    //int64_t time_since_boot = esp_timer_get_time();
+    ESP_LOGI(TAG, "Short press, there has been no touch event for over 40 ms");
+    
+    if ( press < 20) { // we had a short touch after all
+        bd[15+selektor+16*barSelektor] = !bd[15+selektor+16*barSelektor]; // essaie d'écrire...espero
+        press = 0; // reset press
+    }
+
+    if ( continuousPress == true ){
+        ESP_LOGI(TAG, "> 200 ms Time to register the continous press and move on");
+        continuousPress = false;
+        press = 0;
+    }
+
+    currTouch = false; // reset so we know
+}
+
+int oldTime = 0;
+int interval = 0; 
+
 
 /////////////////// WiFI station example //////////////////////
 extern "C"{
@@ -217,6 +247,14 @@ void TurnLedOn(int step){  //ESP32APA102Driver
                 setPixel(&leds, i, Colour[noteSelektor]);           
                 }
 		}
+        if ( currTouch ) {
+            int instaCol = int(press/2); // press has 20 values max
+            setPixel(&leds, selektor, selektorColour[instaCol]); // indicate button touch state, short or continuous long we don't know yet
+        }
+
+        if ( continuousPress ) {
+            setPixel(&leds, selektor, Colour[6]);
+        }
         renderLEDs();
 	//vTaskDelay(1 / portTICK_PERIOD_MS); // 2 better //10
     }
@@ -817,181 +855,136 @@ static void tp_example_read_task(void *pvParameter)
 {
     while (1) {
        
-            touch_pad_intr_enable(); //interrupt mode, enable touch interrupt
+        touch_pad_intr_enable(); //interrupt mode, enable touch interrupt
             
-            for (int i = 0; i < TOUCH_PAD_MAX; i++) {
+        for (int i = 0; i < TOUCH_PAD_MAX; i++) {
 
-                if (s_pad_activated[i] == true) {
-                //ESP_LOGI(TAG, "esp_timer_get_time(), %lld us", esp_timer_get_time());
-                // démarrer un timer // peut-être un tableau des valeurs d'activation pour garder une mémoire
-                interval = esp_timer_get_time() - oldTime;
-                //ESP_LOGI(TAG, "Interval, %i us", interval);
+            if (s_pad_activated[i] == true) {
+
+                interval = (esp_timer_get_time() - oldTime)/1000;  // measure time between button events
+                ESP_LOGI(SPACE_TAG, " ");
+                ESP_LOGI(TAG, "Interval, %i ms", interval);
                 oldTime = esp_timer_get_time();
 
+                esp_timer_stop(oneshot_timer); // stop it if we are here 
+                esp_timer_start_once(oneshot_timer, 40000); // if this triggers, we confirmed we had a short press
 
-                if ( interval < 150000 ) {  // we might have a continuous press
-                    press++; 
+                if ( interval > 350 ) {
+                    press = 0;
+                }
+                press++; 
+                ESP_LOGI(TAG, "press : %d",press);
+                
+                currTouch = true; // For LED indication
+
+                if(s_pad_activated[2] && s_pad_activated[4]){
+                    // ESP_LOGI(TAG, "piton 1");
+                    selektor = 0;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value // capture piton state and return to original state if it was a long press
+                    }
+                if(s_pad_activated[0] && s_pad_activated[4]){
+                    // ESP_LOGI(TAG, "piton 2");
+                    selektor = 1;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                if(s_pad_activated[3] && s_pad_activated[4]){
+                    // ESP_LOGI(TAG, "piton 3");
+                    selektor = 2;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    } 
+                if(s_pad_activated[9] && s_pad_activated[4]){
+                    // ESP_LOGI(TAG, "piton 4");
+                    selektor = 3;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    } 
+                /////// 5-8
+                if(s_pad_activated[2] && s_pad_activated[5]){
+                    // ESP_LOGI(TAG, "piton 5");
+                    selektor = 4;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                if(s_pad_activated[0] && s_pad_activated[5]){
+                    // ESP_LOGI(TAG, "piton 6");
+                    selektor = 5;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    } 
+                if(s_pad_activated[3] && s_pad_activated[5]){
+                    // ESP_LOGI(TAG, "piton 7");
+                    selektor = 6;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    } 
+                if(s_pad_activated[9] && s_pad_activated[5]){
+                    // ESP_LOGI(TAG, "piton 8");
+                    selektor = 7;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    } 
+                /////// 9-12
+                if(s_pad_activated[2] && s_pad_activated[6]){
+                    // ESP_LOGI(TAG, "piton 9");
+                    selektor = 8;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                if(s_pad_activated[0] && s_pad_activated[6]){
+                    // ESP_LOGI(TAG, "piton 10");
+                    selektor = 9;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                if(s_pad_activated[3] && s_pad_activated[6]){
+                    // ESP_LOGI(TAG, "piton 11");
+                    selektor = 10;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                if(s_pad_activated[9] && s_pad_activated[6]){
+                    // ESP_LOGI(TAG, "piton 12");
+                    selektor = 11;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                /////// 13-16
+                if(s_pad_activated[2] && s_pad_activated[7]){
+                    // ESP_LOGI(TAG, "piton 13");
+                    selektor = 12;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                if(s_pad_activated[0] && s_pad_activated[7]){
+                    // ESP_LOGI(TAG, "piton 14");
+                    selektor = 13;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                if(s_pad_activated[3] && s_pad_activated[7]){
+                    // ESP_LOGI(TAG, "piton 15");
+                    selektor = 14;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    }
+                if(s_pad_activated[9] && s_pad_activated[7]){
+                    ESP_LOGI(TAG, "piton 16");
+                    selektor = 15;
+                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
                     }
 
-                else { 
-                    press = 0; 
-                    }
+                if(press == 20){ // number of consecutive 'presses' required for a long continuous press
+                        
+                        // okay we did it, feedback to the user and start a counter to prevent touches registering
 
-                //ESP_LOGI(TAG, "press : %d",press);
+                        // some bool to turn the led blue
+                        
 
-                //ESP_LOGI(TAG, "T%d activated!", i);
-                //ESP_LOGI(TAG, " ");
+                        esp_timer_stop(oneshot_timer); // stop it if we are here 
 
+                        continuousPress = true;
+                        esp_timer_start_once(oneshot_timer, 200000); // delay after which we can reset continuous press
+                        
+                        ESP_LOGI(TAG, "stop the timer!!!");
 
-                    intervalButton = esp_timer_get_time() - lastButtonUpdate; // so as not to oscillate button states too quickly
-
-                    if(s_pad_activated[2] && s_pad_activated[4]){
-                        ESP_LOGI(TAG, "piton 1");
-                        selektor = 0;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+0+16*barSelektor] = !bd[15+0+16*barSelektor]; // 15 bit offset in the array
-                            }
-                        }
-                    if(s_pad_activated[0] && s_pad_activated[4]){
-                        ESP_LOGI(TAG, "piton 2");
-                        selektor = 1;
-                         if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+1+16*barSelektor] = !bd[15+1+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[3] && s_pad_activated[4]){
-                        ESP_LOGI(TAG, "piton 3");
-                        selektor = 2;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+2+16*barSelektor] = !bd[15+2+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[9] && s_pad_activated[4]){
-                        ESP_LOGI(TAG, "piton 4");
-                        selektor = 3;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+3+16*barSelektor] = !bd[15+3+16*barSelektor];
-                            }
-                        }
-                    /////// 5-8
-                    if(s_pad_activated[2] && s_pad_activated[5]){
-                        ESP_LOGI(TAG, "piton 5");
-                        selektor = 4;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+4+16*barSelektor] = !bd[15+4+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[0] && s_pad_activated[5]){
-                        ESP_LOGI(TAG, "piton 6");
-                        selektor = 5;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+5+16*barSelektor] = !bd[15+5+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[3] && s_pad_activated[5]){
-                        ESP_LOGI(TAG, "piton 7");
-                        selektor = 6;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+6+16*barSelektor] = !bd[15+6+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[9] && s_pad_activated[5]){
-                        ESP_LOGI(TAG, "piton 8");
-                        selektor = 7;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+7+16*barSelektor] = !bd[15+7+16*barSelektor];
-                            }
-                        }
-                    /////// 9-12
-                    if(s_pad_activated[2] && s_pad_activated[6]){
-                        ESP_LOGI(TAG, "piton 9");
-                        selektor = 8;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+8+16*barSelektor] = !bd[15+8+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[0] && s_pad_activated[6]){
-                        ESP_LOGI(TAG, "piton 10");
-                        selektor = 9;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+9+16*barSelektor] = !bd[15+9+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[3] && s_pad_activated[6]){
-                        ESP_LOGI(TAG, "piton 11");
-                        selektor = 10;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+10+16*barSelektor] = !bd[15+10+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[9] && s_pad_activated[6]){
-                        ESP_LOGI(TAG, "piton 12");
-                        selektor = 11;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+11+16*barSelektor] = !bd[15+11+16*barSelektor];
-                            }
-                        }
-                    /////// 13-16
-                    if(s_pad_activated[2] && s_pad_activated[7]){
-                        ESP_LOGI(TAG, "piton 13");
-                        selektor = 12;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+12+16*barSelektor] = !bd[15+12+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[0] && s_pad_activated[7]){
-                        ESP_LOGI(TAG, "piton 14");
-                        selektor = 13;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+13+16*barSelektor] = !bd[15+13+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[3] && s_pad_activated[7]){
-                        ESP_LOGI(TAG, "piton 15");
-                        selektor = 14;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+14+16*barSelektor] = !bd[15+14+16*barSelektor];
-                            }
-                        }
-                    if(s_pad_activated[9] && s_pad_activated[7]){
-                        ESP_LOGI(TAG, "piton 16");
-                        selektor = 15;
-                        if (intervalButton > 500000){  // 500 ms delay between registering presses
-                            lastButtonUpdate = esp_timer_get_time();
-                            bd[15+15+16*barSelektor] = !bd[15+15+16*barSelektor];
-                            }
-                        }
-                    
-
-                    if(press >= 15){ // number of 'presses' depends on length of press
+                        // press = 0; // reset press
 
                         modSelektor = selektor;
-
                         ESP_LOGI(TAG, "modSelektor %d",modSelektor);
+                        
                         ESP_LOGI(TAG, " ");
 
                         if(modSelektor<8){ // change la valeur de note représentée par sa couleur
                           noteSelektor = modSelektor;  
                           ESP_LOGI(TAG, "noteSelektor %d", noteSelektor);
-
-                          //for(int i = 15; i < sizeof(bd) ; i++) {
-                          //    bd[i] = 0;
-                          //}
                           convertInt2Bits(noteSelektor, 1); // écrit les valeurs de note en bits ds bd[]
                         }
 
@@ -1046,10 +1039,9 @@ static void tp_example_read_task(void *pvParameter)
                             ESP_LOGI(TAG, "RESET");
                         }
 
-                        press = 0;
                     }
-                    
-                    vTaskDelay(100 / portTICK_PERIOD_MS); // Wait a while for the pad being released
+
+                    vTaskDelay(20 / portTICK_PERIOD_MS); // 100 Wait a while for the pad being released
                     s_pad_activated[i] = false; // Clear information on pad activation
                     // show_message = 1;  /// // Reset the counter triggering a message that application is running
                 }
@@ -1198,7 +1190,23 @@ extern "C" void app_main()
 	///////// FIN TOUCH /////////
 
     // link + udp task are started within the event handler as we need to wait for IP_EVENT_STA_GOT_IP
+    
+   
 
-	vTaskDelete(nullptr);
+    // timers ??
+  
+    const esp_timer_create_args_t oneshot_timer_args = {
+        .callback = &oneshot_timer_callback,
+        // argument specified here will be passed to timer callback function 
+       .arg = NULL,
+        //.dispatch_method = ESP_TIMER_TASK,
+        .name = "one-shot"
+    };
+
+    esp_timer_create(&oneshot_timer_args, &oneshot_timer);
+    //esp_timer_start_once(oneshot_timer, 5000000);
+    // end timers ?
+
+     vTaskDelete(nullptr);
 
 } // fin du extern "C"

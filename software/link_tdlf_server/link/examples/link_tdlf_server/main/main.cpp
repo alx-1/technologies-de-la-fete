@@ -121,6 +121,7 @@ int channel; // 4 bits midi channel (0-7) -> (10,1,2,3,4,5,6,7) // drums + más
 int note; // 4 bits note info // 8 notes correspond to 8 colors // (0-7) -> (36,38,43,50,42,46,39,75),67,49 // más de 8 !
 float duration[8] = {0.25,0.5,1,2,4,8,16,64}; // 4 bits note duration (0-7) -> (64,16,8,4,2,1,1/2,1/4)
 float noteDuration; 
+int myNoteDuration;
 int bar[8] = {1,1,1,1,1,1,1,1}; // 2 bits, up to 4 bars?
 int myBar = 0; 
 bool muteRecords[8] = {0,0,0,0,0,0,0,0}; // mute info per
@@ -419,9 +420,9 @@ extern "C" {
             //mstr devrait être 79 valeurs;
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-            for (int i = 0; i < sizeof(mstr);i++){
-                ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
-            }
+            //for (int i = 0; i < sizeof(mstr);i++){
+            //    ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
+            //}
             ESP_LOGE(SOCKET_TAG, " "); // new line
 
             // Filter the array input and populate mtmss
@@ -944,28 +945,6 @@ void tickTask(void* userParam)
     //ESP_LOGI(LINK_TAG, "saveSeq : %i", saveSeq);
     //ESP_LOGI(LINK_TAG, "toTapped : %i", toTapped );
 
-
-    //// shut off the midi notes that need to be ////
-    int monTemps = int(esp_timer_get_time()/1000);
-    //ESP_LOGI(MIDI_TAG, "Mon Temps, %i", monTemps);
-      //for( int i = 0; i < 16; i++ ) {
-        if( MIDI_NOTES_DELAYED_OFF[0] > 0 && MIDI_NOTES_DELAYED_OFF[0] < monTemps ) {
-        //  ESP_LOGI(MIDI_TAG, "Should attempt to turn this off : %i", i);
-        // ESP_LOGI(MIDI_TAG, "Should attempt to turn this off ");
-
-          //char zedata0[] = {MIDI_NOTE_OFF};
-          //uart_write_bytes(UART_NUM_1,zedata0,1); // note off before anything
-          char zedata1[] = { MIDI_NOTE_ON_CH[1] }; // défini comme midi channel 1 (testing)
-          //uart_write_bytes(UART_NUM_1, zedata1, 1); 
-          uart_write_bytes(UART_NUM_1, "0x90", 1); 
-          //char zedata2[] = {MIDI_NOTES[i]}; // tableau de valeurs de notes hexadécimales 
-          char zedata2[] = {MIDI_NOTES[0]}; // tableau de valeurs de notes hexadécimales 
-          uart_write_bytes(UART_NUM_1, zedata2, 1); 
-          char zedata3[] = {MIDI_NOTE_VEL_OFF};
-          uart_write_bytes(UART_NUM_1,zedata3, 1); // velocité à 0
-        }
-    //} // end midi note off
-
     if ( saveSeq == true ) {
 
       /////// WRITING mtmss[] TO NVS //////
@@ -1015,6 +994,7 @@ void tickTask(void* userParam)
       link.commitAppSessionState(mySession); // le problème est que l'instruction de changer le tempo nous revient
       tempoINC = false;
       saveBPM = false; // as changing the BPM here implies not wanting to tap the tempo in
+      myNoteDuration = ((60/(tempo*4))*1000)*noteDuration; // calculate noteDuration as a function of BPM // 60 BPM * 4 steps per beat = 240 steps per minute // 60 seconds / 240 steps = 0,25 secs or 250 milliseconds per step // ((60 seconds / (BPM * 4 steps per beat))*1000 ms)*noteDuration
       //ESP_LOGI(LINK_TAG, "tempoINC : %i", tempoINC);
     }
 
@@ -1028,6 +1008,7 @@ void tickTask(void* userParam)
       link.commitAppSessionState(mySession);
       tempoDEC = false;
       saveBPM = false;
+      myNoteDuration = ((60/(tempo*4))*1000)*noteDuration; // calculate noteDuration as a function of BPM // 60 BPM * 4 steps per beat = 240 steps per minute // 60 seconds / 240 steps = 0,25 secs or 250 milliseconds per step // ((60 seconds / (BPM * 4 steps per beat))*1000 ms)*noteDuration
     }
 
     ////////// test start stop send to other clients /////////
@@ -1116,7 +1097,7 @@ void tickTask(void* userParam)
     curr_beat_time = state.beatAtTime(link.clock().micros(), 4);
     const double curr_phase = fmod(curr_beat_time, 4);  // const double
 
-    if (curr_beat_time > prev_beat_time ) {
+    if ( curr_beat_time > prev_beat_time ) {
       
       const double prev_phase = fmod(prev_beat_time, 4);
       const double prev_step = floor(prev_phase * 4);
@@ -1132,7 +1113,7 @@ void tickTask(void* userParam)
               if(startStopCB) { // saw a simpler way of doing this!
                 char zedata[] = { MIDI_START };
                 uart_write_bytes(UART_NUM_1, zedata, 1);
-                uart_write_bytes(UART_NUM_1, 0, 1);
+                //uart_write_bytes(UART_NUM_1, 0, 1); // ? produces : E (24513) uart: uart_write_bytes(1112): buffer null
                 changeLink = false;
                 changePiton = false;
                 step = 0; // reset step count
@@ -1140,7 +1121,7 @@ void tickTask(void* userParam)
               else { // on jouait et on arrête // changer pout s'arrêter immédiatement après un stop 
                 char zedata[] = { MIDI_STOP };
                 uart_write_bytes(UART_NUM_1, zedata, 1);
-                uart_write_bytes(UART_NUM_1, 0, 1);
+                //uart_write_bytes(UART_NUM_1, 0, 1);
                 changeLink = false;
                 changePiton = false;
                 }
@@ -1222,6 +1203,29 @@ void tickTask(void* userParam)
           // ESP_LOGI(LINK_TAG, "step : %i", step);
           // ESP_LOGI(LINK_TAG, "sizeof mtmss : %i", sizeof(mtmss));
 
+              //// shut off the midi notes that need to be ////
+    int monTemps = int(esp_timer_get_time()/1000);
+    //ESP_LOGI(MIDI_TAG, "Mon Temps, %i", monTemps);
+      //for( int i = 0; i < 8; i++ ) {
+        //if( MIDI_NOTES_DELAYED_OFF[i] > 0 && MIDI_NOTES_DELAYED_OFF[i] < monTemps ) {
+
+     if( MIDI_NOTES_DELAYED_OFF[0] > 0 && MIDI_NOTES_DELAYED_OFF[0] < monTemps ) {
+        // ESP_LOGI(MIDI_TAG, "Should attempt to turn this off : %i", i);
+        // ESP_LOGI(MIDI_TAG, "Should attempt to turn this off ");
+
+          //char zedata0[] = {MIDI_NOTE_OFF};
+          //uart_write_bytes(UART_NUM_1,zedata0,1); // note off before anything
+          
+        char zedata1[] = { MIDI_NOTE_ON_CH[1] }; // défini comme midi channel 1 (testing)
+        uart_write_bytes(UART_NUM_1, zedata1, 1); //uart_write_bytes(UART_NUM_1, "0x90", 1); // note on channel 0
+          char zedata2[] = {MIDI_NOTES[0]}; // tableau de valeurs de notes hexadécimales 
+          //char zedata2[] = {MIDI_NOTES[i]}; // tableau de valeurs de notes hexadécimales 
+          uart_write_bytes(UART_NUM_1, zedata2, 1); 
+          char zedata3[] = {MIDI_NOTE_VEL_OFF};
+          uart_write_bytes(UART_NUM_1,zedata3, 1); // velocité à 0
+        }
+    //} // end midi note off
+
           for(int i = 0; i<8;i++){ // 8 x 79 = 632 faut faire ça pour chaque valeur de note
            
               myBar =  mtmss[i*79+12] + (mtmss[i*79+13])*2; // 0, 1, 2, 3 bars // how many bars for this note?
@@ -1247,41 +1251,48 @@ void tickTask(void* userParam)
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
                   char zedata2[] = {zeDrums[i]};      // arriver de 0-8
                   uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
+                  char zedata3[] = { MIDI_NOTE_VEL };
+                  uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
                 }
-                else if (channel == 1){ // synth, here channel 1 is midi channel '0' per the channel array 'char MIDI_NOTE_ON_CH[] = {0x99,0x90};'
+              else if (channel == 1){ // synth, here channel 1 is midi channel '0' per the channel array 'char MIDI_NOTE_ON_CH[] = {0x99,0x90};'
 
-                  char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme midi channel channel 0 
-                  // ESP_LOGI(MIDI_TAG, "MIDI_NOTE_ON_CH, %i", MIDI_NOTE_ON_CH[channel]);
-                  uart_write_bytes(UART_NUM_1, zedata1, 1); 
+                char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme midi channel channel 0 
+                // ESP_LOGI(MIDI_TAG, "MIDI_NOTE_ON_CH, %i", MIDI_NOTE_ON_CH[channel]);
+                uart_write_bytes(UART_NUM_1, zedata1, 1); 
 
-                  char zedata2[] = {zeDark[i]}; // tableau de valeurs de notes hexadécimales 
-                  uart_write_bytes(UART_NUM_1, zedata2, 1); 
+                char zedata2[] = {zeDark[i]}; // tableau de valeurs de notes hexadécimales 
+                uart_write_bytes(UART_NUM_1, zedata2, 1); 
+
+                char zedata3[] = { MIDI_NOTE_VEL };
+                uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
                   
-                  // calculate noteDuration as a function of BPM
-                  // 60 BPM * 4 steps per beat = 240 steps per minute
-                  // 60 seconds / 240 steps = 0,25 secs or 250 milliseconds per step
+                //const auto tempo = state.tempo(); // quelle est la valeur de tempo?
+                //myNoteDuration = ((60/(tempo*4))*1000)*noteDuration; // calculate noteDuration as a function of BPM // 60 BPM * 4 steps per beat = 240 steps per minute // 60 seconds / 240 steps = 0,25 secs or 250 milliseconds per step // ((60 seconds / (BPM * 4 steps per beat))*1000 ms)*noteDuration
 
-                  // ((60 seconds / (BPM * 4 steps per beat))*1000 ms)*noteDuration
-                  const auto tempo = state.tempo(); // quelle est la valeur de tempo?
-                  float myNoteDuration = ((60/(tempo*4))*1000)*noteDuration;
-               
-                  MIDI_NOTES[0] = zeDark[i];
-                  // MIDI_NOTES_DELAYED_OFF[0] = int((esp_timer_get_time()/1000)+40); // arbitrary duration
-                  MIDI_NOTES_DELAYED_OFF[0] = int((esp_timer_get_time()/1000)+myNoteDuration); // duration
+                // check if there is a value in the array and populate it or just add the note
+                //int posArray = step%8;
+                //ESP_LOGI(MIDI_TAG, "posArray, %i", posArray);
 
-                  ESP_LOGI(MIDI_TAG, "MIDI NOTE, %i", MIDI_NOTES[0]);
-                  ESP_LOGI(MIDI_TAG, " "); // new line
-                  // ESP_LOGI(MIDI_TAG, "MIDI TIME, %i", MIDI_NOTES_DELAYED_OFF[0]);
+                //MIDI_NOTES[posArray] = zeDark[i];
+                //MIDI_NOTES_DELAYED_OFF[posArray] = int((esp_timer_get_time()/1000)+myNoteDuration); // duration
+
+                MIDI_NOTES[0] = zeDark[i];
+                MIDI_NOTES_DELAYED_OFF[0] = int((esp_timer_get_time()/1000)+myNoteDuration); // duration
+
+                ESP_LOGI(MIDI_TAG, "MIDI NOTE, %i", MIDI_NOTES[0]);
+                ESP_LOGI(MIDI_TAG, " "); // new line
+                // ESP_LOGI(MIDI_TAG, "MIDI TIME, %i", MIDI_NOTES_DELAYED_OFF[0]);
 
                 }
 
                 else{
+                  ESP_LOGI(MIDI_TAG, "Midi channel other than 0 or 1"); // new line
                   // ajouter d'autres gammes (scales)
-                  } 
+                } 
                 
-                char zedata3[] = { MIDI_NOTE_VEL };
-                uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
-                // uart_write_bytes(UART_NUM_1, 0, 1); // ??
+                //char zedata3[] = { MIDI_NOTE_VEL };
+                //uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
+                uart_write_bytes(UART_NUM_1, "0", 1); // ??
 
               }
                   
