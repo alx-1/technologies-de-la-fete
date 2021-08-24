@@ -63,6 +63,23 @@ static const char *MIDI_TAG = "Midi";
   }
   #define PORT 3333
 
+  char clientIPAddresses[8][20]; // 8 potential clients, IPv6 format
+
+
+  int clientIPCheck ( char myArray[] ) {
+    
+    for ( int i = 0; i < 8; i++ ) { // change this to a max of 8
+                  
+      if( strcmp(myArray, clientIPAddresses[i]) == 0 ) {
+        // ESP_LOGI(SOCKET_TAG, "Address already exists.");    // ip address already exists in the array so do nothing
+        return 42; // IP Address already exists at position 'i' in the array
+        break; 
+        }
+
+    }
+    return 1; // not in the array, add it
+  }
+
 #endif
 ////// sockette server //////
 
@@ -151,7 +168,8 @@ double curr_beat_time;
 double prev_beat_time;
 
 bool connektMode = true; // flag pour envoyer l'adresse IP aux clients
-char str_ip[16] ="192.168.0.66"; // send IP to clients !! // stand in ip necessary for memory space?
+char str_ip[16] = "192.168.0.66"; // send IP to clients !! // stand in ip necessary for memory space?
+int nmbrClients = 0;
 
 
 ///////////// INTERACTIONS ///////////
@@ -412,7 +430,7 @@ extern "C" {
 
         while (1) {
 
-            ESP_LOGI(SOCKET_TAG, "Waiting for data");
+            ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
 
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
@@ -487,7 +505,6 @@ extern "C" {
             ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
           
 
-
             // read in bar value from mst[8] and mst[9] and save it as int for the corresponding note
             if(mstr[12]==false && mstr[13]==false){bar[note] = 1;} 
             else if(mstr[12]==true && mstr[13]==false){bar[note] = 2;} 
@@ -521,23 +538,44 @@ extern "C" {
             if (len < 0) {
                 ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
                 break;
-            }
+              }
             
             else {   // Data received
                     inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
-                }
-
-                // keep a list of the distinct addresses using addr_str
+              }
                 
-                ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
+            ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
+                
+            inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
+                
+            ////strcpy(clientIPAddresses[0], inet_ntoa(addr_str));
 
-                ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
-                int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+            if ( startStopState == false ) { // only check for clients if we are in stopped mode, it hangs the playback otherwise...
+              int checkIPExist = clientIPCheck(addr_str); // Does it exist in the array?
+              ESP_LOGI(SOCKET_TAG, "result of checkClientArray : %i", checkIPExist);
 
-                if (err < 0) {
-                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-                   break;
+              if ( checkIPExist == 1 ) { // if it doesn't exist, add it
+                strcpy(clientIPAddresses[nmbrClients], inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1)); // add that address to the array 
+                ESP_LOGI(SOCKET_TAG, "Adding client address : %s", clientIPAddresses[nmbrClients]);
+                nmbrClients++; // Count the newly registered client
                 }
+
+              else { // it exists do nothing
+                ESP_LOGI(SOCKET_TAG, "Address already exists : %s", addr_str);    // ip address already exists in the array so do nothing
+                }
+
+              // nmbrClients = sizeof(clientIPAddresses)/20; // send this to TFT screen // 20 bytes in the address array
+              ESP_LOGI(SOCKET_TAG, "nmbrClients : %i\n", nmbrClients); 
+            
+            } 
+
+            ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
+            int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+
+            if (err < 0) {
+              ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+              break;
+              }
        
         }
 
@@ -1171,6 +1209,7 @@ void tickTask(void* userParam)
       switch (halo_welt)
       {
         case 0:
+
         strcpy(phases, "X000");
         break;
         case 1:
@@ -1186,7 +1225,7 @@ void tickTask(void* userParam)
         ESP_LOGI(LINK_TAG, "phases not assigned correctly"); 
       }
 
-        snprintf(top, 20, "%s", phases);
+        snprintf(top, 20, "clients:%i  %s", nmbrClients, phases);
         
         SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
 
