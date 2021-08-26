@@ -162,7 +162,6 @@ bool changePiton = false;
 bool changeLink = false;
 bool tempoINC = false; // si le tempo doit être augmenté
 bool tempoDEC = false; // si le tempo doit être réduit
-bool saveSeq = false; // nvs save the sequence to start
 double newBPM; // send to setTempo();
 double curr_beat_time;
 double prev_beat_time;
@@ -171,14 +170,22 @@ bool connektMode = true; // flag pour envoyer l'adresse IP aux clients
 char str_ip[16] = "192.168.0.66"; // send IP to clients !! // stand in ip necessary for memory space?
 int nmbrClients = 0;
 
+int nmbrSeq = 0; // the number of sequences in nvs
+char sequence[8][10] = {{"sequence"},{"seq1"},{"seq2"},{"seq3"},{"seq4"},{"seq5"},{"seq6"},{"seq7"}};
+
 
 ///////////// INTERACTIONS ///////////
 ///
 /// save (Touch pad 2)
 bool tapeArch = false; // flag for saving
 bool saveBPM = false; 
+bool saveSeq = false; // nvs save the sequence to start
+bool saveSeqConf = false;
+bool loadSeq = false;
+bool loadSeqConf = false;
 bool saveDelay = false; // for when to remove the save options after an interaction
 int delset = 0;
+int selectedSeq = 0; // user selected sequence to load
 
 ///////////// TAP TEMPO //////////////
 /// from : https://github.com/DieterVDW/arduino-midi-clock/blob/master/MIDI-Clock.ino
@@ -305,12 +312,58 @@ static void tp_example_read_task(void *pvParameter) {
         if (s_pad_activated[0] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 0);  // Wait a while for the pad being released
 
+        if(loadSeq == true ) { // if we had a previous touch then save that thang
+          loadSeqConf = true;
+        }
+
+        else { // set it to true along with a delay
+          loadSeq = true;
+          delset = esp_timer_get_time()+3000000;
+          ESP_LOGI(TAP_TAG, "loadSeq open until : %i", delset); 
+          
+          nmbrSeq = 0; // reset the number of sequences
+
+          // Example of listing all the key-value pairs of any type under specified partition and namespace
+          nvs_iterator_t it = nvs_entry_find("nvs", "mtmss", NVS_TYPE_ANY);
+          // how many sequences do we have ?
+
+          while (it != NULL) {
+            nvs_entry_info_t info;
+            nvs_entry_info(it, &info);
+            it = nvs_entry_next(it);
+            printf("key '%s', type '%d' \n", info.key, info.type);
+            nmbrSeq++; // add one to the sequences 
+            ESP_LOGI(TAP_TAG, "nmbrSeq : %i", nmbrSeq); 
+          };
+          // Note: no need to release iterator obtained from nvs_entry_find function when
+          //       nvs_entry_find or nvs_entry_next function return NULL, indicating no other
+          //       element for specified criteria was found.
+
+          
+        }
+      
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
         s_pad_activated[0] = false; // Reset the counter triggering a message // that application is running
    
         } else if (s_pad_activated[2] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 2);  // Wait a while for the pad being released
-        tapeArch = true; // flag for saving 
+        
+        if ( saveBPM == true ) {
+          tapeArch = true; // flag for saving 
+        }
+
+        else if ( saveSeq == true ) {
+          saveSeqConf = true;
+        }
+
+        else if ( saveBPM == false ) {
+          saveSeq = true;
+          delset = esp_timer_get_time()+3000000;
+          ESP_LOGI(TAP_TAG, "saveSeq open until : %i", delset); 
+        }
+
+     
+
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
         s_pad_activated[2] = false; // Reset the counter triggering a message // that application is running
         
@@ -332,14 +385,36 @@ static void tp_example_read_task(void *pvParameter) {
         
         } else if (s_pad_activated[7] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 7);  
-        tempoDEC = true; 
-        //saveSeq = true;
+          if (loadSeq == true){
+            selectedSeq--;
+            delset = esp_timer_get_time()+3000000;
+            if (selectedSeq < 0 ){
+              selectedSeq = nmbrSeq-1; // loop it
+            }
+          }
+          else{
+            tempoDEC = true; 
+          }
+        
         vTaskDelay(300 / portTICK_PERIOD_MS);  
         s_pad_activated[7] = false; 
 
+
         } else if (s_pad_activated[9] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 9);  // Wait a while for the pad being released
-        tempoINC = true; // pour que le audio loop le prenne en compte
+
+          if (loadSeq == true){
+            selectedSeq++;
+            delset = esp_timer_get_time()+3000000;
+
+            if (selectedSeq > nmbrSeq ){
+            selectedSeq = 0; // loop it
+            }
+          }
+            else{
+            tempoINC= true;  // pour que le audio loop le prenne en compte
+            }     
+
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
         s_pad_activated[9] = false; // Reset the counter triggering a message // that application is running
         }
@@ -980,46 +1055,45 @@ void tickTask(void* userParam)
     //const auto phase = state.phaseAtTime(link.clock().micros(), 1); 
     //ESP_LOGI(LINK_TAG, "tempoINC : %i", tempoINC);
     //ESP_LOGI(LINK_TAG, "tempoDEC : %i", tempoDEC);
-    //ESP_LOGI(LINK_TAG, "saveSeq : %i", saveSeq);
+    //ESP_LOGI(LINK_TAG, "saveSeqConf : %i", saveSeqConf);
     //ESP_LOGI(LINK_TAG, "toTapped : %i", toTapped );
 
-    if ( saveSeq == true ) {
+    if ( saveSeqConf == true ) {
 
       /////// WRITING mtmss[] TO NVS //////
       nvs_handle wificfg_nvs_handler;
       nvs_open("mtmss", NVS_READWRITE, &wificfg_nvs_handler);
-      //nvs_set_str(wificfg_nvs_handler,"sequence",mstr);
-      //nvs_set_blob(wificfg_nvs_handler,"sequence",mstr,79);
-      nvs_set_blob(wificfg_nvs_handler,"sequence",mtmss,1264);
-    
+      nvs_set_blob(wificfg_nvs_handler,sequence[0],mtmss,1264);
       nvs_commit(wificfg_nvs_handler); 
       nvs_close(wificfg_nvs_handler); 
       ////// END NVS ///// 
       
       ESP_LOGI(NVS_TAG, "Sequence saved");
+      saveSeqConf = false;
+      
+    }
+
+    if ( loadSeqConf == true ) {
 
       /// NVS READ CREDENTIALS ///
-      //nvs_handle wificfg_nvs_handler;
+
+      nvs_handle wificfg_nvs_handler;
       size_t len;
       nvs_open("mtmss", NVS_READWRITE, &wificfg_nvs_handler);
-
-      //nvs_get_str(wificfg_nvs_handler, "sequence", NULL, &len);
-      nvs_get_blob(wificfg_nvs_handler, "sequence", NULL, &len);
+      nvs_get_blob(wificfg_nvs_handler, sequence[selectedSeq], NULL, &len);
       char* mySeq = (char*)malloc(len); 
-      //nvs_get_str(wificfg_nvs_handler, "sequence", mySeq, &len);
-      nvs_get_blob(wificfg_nvs_handler, "sequence", mySeq, &len);
-    
-
+      nvs_get_blob(wificfg_nvs_handler, sequence[selectedSeq], mySeq, &len);
       nvs_close(wificfg_nvs_handler);
 
-      for (int i = 0; i < 150; i++) {
+      ///// END NVS /////
+
+      for (int i = 0; i < 250; i++) {
             printf("%i: %i\n", i + 1, mySeq[i]);
         }
-    
-      ESP_LOGI(NVS_TAG,"mySeq :%s",mySeq); 
+  
+      ESP_LOGI(NVS_TAG, "Sequence #%i loaded", selectedSeq);
+      loadSeqConf = false;
 
-      saveSeq = false;
-      
     }
 
     if ( tempoINC == true ) {
@@ -1105,7 +1179,7 @@ void tickTask(void* userParam)
         tapTotal = 0;
         saveBPM = true;
         saveDelay = true; // appeler une fonction pour remettre les variables à false après un moment
-        delayer(6000000);
+        delayer(3000000);
       }
 
       lastTapTime = tapped;
@@ -1116,6 +1190,8 @@ void tickTask(void* userParam)
 
     if (esp_timer_get_time() > delset ){
      saveBPM = false;
+     saveSeq = false; 
+     loadSeq = false;
    }
 
     if ( saveBPM == true && tapeArch == true ) {
@@ -1187,23 +1263,42 @@ void tickTask(void* userParam)
 
         char tmpOHbuf[20];
         char top[20];
+
+        if ( saveSeq == true ) {
+          snprintf(tmpOHbuf, 20 , "Sequence"); 
+          snprintf(current_phase_step, 20, "Save?   ");
+        }
+
+        else if ( loadSeq == true ) {
+          snprintf(tmpOHbuf, 20 , "Sequence"); 
+          snprintf(current_phase_step, 20, "Load:+%i-?", selectedSeq);
+        }
         
-        if (saveBPM == false){
+        else if (saveBPM == false){
           snprintf(tmpOHbuf, 20 , "%i BPM", tmpOH );     /////// display BPM + Phase + Step /////////
+
+          if (step < 10){
+            snprintf(current_phase_step, 20, " 0%i STP", step);
+          }
+          else {
+            snprintf(current_phase_step, 20, " %i STP", step);
+          }
+
         }
         
         else if (saveBPM == true){ // we have a tapped BPM ready to switch?
           snprintf(tmpOHbuf, 20 , "%i BPM?", tappedBPM ); 
+          
+          if (step < 10){
+            snprintf(current_phase_step, 20, " 0%i STP", step);
+          }
+          else {
+            snprintf(current_phase_step, 20, " %i STP", step);
+          }
+
         }
 
-
-        if (step < 10){
-          snprintf(current_phase_step, 20, " 0%i STP", step);
-
-        }
-        else {
-          snprintf(current_phase_step, 20, " %i STP", step);
-        }
+    
 
       //ESP_LOGI(LINK_TAG, "%i", halo_welt); 
       switch (halo_welt)
