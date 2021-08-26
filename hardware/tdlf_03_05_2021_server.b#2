@@ -181,7 +181,7 @@ acastonguay@artengine.ca</text>
 <text x="4.9" y="58.4" size="1.27" layer="25">26 MIDI OUT</text>
 <text x="4.9" y="61.1" size="1.27" layer="25">25 SCL TFT</text>
 <text x="4.8" y="63.6" size="1.27" layer="25">33 SDA TFT</text>
-<text x="28.1" y="17.7" size="1.6764" layer="26" rot="MR270">BATT+</text>
+<text x="25.1" y="17.7" size="1.6764" layer="26" rot="MR270">BATT+</text>
 </plain>
 <libraries>
 <library name="SparkFun-Connectors" urn="urn:adsk.eagle:library:6242394">
@@ -769,7 +769,7 @@ design rules under a new name.</description>
 </element>
 <element name="MIDI" library="SD-50BV" package="CUI_SD-50BV" value="SD-50BV" x="15" y="15" smashed="yes" rot="R270">
 <attribute name="MF" value="CUI Inc" x="15" y="15" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="17.636540625" y="11.76478125" size="1.27948125" layer="25"/>
+<attribute name="NAME" x="13.436540625" y="5.56478125" size="1.27948125" layer="25"/>
 <attribute name="PARTREV" value="1.03" x="15" y="15" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="STANDARD" value="Manufacturer recommendations" x="15" y="15" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
@@ -777,18 +777,18 @@ design rules under a new name.</description>
 <attribute name="PROD_ID" value=" " x="5.7" y="37.1" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="VALUE" x="3.957" y="37.3" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
 </element>
-<element name="51OHMS" library="SparkFun-Resistors" library_urn="urn:adsk.eagle:library:532" package="1206" package3d_urn="urn:adsk.eagle:package:39654/1" value=" " x="1.9" y="37" smashed="yes" rot="R270">
-<attribute name="NAME" x="3.243" y="36.9" size="1.27" layer="25" font="vector" ratio="20" rot="R270" align="bottom-center"/>
-<attribute name="PROD_ID" value=" " x="1.9" y="37" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="VALUE" x="0.757" y="37" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
+<element name="51" library="SparkFun-Resistors" library_urn="urn:adsk.eagle:library:532" package="1206" package3d_urn="urn:adsk.eagle:package:39654/1" value=" " x="2.1" y="37.2" smashed="yes" rot="R270">
+<attribute name="NAME" x="2.1" y="40.043" size="1.27" layer="25" font="vector" ratio="20" align="bottom-center"/>
+<attribute name="PROD_ID" value=" " x="2.1" y="37.2" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="VALUE" x="0.957" y="37.2" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
 </element>
-<element name="BATT_CHARGE_+" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X01" package3d_urn="urn:adsk.eagle:package:6242934/1" value="" x="9" y="39.4" smashed="yes" grouprefs="BATTCHARGE">
-<attribute name="NAME" x="8.3938" y="36.3288" size="1.27" layer="25"/>
-<attribute name="VALUE" x="7.73" y="36.225" size="1.27" layer="27"/>
+<element name="BATT_+" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X01" package3d_urn="urn:adsk.eagle:package:6242934/1" value="" x="9" y="25.4" smashed="yes" grouprefs="BATTCHARGE">
+<attribute name="NAME" x="8.5938" y="36.3288" size="1.27" layer="25"/>
+<attribute name="VALUE" x="7.73" y="22.225" size="1.27" layer="27"/>
 </element>
-<element name="BATT_GND" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X01" package3d_urn="urn:adsk.eagle:package:6242934/1" value="" x="9" y="25.5" smashed="yes" grouprefs="BATTCHARGE">
-<attribute name="NAME" x="6.7938" y="27.2288" size="1.27" layer="25"/>
-<attribute name="VALUE" x="7.73" y="22.325" size="1.27" layer="27"/>
+<element name="BATT_GND" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X01" package3d_urn="urn:adsk.eagle:package:6242934/1" value="" x="9" y="39.1" smashed="yes" grouprefs="BATTCHARGE">
+<attribute name="NAME" x="7.7938" y="24.4288" size="1.27" layer="25"/>
+<attribute name="VALUE" x="7.73" y="35.925" size="1.27" layer="27"/>
 </element>
 <element name="+5V" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X01" package3d_urn="urn:adsk.eagle:package:6242934/1" value="" x="27.2" y="39" smashed="yes" grouprefs="BATTCHARGE">
 <attribute name="NAME" x="22.2938" y="38.4288" size="1.27" layer="25"/>
@@ -810,7 +810,7 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="28.27" y="23.675" size="1.27" layer="27" rot="R180"/>
 </element>
 <element name="BATT+" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X02" package3d_urn="urn:adsk.eagle:package:6242942/1" value="" x="27.1" y="8.8" smashed="yes" rot="R180">
-<attribute name="NAME" x="26.7288" y="15.9462" size="1.27" layer="25" ratio="10" rot="R270"/>
+<attribute name="NAME" x="23.7288" y="15.9462" size="1.27" layer="25" ratio="10" rot="R270"/>
 <attribute name="VALUE" x="28.37" y="11.975" size="1.27" layer="27" rot="R180"/>
 </element>
 </elements>
@@ -874,14 +874,14 @@ design rules under a new name.</description>
 <vertex x="0.5" y="99.9"/>
 </polygon>
 <wire x1="25.9" y1="81.9" x2="28.2808" y2="79.5192" width="0.254" layer="1"/>
-<wire x1="15" y1="20.5" x2="7.04" y2="20.5" width="0.254" layer="16"/>
-<wire x1="7.04" y1="20.5" x2="6.27" y2="19.73" width="0.254" layer="16"/>
+<wire x1="6.27" y1="19.73" x2="7.04" y2="20.5" width="0.254" layer="16"/>
 <wire x1="11.3" y1="94.1" x2="23.5" y2="81.9" width="0.254" layer="1"/>
 <wire x1="23.5" y1="81.9" x2="26" y2="81.9" width="0.254" layer="1"/>
 <wire x1="25.03799375" y1="40.03799375" x2="25.03799375" y2="27.66200625" width="0.254" layer="1"/>
 <wire x1="25.03799375" y1="27.66200625" x2="27.2" y2="25.5" width="0.254" layer="1"/>
 <wire x1="27.2" y1="25.5" x2="20" y2="25.5" width="0.254" layer="1"/>
 <wire x1="20" y1="25.5" x2="15" y2="20.5" width="0.254" layer="1"/>
+<wire x1="7.04" y1="20.5" x2="15" y2="20.5" width="0.254" layer="16"/>
 </signal>
 <signal name="N$1">
 <contactref element="ESP32_1" pad="9"/>
@@ -897,10 +897,10 @@ design rules under a new name.</description>
 </signal>
 <signal name="N$4">
 <contactref element="ESP32_1" pad="7"/>
-<contactref element="51OHMS" pad="1"/>
+<contactref element="51" pad="1"/>
 <wire x1="2.9" y1="59.04" x2="4.9" y2="57.04" width="0.254" layer="1"/>
 <wire x1="4.9" y1="57.04" x2="4.9" y2="41.4" width="0.254" layer="1"/>
-<wire x1="4.9" y1="41.4" x2="1.9" y2="38.4" width="0.254" layer="1"/>
+<wire x1="4.9" y1="41.4" x2="2.1" y2="38.6" width="0.254" layer="1"/>
 </signal>
 <signal name="3V">
 <contactref element="51_OHMS" pad="2"/>
@@ -911,14 +911,14 @@ design rules under a new name.</description>
 </signal>
 <signal name="PIN27">
 <contactref element="MIDI" pad="5"/>
-<contactref element="51OHMS" pad="2"/>
-<wire x1="2" y1="35.7" x2="1.9" y2="35.6" width="0.254" layer="1"/>
+<contactref element="51" pad="2"/>
+<wire x1="2.2" y1="35.9" x2="2.1" y2="35.8" width="0.254" layer="1"/>
 <wire x1="18.89" y1="18.89" x2="17.3" y2="17.3" width="0.254" layer="1"/>
 <wire x1="17.3" y1="17.3" x2="9.8" y2="17.3" width="0.254" layer="1"/>
 <wire x1="9.8" y1="17.3" x2="7.4" y2="19.7" width="0.254" layer="1"/>
 <wire x1="7.4" y1="19.7" x2="7.4" y2="30.6" width="0.254" layer="1"/>
-<wire x1="7.4" y1="30.6" x2="2.4" y2="35.6" width="0.254" layer="1"/>
-<wire x1="2.4" y1="35.6" x2="1.9" y2="35.6" width="0.254" layer="1"/>
+<wire x1="7.4" y1="30.6" x2="2.2" y2="35.8" width="0.254" layer="1"/>
+<wire x1="2.2" y1="35.8" x2="2.1" y2="35.8" width="0.254" layer="1"/>
 </signal>
 <signal name="N$6">
 <contactref element="-12V" pad="1"/>
@@ -960,27 +960,27 @@ design rules under a new name.</description>
 <signal name="GND_BATT">
 <contactref element="JP3" pad="1"/>
 <contactref element="BATT+" pad="1"/>
-<contactref element="BATT_CHARGE_+" pad="1"/>
-<wire x1="27" y1="20.5" x2="27.25" y2="20.75" width="0.254" layer="16"/>
-<wire x1="27.25" y1="20.75" x2="27.4" y2="20.9" width="0.254" layer="16"/>
+<contactref element="BATT_+" pad="1"/>
 <wire x1="27" y1="20.5" x2="27" y2="8.9" width="0.254" layer="16"/>
 <wire x1="27" y1="8.9" x2="27.1" y2="8.8" width="0.254" layer="16"/>
-<wire x1="9" y1="39.4" x2="27.25" y2="21.15" width="0.254" layer="16"/>
-<wire x1="27.25" y1="21.15" x2="27.25" y2="20.75" width="0.254" layer="16"/>
+<wire x1="27" y1="20.5" x2="22.1" y2="25.4" width="0.254" layer="16"/>
+<wire x1="22.1" y1="25.4" x2="9" y2="25.4" width="0.254" layer="16"/>
 </signal>
 <signal name="+VBATT">
 <contactref element="JP3" pad="2"/>
 <contactref element="BATT+" pad="2"/>
 <contactref element="BATT_GND" pad="1"/>
-<wire x1="24.46" y1="20.5" x2="24.16" y2="20.5" width="0.254" layer="16"/>
-<wire x1="9.1433" y1="25.3567" x2="9" y2="25.5" width="0.254" layer="16"/>
-<wire x1="24.46" y1="20.5" x2="24.46" y2="8.9" width="0.254" layer="16"/>
-<wire x1="24.46" y1="8.9" x2="24.56" y2="8.8" width="0.254" layer="16"/>
-<wire x1="25.2" y1="8.3" x2="25.2" y2="8.64" width="0.254" layer="16"/>
-<wire x1="24.56" y1="8.8" x2="24.7" y2="8.8" width="0.254" layer="16"/>
-<wire x1="25.2" y1="8.3" x2="24.7" y2="8.8" width="0.254" layer="16"/>
-<wire x1="24.46" y1="20.5" x2="19.6033" y2="25.3567" width="0.254" layer="16"/>
-<wire x1="19.6033" y1="25.3567" x2="9.1433" y2="25.3567" width="0.254" layer="16"/>
+<wire x1="24.56" y1="8.8" x2="24.56" y2="20.4" width="0.254" layer="16"/>
+<wire x1="24.56" y1="20.4" x2="24.46" y2="20.5" width="0.254" layer="16"/>
+<wire x1="7.7808" y1="25.9050125" x2="7.7808" y2="24.8949875" width="0.254" layer="16"/>
+<wire x1="9" y1="39.1" x2="9" y2="27.1242125" width="0.254" layer="16"/>
+<wire x1="7.7808" y1="24.8949875" x2="7.8" y2="24.8757875" width="0.254" layer="16"/>
+<wire x1="7.8" y1="24.8757875" x2="7.8" y2="24.2" width="0.254" layer="16"/>
+<wire x1="9" y1="27.1242125" x2="7.7808" y2="25.9050125" width="0.254" layer="16"/>
+<wire x1="7.8" y1="24.2" x2="8.4757875" y2="24.2" width="0.254" layer="16"/>
+<wire x1="8.4757875" y1="24.2" x2="8.4949875" y2="24.1808" width="0.254" layer="16"/>
+<wire x1="20.7792" y1="24.1808" x2="24.46" y2="20.5" width="0.254" layer="16"/>
+<wire x1="8.4949875" y1="24.1808" x2="20.7792" y2="24.1808" width="0.254" layer="16"/>
 </signal>
 </signals>
 <mfgpreviewcolors>

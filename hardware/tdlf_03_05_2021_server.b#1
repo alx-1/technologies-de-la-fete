@@ -158,13 +158,13 @@
 <wire x1="29.5" y1="100" x2="29.5" y2="0" width="0.1524" layer="20"/>
 <wire x1="29.5" y1="0" x2="0" y2="0" width="0.1524" layer="20"/>
 <circle x="26.8" y="97.1" radius="1.615546875" width="0.254" layer="20"/>
-<circle x="2.7" y="97.1" radius="1.615546875" width="0.254" layer="20"/>
+<circle x="2.8" y="97.1" radius="1.615546875" width="0.254" layer="20"/>
 <wire x1="5" y1="67.6" x2="23.3" y2="67.6" width="0.254" layer="25"/>
 <wire x1="29.1" y1="41" x2="7.6" y2="41" width="0.254" layer="25" grouprefs="BATTCHARGE"/>
 <wire x1="7.6" y1="41" x2="7.6" y2="23.9" width="0.254" layer="25" grouprefs="BATTCHARGE"/>
 <wire x1="7.6" y1="23.9" x2="29.1" y2="23.9" width="0.254" layer="25" grouprefs="BATTCHARGE"/>
 <wire x1="29.1" y1="23.9" x2="29.1" y2="41" width="0.254" layer="25" grouprefs="BATTCHARGE"/>
-<circle x="2.7" y="2.9" radius="1.615546875" width="0.254" layer="20"/>
+<circle x="2.8" y="2.9" radius="1.615546875" width="0.254" layer="20"/>
 <circle x="26.8" y="2.9" radius="1.615546875" width="0.254" layer="20"/>
 <wire x1="1" y1="7.1" x2="9.4" y2="7.1" width="1.016" layer="22"/>
 <text x="4.9" y="66.1" size="1.27" layer="25">32 T9</text>

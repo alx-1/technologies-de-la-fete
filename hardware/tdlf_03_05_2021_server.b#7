@@ -886,11 +886,9 @@ design rules under a new name.</description>
 </polygon>
 <polygon width="0.254" layer="1">
 <vertex x="0.5" y="99.7"/>
-<vertex x="29.3" y="99.7"/>
-<vertex x="29.8" y="99.2"/>
-<vertex x="29.8" y="0.3"/>
-<vertex x="29.7" y="0.2"/>
-<vertex x="0.3" y="0.2"/>
+<vertex x="29.29230625" y="99.7"/>
+<vertex x="29.29230625" y="0.301925"/>
+<vertex x="0.3" y="0.301925"/>
 <vertex x="0.3" y="99.7"/>
 <vertex x="0.5" y="99.9"/>
 </polygon>

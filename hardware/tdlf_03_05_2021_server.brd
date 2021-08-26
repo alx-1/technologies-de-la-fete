@@ -174,7 +174,7 @@
 <text x="20.6" y="50.8" size="1.27" layer="25">4 T0</text>
 <text x="5.2" y="81.2" size="1.27" layer="21">3V3</text>
 <text x="20" y="81.4" size="1.27" layer="25" grouprefs="BATTCHARGE">GND</text>
-<text x="24.2" y="67.3" size="1.27" layer="26" rot="R180">+5V</text>
+<text x="24.2" y="67.3" size="1.27" layer="25" rot="R180">+5V</text>
 <text x="24.1" y="44.5" size="1.27" layer="25" rot="R180">15 T3</text>
 <text x="5.2" y="4.1" size="1.1" layer="26" rot="MR180">tdlf v 0.3 
 acastonguay@artengine.ca</text>

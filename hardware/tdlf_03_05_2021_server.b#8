@@ -154,9 +154,9 @@
 <fusionsync huburn="a.cGVyc29uYWw6dWUyYTYyMmQz" projecturn="a.cGVyc29uYWw6dWUyYTYyMmQzIzIwMjAwMTA4MjUzMTkwODgx" f3durn="urn:adsk.wipprod:dm.lineage:EJ7CIL_8QPSL4HfMM387xA" pcbguid="" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="1e268f09-bdda-4e8c-a022-348851f8809f" lastsyncedrevisionid="1e268f09-bdda-4e8c-a022-348851f8809f" lastboardhashguid="10110adf-730a-8ede-3051-079abd0e3524" lastpushedtime="2021-04-02T02:38:33Z" linktopcb3d="true"/>
 <plain>
 <wire x1="0" y1="0" x2="0" y2="100" width="0.1524" layer="20"/>
-<wire x1="0" y1="100" x2="30" y2="100" width="0.1524" layer="20"/>
-<wire x1="30" y1="100" x2="30" y2="0" width="0.1524" layer="20"/>
-<wire x1="30" y1="0" x2="0" y2="0" width="0.1524" layer="20"/>
+<wire x1="0" y1="100" x2="29.5" y2="100" width="0.1524" layer="20"/>
+<wire x1="29.5" y1="100" x2="29.5" y2="0" width="0.1524" layer="20"/>
+<wire x1="29.5" y1="0" x2="0" y2="0" width="0.1524" layer="20"/>
 <circle x="26.4" y="95.9" radius="1.615546875" width="0.254" layer="20"/>
 <circle x="3.7" y="95.9" radius="1.615546875" width="0.254" layer="20"/>
 <wire x1="5" y1="69.6" x2="23.3" y2="69.6" width="0.254" layer="25"/>
@@ -167,7 +167,7 @@
 <wire x1="28.9" y1="41" x2="29" y2="35.8" width="0.254" layer="25"/>
 <circle x="3.6" y="3.8" radius="1.615546875" width="0.254" layer="20"/>
 <circle x="26.3" y="3.8" radius="1.615546875" width="0.254" layer="20"/>
-<wire x1="29" y1="93" x2="29" y2="84.6" width="1.016" layer="22"/>
+<wire x1="28.6" y1="92.8" x2="28.6" y2="84.4" width="1.016" layer="22"/>
 <text x="4.9" y="66.1" size="1.27" layer="25">32 T9</text>
 <text x="4.9" y="55.7" size="1.27" layer="25">27 T7</text>
 <text x="4.6" y="50.5" size="1.27" layer="25">12 T5</text>
@@ -805,12 +805,12 @@ design rules under a new name.</description>
 <attribute name="POPULARITY" value="0" x="14.9" y="88.6" size="1.778" layer="28" rot="MR180" display="off"/>
 <attribute name="VALUE" x="8.55" y="84.028" size="1.27" layer="28" rot="MR180"/>
 </element>
-<element name="JP3" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X02" package3d_urn="urn:adsk.eagle:package:6242942/1" value="" x="27.9" y="20.4" smashed="yes" rot="R180">
-<attribute name="VALUE" x="29.17" y="23.575" size="1.27" layer="27" rot="R180"/>
+<element name="JP3" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X02" package3d_urn="urn:adsk.eagle:package:6242942/1" value="" x="27" y="20.5" smashed="yes" rot="R180">
+<attribute name="VALUE" x="28.27" y="23.675" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="BATT+" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X02" package3d_urn="urn:adsk.eagle:package:6242942/1" value="" x="27.9" y="8.8" smashed="yes" rot="R180">
-<attribute name="NAME" x="27.5288" y="15.9462" size="1.27" layer="25" ratio="10" rot="R270"/>
-<attribute name="VALUE" x="29.17" y="11.975" size="1.27" layer="27" rot="R180"/>
+<element name="BATT+" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" package="1X02" package3d_urn="urn:adsk.eagle:package:6242942/1" value="" x="27.1" y="8.8" smashed="yes" rot="R180">
+<attribute name="NAME" x="26.7288" y="15.9462" size="1.27" layer="25" ratio="10" rot="R270"/>
+<attribute name="VALUE" x="28.37" y="11.975" size="1.27" layer="27" rot="R180"/>
 </element>
 </elements>
 <signals>
@@ -991,23 +991,25 @@ design rules under a new name.</description>
 <contactref element="JP3" pad="1"/>
 <contactref element="BATT+" pad="1"/>
 <contactref element="BATT_CHARGE_+" pad="1"/>
-<wire x1="27.9" y1="20.4" x2="27.7" y2="20.6" width="0.254" layer="16"/>
-<wire x1="27.7" y1="20.6" x2="27.7" y2="22.4" width="0.254" layer="16"/>
+<wire x1="27" y1="20.5" x2="27.7" y2="21.2" width="0.254" layer="16"/>
+<wire x1="27.7" y1="21.2" x2="27.7" y2="22.4" width="0.254" layer="16"/>
 <wire x1="27.7" y1="22.4" x2="10.7" y2="39.4" width="0.254" layer="16"/>
 <wire x1="10.7" y1="39.4" x2="8.8" y2="39.4" width="0.254" layer="16"/>
-<wire x1="27.9" y1="20.4" x2="27.9" y2="8.8" width="0.254" layer="16"/>
+<wire x1="27" y1="20.5" x2="27" y2="8.9" width="0.254" layer="16"/>
+<wire x1="27" y1="8.9" x2="27.1" y2="8.8" width="0.254" layer="16"/>
 </signal>
 <signal name="+VBATT">
 <contactref element="JP3" pad="2"/>
 <contactref element="BATT+" pad="2"/>
 <contactref element="BATT_GND" pad="1"/>
-<wire x1="25.36" y1="20.4" x2="20.26" y2="25.5" width="0.254" layer="16"/>
-<wire x1="20.26" y1="25.5" x2="8.8" y2="25.5" width="0.254" layer="16"/>
-<wire x1="25.36" y1="20.4" x2="25.36" y2="8.8" width="0.254" layer="16"/>
-<wire x1="25.36" y1="8.8" x2="25.36" y2="8.46" width="0.254" layer="16"/>
-<wire x1="25.36" y1="8.46" x2="25.2" y2="8.3" width="0.254" layer="16"/>
+<wire x1="24.46" y1="20.5" x2="24.46" y2="21.4" width="0.254" layer="16"/>
+<wire x1="24.46" y1="21.4" x2="20.36" y2="25.5" width="0.254" layer="16"/>
+<wire x1="20.36" y1="25.5" x2="8.8" y2="25.5" width="0.254" layer="16"/>
+<wire x1="24.46" y1="20.5" x2="24.46" y2="8.9" width="0.254" layer="16"/>
+<wire x1="24.46" y1="8.9" x2="24.56" y2="8.8" width="0.254" layer="16"/>
 <wire x1="25.2" y1="8.3" x2="25.2" y2="8.64" width="0.254" layer="16"/>
-<wire x1="25.2" y1="8.64" x2="25.36" y2="8.8" width="0.254" layer="16"/>
+<wire x1="24.56" y1="8.8" x2="24.7" y2="8.8" width="0.254" layer="16"/>
+<wire x1="25.2" y1="8.3" x2="24.7" y2="8.8" width="0.254" layer="16"/>
 </signal>
 </signals>
 <mfgpreviewcolors>

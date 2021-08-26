@@ -171,16 +171,14 @@
 <text x="4.9" y="66.1" size="1.27" layer="25">32 T9</text>
 <text x="4.9" y="55.7" size="1.27" layer="25">27 T7</text>
 <text x="4.6" y="50.5" size="1.27" layer="25">12 T5</text>
-<text x="16.6" y="45.8" size="1.27" layer="25">2 T2 4 T0</text>
+<text x="20.6" y="45.8" size="1.27" layer="25">2 T2</text>
 <text x="20.6" y="48.2" size="1.27" layer="25">0 T1</text>
 <text x="17.4" y="52.1" size="1.27" layer="25">2 T4 4 T2</text>
 <text x="5.2" y="81.2" size="1.27" layer="21">3V3</text>
-<text x="21.5" y="76.2" size="1.27" layer="21">3V3</text>
-<text x="20.7" y="81.3" size="1.27" layer="25">GND</text>
-<text x="20.7" y="78.7" size="1.27" layer="25">GND</text>
-<text x="19.9" y="67.6" size="1.778" layer="26" rot="MR180">+5V</text>
-<text x="19.7" y="44.5" size="1.778" layer="26" rot="MR180">+5V</text>
-<text x="16.6" y="82.9" size="2.54" layer="26" rot="MR270">tdlf v 0.2 acastonguay@artengine.ca</text>
+<text x="20.4" y="81.3" size="1.27" layer="25">GND</text>
+<text x="24.2" y="67.4" size="1.27" layer="26" rot="R180">+5V</text>
+<text x="23.5" y="44.5" size="1.27" layer="25" rot="R180">15 T</text>
+<text x="2.4" y="28.9" size="1.016" layer="26" rot="MR270">tdlf v 0.2 acastonguay@artengine.ca</text>
 </plain>
 <libraries>
 <library name="SparkFun-Connectors" urn="urn:adsk.eagle:library:6242394">
@@ -768,10 +766,9 @@ design rules under a new name.</description>
 <attribute name="NAME" x="23.66478125" y="18.063459375" size="1.27948125" layer="25" rot="R270"/>
 <attribute name="PARTREV" value="1.03" x="15" y="15" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="STANDARD" value="Manufacturer recommendations" x="15" y="15" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="VALUE" x="4.0725" y="18.802609375" size="1.27891875" layer="27" rot="R270"/>
 </element>
 <element name="51" library="SparkFun-Resistors" library_urn="urn:adsk.eagle:library:532" package="1206" package3d_urn="urn:adsk.eagle:package:39654/1" value=" " x="4.5" y="25.1" smashed="yes" rot="R270">
-<attribute name="NAME" x="1.743" y="23.5" size="1.27" layer="25" font="vector" ratio="20" rot="R270" align="bottom-center"/>
+<attribute name="NAME" x="5.843" y="23.4" size="1.27" layer="25" font="vector" ratio="20" rot="R270" align="bottom-center"/>
 <attribute name="PROD_ID" value=" " x="4.5" y="25.1" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="VALUE" x="2.757" y="25.3" size="0.6096" layer="27" font="vector" ratio="20" rot="R270" align="top-center"/>
 </element>
@@ -816,17 +813,10 @@ design rules under a new name.</description>
 <signals>
 <signal name="3V3">
 <contactref element="ESP32_1" pad="16"/>
-<contactref element="ESP32_2" pad="14"/>
 <contactref element="TFT" pad="2"/>
-<wire x1="20.7" y1="77.02" x2="11.9" y2="77.02" width="0.254" layer="1"/>
-<wire x1="11.9" y1="77.02" x2="11.6" y2="77.02" width="0.254" layer="1"/>
-<wire x1="20.7" y1="77.02" x2="25.9" y2="76.82" width="0.254" layer="1"/>
 <contactref element="51" pad="1"/>
-<wire x1="4.5" y1="26.5" x2="11.6" y2="33.6" width="0.254" layer="1"/>
-<wire x1="11.6" y1="77.02" x2="11.6" y2="33.6" width="0.254" layer="1"/>
-<wire x1="11.9" y1="77.02" x2="11.78" y2="76.9" width="0.254" layer="1"/>
-<wire x1="11.78" y1="76.9" x2="6.78" y2="81.9" width="0.254" layer="1"/>
-<wire x1="6.78" y1="81.9" x2="3.1" y2="81.9" width="0.254" layer="1"/>
+<wire x1="11.6" y1="33.6" x2="4.5" y2="26.5" width="0.254" layer="1"/>
+<wire x1="3.1" y1="81.9" x2="6.78" y2="81.9" width="0.254" layer="1"/>
 <wire x1="3.1" y1="81.9" x2="2.9" y2="81.9" width="0.254" layer="1"/>
 <wire x1="13.84" y1="96.1" x2="12.8" y2="95.06" width="0.254" layer="1"/>
 <wire x1="12.8" y1="95.06" x2="12.8" y2="93.5" width="0.254" layer="1"/>
@@ -836,16 +826,16 @@ design rules under a new name.</description>
 <wire x1="12.314453125" y1="93.014453125" x2="3.03799375" y2="93.014453125" width="0.254" layer="1"/>
 <wire x1="2.89845625" y1="93.12100625" x2="2.89845625" y2="82.10154375" width="0.254" layer="1"/>
 <wire x1="2.89845625" y1="82.10154375" x2="3.1" y2="81.9" width="0.254" layer="1"/>
+<wire x1="6.78" y1="81.9" x2="11.6" y2="77.08" width="0.254" layer="1"/>
+<wire x1="11.6" y1="77.08" x2="11.6" y2="33.6" width="0.254" layer="1"/>
 </signal>
 <signal name="GND">
 <contactref element="ESP32_2" pad="16"/>
-<contactref element="ESP32_2" pad="15"/>
 <wire x1="25.9" y1="81.9" x2="25.9" y2="81.8" width="0.254" layer="1"/>
 <contactref element="TFT" pad="1"/>
 <contactref element="MIDI" pad="2"/>
-<wire x1="25.9" y1="81.8" x2="25.9" y2="79.36" width="0.254" layer="1"/>
-<wire x1="25.9" y1="79.36" x2="28.2808" y2="76.9792" width="0.254" layer="1"/>
-<wire x1="28.2808" y1="76.9792" x2="28.2808" y2="43.2808" width="0.254" layer="1"/>
+<wire x1="28.2808" y1="76.9792" x2="28.2808" y2="76.9" width="0.254" layer="1"/>
+<wire x1="28.2808" y1="76.9" x2="28.2808" y2="43.2808" width="0.254" layer="1"/>
 <wire x1="28.2808" y1="43.2808" x2="23.48" y2="38.48" width="0.254" layer="1"/>
 <wire x1="15" y1="20.5" x2="14.96" y2="38.34" width="0.254" layer="1"/>
 <wire x1="14.96" y1="38.34" x2="23.48" y2="38.48" width="0.254" layer="1"/>
@@ -855,7 +845,8 @@ design rules under a new name.</description>
 <wire x1="22" y1="98.4" x2="22.885515625" y2="97.514484375" width="0.254" layer="1"/>
 <wire x1="22.885515625" y1="94.414484375" x2="26.3" y2="91" width="0.254" layer="1"/>
 <wire x1="26.3" y1="91" x2="26.3" y2="82.2" width="0.254" layer="1"/>
-<wire x1="26.3" y1="82.2" x2="25.9" y2="81.8" width="0.254" layer="1"/>
+<wire x1="26.3" y1="82.2" x2="26" y2="81.9" width="0.254" layer="1"/>
+<wire x1="26" y1="81.9" x2="25.9" y2="81.8" width="0.254" layer="1"/>
 <wire x1="22.885515625" y1="97.514484375" x2="22.885515625" y2="94.414484375" width="0.254" layer="1"/>
 <contactref element="X1" pad="9"/>
 <contactref element="X1" pad="10"/>
@@ -892,6 +883,8 @@ design rules under a new name.</description>
 <vertex x="0.3" y="99.7"/>
 <vertex x="0.5" y="99.9"/>
 </polygon>
+<wire x1="28.2808" y1="76.9792" x2="28.2808" y2="79.6192" width="0.254" layer="1"/>
+<wire x1="28.2808" y1="79.6192" x2="26" y2="81.9" width="0.254" layer="1"/>
 </signal>
 <signal name="N$1">
 <contactref element="ESP32_1" pad="9"/>
@@ -950,15 +943,11 @@ design rules under a new name.</description>
 <contactref element="X1" pad="6"/>
 <wire x1="11.09" y1="87.33" x2="11.09" y2="89.87" width="0.254" layer="16"/>
 <contactref element="ESP32_2" pad="10"/>
-<contactref element="ESP32_2" pad="1"/>
 <contactref element="+5V" pad="1"/>
 <wire x1="25.9" y1="66.66" x2="27.94" y2="66.66" width="0.254" layer="16"/>
 <wire x1="27.94" y1="66.66" x2="28" y2="66.6" width="0.254" layer="16"/>
 <wire x1="28" y1="66.6" x2="28" y2="43.9" width="0.254" layer="16"/>
 <wire x1="28" y1="43.9" x2="27.9" y2="43.8" width="0.254" layer="16"/>
-<wire x1="27.9" y1="43.8" x2="25.9" y2="43.8" width="0.254" layer="16"/>
-<wire x1="25.9" y1="43.8" x2="27" y2="42.7" width="0.254" layer="16"/>
-<wire x1="27" y1="42.7" x2="27" y2="39" width="0.254" layer="16"/>
 <wire x1="24.027271875" y1="94.238596875" x2="23.870659375" y2="94.50985625" width="0.254" layer="16"/>
 <wire x1="24.027271875" y1="94.191940625" x2="24.027271875" y2="94.238596875" width="0.254" layer="16"/>
 <wire x1="28" y1="66.6" x2="28" y2="90.2192125" width="0.254" layer="16"/>
@@ -969,6 +958,8 @@ design rules under a new name.</description>
 <wire x1="11.09" y1="92.51" x2="11.09" y2="89.87" width="0.254" layer="16"/>
 <wire x1="19.599715625" y1="98.7808" x2="9.7808" y2="98.7808" width="0.254" layer="16"/>
 <wire x1="9.4" y1="94.2" x2="11.09" y2="92.51" width="0.254" layer="16"/>
+<wire x1="27.9" y1="43.8" x2="27.9" y2="39.9" width="0.254" layer="16"/>
+<wire x1="27.9" y1="39.9" x2="27" y2="39" width="0.254" layer="16"/>
 </signal>
 <signal name="+12V">
 <contactref element="X1" pad="7"/>

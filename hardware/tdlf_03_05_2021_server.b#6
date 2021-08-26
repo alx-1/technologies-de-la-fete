@@ -151,7 +151,7 @@
 <layer number="255" name="routoute" color="7" fill="1" visible="yes" active="yes"/>
 </layers>
 <board>
-<fusionsync huburn="a.cGVyc29uYWw6dWUyYTYyMmQz" projecturn="a.cGVyc29uYWw6dWUyYTYyMmQzIzIwMjAwMTA4MjUzMTkwODgx" f3durn="urn:adsk.wipprod:dm.lineage:EJ7CIL_8QPSL4HfMM387xA" pcbguid="" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="1e268f09-bdda-4e8c-a022-348851f8809f" lastsyncedrevisionid="1e268f09-bdda-4e8c-a022-348851f8809f" lastboardhashguid="10110adf-730a-8ede-3051-079abd0e3524" lastpushedtime="2021-04-02T02:38:33Z" linktopcb3d="true"/>
+<fusionsync huburn="a.cGVyc29uYWw6dWUyYTYyMmQz" projecturn="a.cGVyc29uYWw6dWUyYTYyMmQzIzIwMjAwMTA4MjUzMTkwODgx" f3durn="urn:adsk.wipprod:dm.lineage:EJ7CIL_8QPSL4HfMM387xA" pcbguid="" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="7d571e40-2c82-453b-b189-2d8ddc5c869f" lastsyncedrevisionid="7d571e40-2c82-453b-b189-2d8ddc5c869f" lastboardhashguid="83bfc7fe-6b66-0ea3-aab0-548db4954436" lastpushedtime="2021-06-20T17:21:24Z" linktopcb3d="true"/>
 <plain>
 <wire x1="0" y1="0" x2="0" y2="100" width="0.1524" layer="20"/>
 <wire x1="0" y1="100" x2="29.5" y2="100" width="0.1524" layer="20"/>
@@ -921,13 +921,13 @@ design rules under a new name.</description>
 <wire x1="5.9" y1="56.04" x2="5.9" y2="37.5" width="0.254" layer="1"/>
 <wire x1="5.9" y1="37.5" x2="2.6" y2="34.2" width="0.254" layer="1"/>
 </signal>
-<signal name="N$3">
+<signal name="3V">
 <contactref element="51" pad="2"/>
 <contactref element="MIDI" pad="4"/>
 <wire x1="4.5" y1="23.7" x2="11.11" y2="17.09" width="0.254" layer="1"/>
 <wire x1="11.11" y1="18.89" x2="11.11" y2="17.09" width="0.254" layer="1"/>
 </signal>
-<signal name="N$5">
+<signal name="PIN27">
 <contactref element="MIDI" pad="5"/>
 <contactref element="51OHMS" pad="2"/>
 <wire x1="18.89" y1="18.89" x2="17.111340625" y2="12.5" width="0.254" layer="1"/>
