@@ -35,6 +35,7 @@
 
 #define HOST_IP_ADDR "255.255.255.255" // trying to broadcast first // //#define HOST_IP_ADDR "192.168.0.101"
 #define PORT 3333
+// #define PORT_SRV 3334 // essai réception
 
 extern "C" {
 static const char *SOCKET_TAG = "Socket";
@@ -46,7 +47,7 @@ static const char *SPACE_TAG = "";
 }
 
 ////// sockette /////
-char rx_buffer[128]; // 128
+char rx_buffer[79]; // To hold incoming sequence
 char addr_str[128];
 int addr_family;    
 int ip_protocol;
@@ -370,8 +371,119 @@ void tickTask(void* userParam)
 
 } // fin de tickTask
 
+extern "C" {
+
+void convertInt2Bits(int monInt, int monOffset){
+    // monInt à convertir, monOffset pour l'écrire au bon endroit
+
+    for(int i=0;i<4;i++){ // reset avant de ré-écrire les valeurs
+        bd[i+4*monOffset] = false;
+    }
+    
+    if(monInt == 0){
+        // do nothing
+        }
+        else if( monInt == 1 ){ bd[3+4*monOffset] = true; }
+        else if( monInt == 2 ){ bd[2+4*monOffset] = true; }
+        else if( monInt == 3 ){ bd[3+4*monOffset] = true; bd[2+4*monOffset] = true; }
+        else if( monInt == 4 ){ bd[1+4*monOffset] = true; }
+        else if( monInt == 5 ){ bd[3+4*monOffset] = true; bd[1+4*monOffset] = true; }
+        else if( monInt == 6 ){ bd[2+4*monOffset] = true; bd[1+4*monOffset] = true; }
+        else if( monInt == 7 ){ bd[3+4*monOffset] = true; bd[2+4*monOffset] = true; bd[1+4*monOffset] = true; } 
+        else{
+        ESP_LOGI(TAG, "monInt out of range");
+        }
+        ESP_LOGI(TAG, "noteSelektor %i", monInt);
+    } // fin converter
+
+    void bits2noteSelektor(bool bit1, bool bit2, bool bit3) { // bits bd[5],bd[6],bd[7]
+        noteSelektor = ((bit3*1)+(bit2*2)+(bit1*4));
+        ESP_LOGI(TAG, "noteSelektor %i", noteSelektor);
+    }
+
+    void bits2barSelektor(bool bit12, bool bit13) { // bits bd[12], bd[13]
+        barSelektor = (bit12*1)+(bit13*2);
+        ESP_LOGI(TAG, "barSelektor %i", barSelektor);
+    }
+
+}
+
 ////////// UDP SOCKETTE ////////
 // extern "C" {
+// essai réception de config au départ //
+/* static void udp_server_task(void *pvParameters)
+{
+    char rx_buffer_serv[128];
+    
+    char addr_str_serv[128];
+    int addr_family_serv = AF_INET6;
+    int ip_protocol_serv = IPPROTO_IPV6;
+    struct sockaddr_in6 dest_addr_serv; // IPV6
+
+while (1) {
+
+            ESP_LOGI(SOCKET_TAG, "AF_INET6");
+            bzero(&dest_addr_serv.sin6_addr.un, sizeof(dest_addr_serv.sin6_addr.un));
+            dest_addr_serv.sin6_family = AF_INET6;
+            dest_addr_serv.sin6_port = htons(PORT_SRV);
+            
+            inet6_ntoa_r(dest_addr_serv.sin6_addr, addr_str_serv, sizeof(addr_str_serv) - 1);
+            int sock_serv = socket(addr_family_serv, SOCK_DGRAM, ip_protocol_serv);
+            ESP_LOGI(SOCKET_TAG, "Socket created with id : %i", sock_serv);
+            
+            if (sock_serv < 0) {
+                ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
+                break;
+            }
+
+            int opt = 1;
+            setsockopt(sock_serv, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+            setsockopt(sock_serv, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof(opt));
+
+            int err_serv = bind(sock_serv, (struct sockaddr *)&dest_addr_serv, sizeof(dest_addr_serv));
+
+            if (err_serv < 0) {
+                ESP_LOGE(SOCKET_TAG, "Socket unable to bind: errno %d", errno);
+                ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                break;
+            }
+
+            ESP_LOGI(SOCKET_TAG, "Socket bound, port %d", PORT_SRV);
+
+
+        while (1) {
+            if(mstrpckIP && nouvSockette ){
+
+            ESP_LOGI(SOCKET_TAG, "Socketz waiting for data\n");
+
+            struct sockaddr_in6 source_addr_serv; // Large enough for both IPv4 or IPv6
+            socklen_t socklen_serv = sizeof(source_addr_serv);
+            
+            int len_serv = recvfrom(sock_serv, rx_buffer_serv, sizeof(rx_buffer_serv)-1, 0, (struct sockaddr *)&source_addr_serv, &socklen_serv);
+           
+            for (int i = 0; i < sizeof(rx_buffer_serv);i++){
+                ESP_LOGE(SOCKET_TAG, "rx_buffer_serv %i :%i", i, rx_buffer_serv[i]);
+            }
+            
+
+              // Error occurred during receiving
+            if (len_serv < 0) {
+                ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
+                break;
+              }
+
+             
+        }
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+ 
+    } // fin du premier while
+    
+   } // fin du second while
+
+   vTaskDelete(NULL);
+
+} */
+
 static void udp_client_task(void *pvParameters)
 {
 
@@ -397,22 +509,44 @@ static void udp_client_task(void *pvParameters)
   	ESP_LOGI(SOCKET_TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR, PORT);
 	
     ///// FIN SOCKETTE /////
-    while (1) {
-        while (1) { // bdChanged est un flag si bd[] a changé
+   
+    while (1) { // bdChanged est un flag si bd[] a changé
 
-            for(int i = 0; i<sizeof(bd); i++){
-                    if (bd[i] != cbd[i]){
-                        ESP_LOGI(SOCKET_TAG, "bd changed!");
-                        bdChanged = true;
-                    }
+        for(int i = 0; i<sizeof(bd); i++){
+            if (bd[i] != cbd[i]){
+            ESP_LOGI(SOCKET_TAG, "bd changed 1!");
+            bdChanged = true;
+            break; 
             }
+        }
 
-            if(!mstrpckIP){ 
+        // check if a load sequence message is arriving
+
+ /*        struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
+        socklen_t socklen = sizeof(source_addr);
+        int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+                
+        ESP_LOGI(SOCKET_TAG, "what where on devrait recevoir quelque chose?");
+        // int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
+
+        ESP_LOGI(SOCKET_TAG, "...quelque chose?");
+
+        if (len < 0) {
+            ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
+            break;
+            }
+        else {
+            rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
+            ESP_LOGI(SOCKET_TAG, "Received mstr ? %d bytes from %s:", len, rx_buffer);
+        }  */
+            
+
+        if(!mstrpckIP){ 
             int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)); // peut envoyer une string au lieu du tableau vide
   
-                if (err < 0) {
-                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-                    break;
+            if (err < 0) {
+                ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                break;
                 }
             // ESP_LOGI(SOCKET_TAG, "Message sent");
 
@@ -443,7 +577,7 @@ static void udp_client_task(void *pvParameters)
 
             vTaskDelay(100 / portTICK_PERIOD_MS); // 500 
 
-        } // end if (mstrpck)
+        } // end if (!mstrpck)
 
         else if (mstrpckIP && !nouvSockette){
 	        
@@ -468,69 +602,84 @@ static void udp_client_task(void *pvParameters)
 
         } // fin de !nouvSockette
 
-        else if (mstrpckIP && nouvSockette && bdChanged){
+        else if ( mstrpckIP && nouvSockette ) {
 
-            // ESP_LOGI(TAG, "tente d'envoyer");
+            if ( bdChanged ) {
 
-            //for (int i = 0; i < sizeof(bd);i++){
-            //    ESP_LOGE(TAG, "bd : %i,  %i", i, bd[i]);
-            //}
+                ESP_LOGI(SOCKET_TAG, "bd changed 2!");
 
-            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+                //for (int i = 0; i < sizeof(bd);i++){
+                //    ESP_LOGE(TAG, "bd : %i,  %i", i, bd[i]);
+                //}
 
-             for(int i = 0; i<sizeof(bd); i++){ // copy bd[] to cbd[] (changed bd)
+                int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+
+                for(int i = 0; i<sizeof(bd); i++){ // copy bd[] to cbd[] (changed bd)
                     cbd[i] = bd[i];
                     }
 
-            if (err < 0) {
-                ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-                 break;
-            }
+                if (err < 0) {
+                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                    break;
+                }
             
-           // ESP_LOGI(SOCKET_TAG, "Message sent");
+                // ESP_LOGI(SOCKET_TAG, "Message sent");
 
-            struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
-            socklen_t socklen = sizeof(source_addr);
-            //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
-            int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
+                struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
+                socklen_t socklen = sizeof(source_addr);
+                //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+                int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
 
-            // Error occurred during receiving
-            if (len < 0) {
-                ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
-                break;
-            } else { // Data received
-                rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
+                // Error occurred during receiving
+                if (len < 0) {
+                    ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
+                    break;
+                } else { // Data received
+                    rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
                 
-                //ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
+                    ESP_LOGI(SOCKET_TAG, "Received mstr ? %d bytes from %s:", len, addr_str);
+                    
+                    if ( len > 20 ){  // So we're getting love and an array to load
+                            
+                        for ( int i = 0; i < sizeof(rx_buffer); i++ ) {
+                            // ESP_LOGI(SOCKET_TAG, "rx_buffer[%i] = %i ", i, rx_buffer[i]); 
+                            bd[i] = rx_buffer[i]; // copy into bd[]
+                            cbd[i] = rx_buffer[i]; // copy into cbd[] so the comparison is not false
+                            ESP_LOGI(SOCKET_TAG, "rx_buffer -> bd[%i] = %i ", i, bd[i]);    
+                        }
 
-                //ESP_LOGI(SOCKET_TAG, "2e confirmation mstrpckIP  : ");
-                //HOST_IP_ADDR = rx_buffer;
-                //ESP_LOGI(SOCKET_TAG, "%s", rx_buffer); 
+                        bits2noteSelektor(bd[5],bd[6],bd[7]);
+                        bits2barSelektor(bd[12],bd[13]);
+                        for ( int i = 0 ; i < 16 ; i++ ) {  // Add a visual of the new sequence!! Outside of the start/stop sequence
+                            TurnLedOn(i);
+                        }
 
-                if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
-                   // ESP_LOGI(SOCKET_TAG, "succès UDP");
-                } 
+                    }
+                    
+                    if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
+                        // ESP_LOGI(SOCKET_TAG, "succès UDP");
+                    } 
+
+                }
+
+                vTaskDelay(10 / portTICK_PERIOD_MS); // 500
+
+                bdChanged = false;
 
             }
-            vTaskDelay(10 / portTICK_PERIOD_MS); // 500
 
-            bdChanged = false;
-            // bdCha||ged = false;
-        } // fin nouvelle sockette
+        }  // fin nouvelle sockette 
         
-        }
+    } // fin du while
 
-        if (sock != -1) {
-            ESP_LOGE(TAG, "Shutting down socket and restarting...");
-            shutdown(sock, 0);
-            close(sock);
-        }
-
+    if (sock != -1) {
+        ESP_LOGE(TAG, "Shutting down socket and restarting...");
+        shutdown(sock, 0);
+        close(sock);
     }
+  
     vTaskDelete(NULL); 
-}
-
-// } // fin extern "C"
+} // fin extern "C"
 
 
 extern "C" { 
@@ -591,7 +740,10 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 
         // udp_client // sockette
         xTaskCreate(udp_client_task, "udp_client", 4096, NULL, 5, NULL);
-        ESP_LOGI(SOCKET_TAG, "udp_client started from IP_EVENT_STA_GOT_IP"); 
+        ESP_LOGI(SOCKET_TAG, "udp_client started from IP_EVENT_STA_GOT_IP");
+
+       /*  xTaskCreate(udp_server_task, "udp_server", 4096, NULL, 5, NULL);
+        ESP_LOGI(SOCKET_TAG, "udp_server started from IP_EVENT_STA_GOT_IP");   */
         
         // link
         SemaphoreHandle_t tickSemphr = xSemaphoreCreateBinary();
@@ -806,34 +958,6 @@ extern "C" { void wifi_init_sta(void)
 static bool s_pad_activated[TOUCH_PAD_MAX];
 static uint32_t s_pad_init_val[TOUCH_PAD_MAX];
 ////// TOUCH //////
-
-
-extern "C" {
-
-void convertInt2Bits(int monInt, int monOffset){
-    // monInt à convertir, monOffset pour l'écrire au bon endroit
-
-    for(int i=0;i<4;i++){ // reset avant de ré-écrire les valeurs
-        bd[i+4*monOffset] = false;
-    }
-    
-    if(monInt == 0){
-        // do nothing
-        }
-        else if( monInt == 1 ){ bd[3+4*monOffset] = true; }
-        else if( monInt == 2 ){ bd[2+4*monOffset] = true; }
-        else if( monInt == 3 ){ bd[3+4*monOffset] = true; bd[2+4*monOffset] = true; }
-        else if( monInt == 4 ){ bd[1+4*monOffset] = true; }
-        else if( monInt == 5 ){ bd[3+4*monOffset] = true; bd[1+4*monOffset] = true; }
-        else if( monInt == 6 ){ bd[2+4*monOffset] = true; bd[1+4*monOffset] = true; }
-        else if( monInt == 7 ){ bd[3+4*monOffset] = true; bd[2+4*monOffset] = true; bd[1+4*monOffset] = true; } 
-        else{
-        ESP_LOGI(TAG, "monInt out of range");
-        }
-        ESP_LOGI(TAG, "noteSelektor %i", monInt);
-    } // fin converter
-}
-
 
 extern "C" {
 ////////// TOUCH ///////////
@@ -1133,7 +1257,7 @@ extern "C" void app_main()
 
 
     if(skipNVSRead){
-      //////// WRITING TO NVS // EVENTUALLY USE THIS TO SAVE mtmstr[] //////
+      //////// WRITING TO NVS // 
       nvs_handle wificfg_nvs_handler;
       nvs_open("Wifi", NVS_READWRITE, &wificfg_nvs_handler);
       nvs_set_str(wificfg_nvs_handler,"wifi_ssid","testing");

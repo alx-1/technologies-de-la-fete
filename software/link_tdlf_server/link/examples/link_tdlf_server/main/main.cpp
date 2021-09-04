@@ -1,5 +1,5 @@
-////// tdlf server ///// receive note, channel info through UDP + send midi through serial to instruments
-////// ESP32 Ableton Link node // midi clock // BPM (+ - )// Start/Stop
+////// tdlf server ///// receive note, midi channel info through UDP + send midi through serial // Save, Load sequences
+////// ESP32 Ableton Link node // midi clock // BPM (+ - )// Start/Stop 
 ////// Smart config NVS enabled to set the wifi credentials from ESPTouch app if no IP is attributed
 
 
@@ -63,27 +63,21 @@ static const char *MIDI_TAG = "Midi";
   }
   #define PORT 3333
 
-  char clientIPAddresses[8][20]; // 8 potential clients, IPv6 format
-
-
-  int clientIPCheck ( char myArray[] ) {
+  char clientIPAddresses[8][21]; // 8 potential clients, IPv6 format + 1 for string termination by strncat
+  
+  int clientIPCheck ( char myArray[] ) { // ESP_LOGI(SOCKET_TAG, "This is myArray : %s", myArray);
     
-    for ( int i = 0; i < 8; i++ ) { // change this to a max of 8
-                  
-      if( strcmp(myArray, clientIPAddresses[i]) == 0 ) {
-        // ESP_LOGI(SOCKET_TAG, "Address already exists.");    // ip address already exists in the array so do nothing
-        return 42; // IP Address already exists at position 'i' in the array
+    for ( int i = 0; i < 8; i++ ) { // max of 8 IP addresses connected
+      if( strcmp( myArray, clientIPAddresses[i] ) == 0 ) {
+        return i; // IP Address already exists at position 'i' in the array
         break; 
         }
 
     }
-    return 1; // not in the array, add it
+    return 42; // not in the array, add it
   }
-
 #endif
 ////// sockette server //////
-
-// #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 
 
 // Serial midi
@@ -129,8 +123,7 @@ int MIDI_NOTES_DELAYED_OFF[16] = {0};
 #define MIDI_SONG_POSITION_POINTER 0xF2
 
 ///// seq /////
-
-// bool mstr[75] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-9] (bar) // mstr[10] (mute) // mstr[11-74](steps)
+bool loadedSeq[1264] = {}; // to store the loaded sequences
 bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
 bool mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
 
@@ -169,10 +162,10 @@ double prev_beat_time;
 bool connektMode = true; // flag pour envoyer l'adresse IP aux clients
 char str_ip[16] = "192.168.0.66"; // send IP to clients !! // stand in ip necessary for memory space?
 int nmbrClients = 0;
+int loadedClients = 0;
 
 int nmbrSeq = 0; // the number of sequences in nvs
 char sequence[8][10] = {{"sequence"},{"seq1"},{"seq2"},{"seq3"},{"seq4"},{"seq5"},{"seq6"},{"seq7"}};
-
 
 ///////////// INTERACTIONS ///////////
 ///
@@ -180,8 +173,11 @@ char sequence[8][10] = {{"sequence"},{"seq1"},{"seq2"},{"seq3"},{"seq4"},{"seq5"
 bool tapeArch = false; // flag for saving
 bool saveBPM = false; 
 bool saveSeq = false; // nvs save the sequence to start
+bool seqSaved = false;
 bool saveSeqConf = false;
 bool loadSeq = false;
+bool seqLoaded = false;
+bool seqToLoad = false; // to know when to send the loaded sequence to clients
 bool loadSeqConf = false;
 bool saveDelay = false; // for when to remove the save options after an interaction
 int delset = 0;
@@ -463,24 +459,28 @@ static void tp_example_touch_pad_init(void) { // Before reading touch pad, we ne
 
 ////////////////////// sockette server ///////////////////////
 #if defined USE_SOCKETS
+
+int sock; 
+
 extern "C" {
   static void udp_server_task(void *pvParameters)
   {
     char addr_str[128];
-    int addr_family;
-    int ip_protocol;
+    int addr_family = AF_INET6;
+    int ip_protocol = IPPROTO_IPV6;
+    struct sockaddr_in6 dest_addr; // IPV6*/
 
     while (1) { 
 
-        struct sockaddr_in6 dest_addr; // IPV6*/
         bzero(&dest_addr.sin6_addr.un, sizeof(dest_addr.sin6_addr.un));
         dest_addr.sin6_family = AF_INET6;
         dest_addr.sin6_port = htons(PORT);
-        addr_family = AF_INET6;
-        ip_protocol = IPPROTO_IPV6;
+        
         inet6_ntoa_r(dest_addr.sin6_addr, addr_str, sizeof(addr_str) - 1);
 
-        int sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
+        sock = socket(addr_family, SOCK_DGRAM, ip_protocol);
+
+        ESP_LOGI(SOCKET_TAG, "Socket created id : %i", sock);
 
         if (sock < 0) {
             ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
@@ -493,19 +493,15 @@ extern "C" {
 
         if (err < 0) {
             ESP_LOGE(SOCKET_TAG, "Socket unable to bind: errno %d", errno);
+            ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+            break;
         }
 
         ESP_LOGI(SOCKET_TAG, "Socket bound, port %d", PORT);
 
-        if (err < 0) {
-            ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-            break;
-        }
-        
-
         while (1) {
 
-            ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
+            // ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
 
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
@@ -621,37 +617,67 @@ extern "C" {
                 
             ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
                 
-            inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
+            //inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
                 
-            ////strcpy(clientIPAddresses[0], inet_ntoa(addr_str));
-
             if ( startStopState == false ) { // only check for clients if we are in stopped mode, it hangs the playback otherwise...
+              
               int checkIPExist = clientIPCheck(addr_str); // Does it exist in the array?
-              ESP_LOGI(SOCKET_TAG, "result of checkClientArray : %i", checkIPExist);
 
-              if ( checkIPExist == 1 ) { // if it doesn't exist, add it
-                strcpy(clientIPAddresses[nmbrClients], inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1)); // add that address to the array 
-                ESP_LOGI(SOCKET_TAG, "Adding client address : %s", clientIPAddresses[nmbrClients]);
+              ESP_LOGI(SOCKET_TAG, "result of clientIPCheck : %i", checkIPExist);
+
+              if ( checkIPExist == 42 ) { // if it doesn't exist, add it
+              
+                strncat(clientIPAddresses[nmbrClients], inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1),20); // add that address to the array 
+                ESP_LOGI(SOCKET_TAG, "Added client address : %s", clientIPAddresses[nmbrClients]);
+
                 nmbrClients++; // Count the newly registered client
+                ESP_LOGI(SOCKET_TAG, "How many clients ? : %i", nmbrClients);
+
                 }
 
-              else { // it exists do nothing
-                ESP_LOGI(SOCKET_TAG, "Address already exists : %s", addr_str);    // ip address already exists in the array so do nothing
+              else { // IP already exists 
+
+                ESP_LOGI(SOCKET_TAG, "Address already exists : %s", addr_str);    // ip address already exists in the array so do nothing // at what position
+                
+                if ( seqToLoad ) { // 
+
+                  ESP_LOGI(SOCKET_TAG, "Sending love instead of an IP to : %s", addr_str); 
+
+                  bool tmpArray[79];
+                  
+                  for ( int i = 0; i < 80; i++ ) { // checkIPExist is the offset
+
+                    tmpArray[i] = loadedSeq[i+(79*checkIPExist)]; // populate tmpmstr array
+                    ESP_LOGI(SOCKET_TAG, "tmpArray[%i] = %i ", i, tmpArray[i]); 
+
+                  }
+
+                  int err = sendto(sock, tmpArray, sizeof(tmpArray), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+                  loadedClients++; // keep track of how many clients have been loaded
+                  ESP_LOGI(SOCKET_TAG, "loadedClients : %i\n", loadedClients); 
+                  
+                  if( loadedClients == nmbrClients ) { // All the clients are loaded
+
+                    seqToLoad = false;
+                    loadedClients = 0;
+
+                    }
+                    
                 }
 
-              // nmbrClients = sizeof(clientIPAddresses)/20; // send this to TFT screen // 20 bytes in the address array
+              } // End of "else if IP exists"
+
               ESP_LOGI(SOCKET_TAG, "nmbrClients : %i\n", nmbrClients); 
             
             } 
 
-            ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
             int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+            ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
 
             if (err < 0) {
               ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
               break;
-              }
-       
+              }       
         }
 
         if (sock != -1) {
@@ -1068,14 +1094,23 @@ void tickTask(void* userParam)
       nvs_close(wificfg_nvs_handler); 
       ////// END NVS ///// 
       
-      ESP_LOGI(NVS_TAG, "Sequence saved");
+      seqSaved = true;
+      delset = esp_timer_get_time()+1500000;
       saveSeqConf = false;
+      
+      for (int i = 0; i < 180; i++) { // What are we writing?
+       ESP_LOGI(SOCKET_TAG, "savedSeq[%i] = %i ", i, mtmss[i]);   
+      } 
+      ESP_LOGI(NVS_TAG, "Sequence saved");
+  
       
     }
 
     if ( loadSeqConf == true ) {
 
       /// NVS READ CREDENTIALS ///
+
+       loadSeqConf = false;
 
       nvs_handle wificfg_nvs_handler;
       size_t len;
@@ -1087,12 +1122,15 @@ void tickTask(void* userParam)
 
       ///// END NVS /////
 
-      for (int i = 0; i < 250; i++) {
-            printf("%i: %i\n", i + 1, mySeq[i]);
-        }
+     for (int i = 0; i < 242; i++) { // Populate the tmp loadedSequence from nvs
+       loadedSeq[i] = mySeq[i];
+       ESP_LOGI(SOCKET_TAG, "loadedSeq[%i] = %i ", i, loadedSeq[i]);   
+      } 
   
+      seqLoaded = true;
+      seqToLoad = true;
+      delset = esp_timer_get_time()+2000000;
       ESP_LOGI(NVS_TAG, "Sequence #%i loaded", selectedSeq);
-      loadSeqConf = false;
 
     }
 
@@ -1190,8 +1228,12 @@ void tickTask(void* userParam)
 
     if (esp_timer_get_time() > delset ){
      saveBPM = false;
+
      saveSeq = false; 
+     seqSaved = false;
+     
      loadSeq = false;
+     seqLoaded = false;
    }
 
     if ( saveBPM == true && tapeArch == true ) {
@@ -1264,9 +1306,19 @@ void tickTask(void* userParam)
         char tmpOHbuf[20];
         char top[20];
 
-        if ( saveSeq == true ) {
+        if ( seqSaved == true ) {
+          snprintf(tmpOHbuf, 20 , "Sequence"); 
+          snprintf(current_phase_step, 20, "Saved   ");
+        }
+
+        else if ( saveSeq == true ) {
           snprintf(tmpOHbuf, 20 , "Sequence"); 
           snprintf(current_phase_step, 20, "Save?   ");
+        }
+
+        else if ( seqLoaded == true ) {
+          snprintf(tmpOHbuf, 20 , "Sequence"); 
+          snprintf(current_phase_step, 20, "%i loaded", selectedSeq);
         }
 
         else if ( loadSeq == true ) {
@@ -1297,7 +1349,6 @@ void tickTask(void* userParam)
           }
 
         }
-
     
 
       //ESP_LOGI(LINK_TAG, "%i", halo_welt); 
