@@ -3608,17 +3608,17 @@ Source: 3M</description>
 <attribute name="VALUE" x="25.4" y="91.44" size="1.778" layer="96" rot="R90"/>
 <attribute name="NAME" x="9.398" y="91.44" size="1.778" layer="95" rot="R90"/>
 </instance>
-<instance part="MIDI" gate="G$1" x="25.4" y="22.86" smashed="yes">
-<attribute name="NAME" x="20.316659375" y="33.7892" size="1.27083125" layer="95" ratio="2"/>
-<attribute name="VALUE" x="20.313" y="10.1425" size="1.27175" layer="96" ratio="2"/>
+<instance part="MIDI" gate="G$1" x="33.02" y="22.86" smashed="yes">
+<attribute name="NAME" x="27.936659375" y="33.7892" size="1.27083125" layer="95" ratio="2"/>
+<attribute name="VALUE" x="27.933" y="10.1425" size="1.27175" layer="96" ratio="2"/>
 </instance>
-<instance part="51_OHMS" gate="G$1" x="10.16" y="35.56" smashed="yes" rot="R270">
-<attribute name="NAME" x="11.684" y="35.56" size="1.778" layer="95" font="vector" rot="R270" align="bottom-center"/>
-<attribute name="VALUE" x="8.636" y="35.56" size="1.778" layer="96" font="vector" rot="R270" align="top-center"/>
+<instance part="51_OHMS" gate="G$1" x="15.24" y="35.56" smashed="yes" rot="R270">
+<attribute name="NAME" x="16.764" y="35.56" size="1.778" layer="95" font="vector" rot="R270" align="bottom-center"/>
+<attribute name="VALUE" x="13.716" y="35.56" size="1.778" layer="96" font="vector" rot="R270" align="top-center"/>
 </instance>
 <instance part="51" gate="G$1" x="7.62" y="25.4" smashed="yes" rot="R270">
 <attribute name="NAME" x="9.144" y="25.4" size="1.778" layer="95" font="vector" rot="R270" align="bottom-center"/>
-<attribute name="VALUE" x="6.096" y="25.4" size="1.778" layer="96" font="vector" rot="R270" align="top-center"/>
+<attribute name="VALUE" x="3.556" y="25.4" size="1.778" layer="96" font="vector" rot="R270" align="top-center"/>
 </instance>
 <instance part="BATT_+" gate="G$1" x="68.58" y="55.88" smashed="yes">
 <attribute name="VALUE" x="66.04" y="50.8" size="1.778" layer="96"/>
@@ -3708,7 +3708,6 @@ Source: 3M</description>
 <wire x1="5.08" y1="106.68" x2="17.78" y2="106.68" width="0.1524" layer="91"/>
 <wire x1="17.78" y1="106.68" x2="17.78" y2="101.6" width="0.1524" layer="91"/>
 <pinref part="51_OHMS" gate="G$1" pin="1"/>
-<wire x1="10.16" y1="40.64" x2="15.24" y2="40.64" width="0.1524" layer="91"/>
 <wire x1="15.24" y1="40.64" x2="15.24" y2="81.28" width="0.1524" layer="91"/>
 </segment>
 </net>
@@ -3721,15 +3720,13 @@ Source: 3M</description>
 <wire x1="43.18" y1="106.68" x2="20.32" y2="106.68" width="0.1524" layer="91"/>
 <wire x1="20.32" y1="106.68" x2="20.32" y2="101.6" width="0.1524" layer="91"/>
 <wire x1="43.18" y1="81.28" x2="50.8" y2="81.28" width="0.1524" layer="91"/>
-<wire x1="50.8" y1="81.28" x2="50.8" y2="30.48" width="0.1524" layer="91"/>
-<wire x1="50.8" y1="30.48" x2="33.02" y2="30.48" width="0.1524" layer="91"/>
-<wire x1="33.02" y1="30.48" x2="33.02" y2="35.56" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="81.28" x2="50.8" y2="35.56" width="0.1524" layer="91"/>
 <pinref part="MIDI" gate="G$1" pin="2"/>
-<wire x1="15.24" y1="27.94" x2="12.7" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="33.02" y1="35.56" x2="12.7" y2="35.56" width="0.1524" layer="91"/>
-<wire x1="12.7" y1="35.56" x2="12.7" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="50.8" y1="30.48" x2="50.8" y2="7.62" width="0.1524" layer="91"/>
-<junction x="50.8" y="30.48"/>
+<wire x1="22.86" y1="27.94" x2="20.32" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="35.56" x2="20.32" y2="35.56" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="35.56" x2="20.32" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="35.56" x2="50.8" y2="7.62" width="0.1524" layer="91"/>
+<junction x="50.8" y="35.56"/>
 <wire x1="50.8" y1="7.62" x2="-20.32" y2="7.62" width="0.1524" layer="91"/>
 <wire x1="-20.32" y1="7.62" x2="-20.32" y2="25.4" width="0.1524" layer="91"/>
 <pinref part="-12V" gate="-9" pin="KL"/>
@@ -3785,16 +3782,16 @@ Source: 3M</description>
 <net name="3V" class="0">
 <segment>
 <pinref part="51_OHMS" gate="G$1" pin="2"/>
-<wire x1="10.16" y1="22.86" x2="10.16" y2="30.48" width="0.1524" layer="91"/>
+<wire x1="15.24" y1="22.86" x2="15.24" y2="30.48" width="0.1524" layer="91"/>
 <pinref part="MIDI" gate="G$1" pin="4"/>
-<wire x1="15.24" y1="22.86" x2="10.16" y2="22.86" width="0.1524" layer="91"/>
+<wire x1="22.86" y1="22.86" x2="15.24" y2="22.86" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="PIN27" class="0">
 <segment>
 <pinref part="MIDI" gate="G$1" pin="5"/>
 <pinref part="51" gate="G$1" pin="2"/>
-<wire x1="15.24" y1="20.32" x2="7.62" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="22.86" y1="20.32" x2="7.62" y2="20.32" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$6" class="0">

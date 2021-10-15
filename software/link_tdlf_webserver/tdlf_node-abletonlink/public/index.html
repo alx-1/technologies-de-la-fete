@@ -127,13 +127,13 @@
     
         socket.on('test', function(data) { // trying to get the playState
         myPlayState = data.test;
-        //console.log("test : "+myPlayState);
+        console.log("test : "+myPlayState);
         });
     
 
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-            //console.log(data);
+            console.log(data);
             step = data;
             // change border color fo the active button
             
