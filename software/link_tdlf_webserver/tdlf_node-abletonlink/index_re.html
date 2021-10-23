@@ -13,18 +13,8 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/p5.min.js" type="text/javascript"></script>
     <script src ="js/p5.touchgui.js" type="text/javascript"></script>
-   
 
     <script>
-
-
-        var ws = new WebSocket("ws://192.168.0.110:9001/");
-        let isOpen = false;
-
-        ws.onopen = function(event) {
-            console.log("WebSocket is open now.");
-            isOpen = true;
-            };
         
         var gui; // p5.touchgui
 
@@ -54,10 +44,9 @@
         var myPlayState;
 
         let yesi = "halo welt";
-        let liveposeData = "hey";
-        let eric_X = 0;
-        let eric_Y = 0;
 
+        
+    
         var output;
     
         //var bd = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -140,94 +129,13 @@
     
         socket.on('test', function(data) { // trying to get the playState
         myPlayState = data.test;
-        // console.log("test : "+myPlayState);
+        console.log("test : "+myPlayState);
         });
 
         socket.on('yesi', function(data) { // trying to get the playState
         yesi = data.yesi;
-        //console.log("yesi : "+yesi);
-
-        if(yesi.includes("NOSE")){
-            // NOSE: [484.7156677246094, 129.638916015625, 0.34381017088890076]
-            // need to split this message to retrieve the x and y values
-            liveposeData = yesi.split("[");
-            console.log(liveposeData[1]);
-            liveposeData = liveposeData[1].split(",");
-
-           //console.log("livepose_NoseX : "+int(liveposeData[0]));
-           //console.log("livepose_NoseY : "+int(liveposeData[1]));
-
-           if(isOpen){
-            if (int(liveposeData[0])!=0){
-                ws.send(["livepose_Nose_X", int(liveposeData[0])]);
-            }   
-        } // only try to send data if the socket is open
-
-        if(isOpen){
-            if (int(liveposeData[1])!=0){
-                ws.send(["livepose_Nose_Y", int(liveposeData[1])]);
-            }
-        } // only try to send data if the socket is open
-
-        }
-
-        else if(yesi.includes("LEFT_SHOULDER")){
-       
-            liveposeData = yesi.split("[");
-            console.log(liveposeData[1]);
-            liveposeData = liveposeData[1].split(",");
-
-            //console.log("livepose_LEFT_SHOULDER_X : "+int(liveposeData[0]));
-            //console.log("livepose_LEFT_SHOULDER_Y : "+int(liveposeData[1]));
-
-        if(isOpen){
-            if (int(liveposeData[0])!=0){
-                ws.send(["livepose_LEFT_SHOULDER_X", int(liveposeData[0])]);
-            }   
-        } // only try to send data if the socket is open
-
-        if(isOpen){
-            if (int(liveposeData[1])!=0){
-                ws.send(["livepose_LEFT_SHOUDLER_Y", int(liveposeData[1])]);
-            }
-        } // only try to send data if the socket is open
-
-        }
-
-        else if(yesi.includes("RIGHT_SHOULDER")){
-       
-       liveposeData = yesi.split("[");
-       console.log(liveposeData[1]);
-       liveposeData = liveposeData[1].split(",");
-
-       //console.log("livepose_RIGHT_SHOULDER_X : "+int(liveposeData[0]));
-       //console.log("livepose_RIGHT_SHOULDER_Y : "+int(liveposeData[1]));
-
-   if(isOpen){
-       if (int(liveposeData[0])!=0){
-           ws.send(["livepose_RIGHT_SHOULDER_X", int(liveposeData[0])]);
-       }   
-   } // only try to send data if the socket is open
-
-   if(isOpen){
-       if (int(liveposeData[1])!=0){
-           ws.send(["livepose_RIGHT_SHOUDLER_Y", int(liveposeData[1])]);
-       }
-   } // only try to send data if the socket is open
-
-   } //End of right shoulder
-
-   // Éric contrôleur
-   if(isOpen){
-       
-           ws.send(["Eric_X", eric_X]);
-           ws.send(["Eric_Y", eric_Y]);
-       
-        }  // only try to send data if the socket is open
-
-  
-        
-    }); 
+        console.log("yesi : "+yesi);
+        });
     
 
         // handle the event sent with socket.send()
@@ -280,23 +188,9 @@
             rect(555,5,250,245,20);
             rect(5,255,800,150,20);
             drawGui();
-
-
+          
             fill("#DDBB44");
             textSize(16);
-
-            if(mouseX > 555 && mouseX < 800 && mouseY > 5 && mouseY < 250) {
-
-                console.log("oh yeah!!)");
-                //console.log(mouseX);
-                //console.log(mouseY);
-                text('Éric', mouseX, mouseY);
-                // save mouseX y mouseY
-                eric_X = mouseX-555;
-                eric_Y = mouseY-5;
-
-            }
-          
 
             text('technologies de la fête', sx, sy+off);
             // text('beat :        '+myBeat, sx, sy+2*off);

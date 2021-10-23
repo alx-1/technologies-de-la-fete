@@ -10,6 +10,64 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 //const p5 = require('p5')(server);
 
+let yesi = "halo welt";
+let stringy = "hey";
+
+// For Websockets
+const WebSocket = require('ws');
+const socketteserver = new WebSocket.Server({
+  port: 8000
+});
+
+
+let sockets = [];
+socketteserver.on('connection', function(socket) {
+  sockets.push(socket);
+
+  // console.log("une nouvelle sockette");
+
+  // When you receive a message, send that message to every socket.
+  socket.on('message', function(msg) {
+    //console.log(""+msg);
+
+    // send the whole message as data for now 
+    stringy = (""+msg);
+    //stringy = ("something else is there");
+    let resultat = false;
+    let total = 0;
+
+    // if string matches part of the string don't send out 
+
+    const mesStrings = ["something","HIP","BIG","RIGHT_ELBOW","ANKLE","KNEE","TOE","HEEL"]; // RIGHT_HIP/LEFT_HIP/RIGHT_BIG_TOE/RIGHT_ELBOW/LEFT_ELBOW/LEFT_BIG_TOE
+
+    for (let i = 0; i < mesStrings.length; i++){
+
+        resultat = false;   
+        resultat = stringy.includes(mesStrings[i]);
+        // console.log("argh : "+stringy.includes(mesStrings[i]));
+        total = resultat+total;
+
+    }
+
+    if(total > 0 ){
+        //console.log("filtre"); 
+        sockets.forEach(s => s.send("junk"));
+    }
+
+    else { // donc la string n'est pas trouvée
+        sockets.forEach(s => s.send(msg));
+        console.log("sending " +stringy); 
+        yesi = stringy;
+    }
+   
+  });
+
+  // When a socket closes, or disconnects, remove it from the array.
+  socket.on('close', function() {
+    sockets = sockets.filter(s => s !== socket);
+  });
+});
+
 
 function fmod(a, b){
     var x = Math.floor(a/b);
@@ -58,7 +116,6 @@ link.on('playState', (playState) => console.log("playState", playState));
 
         }
 
-
         beat = 0 ^ beat;
         //console.log("beat? : "+beat);
         if(0 < beat - lastBeat) {
@@ -66,10 +123,13 @@ link.on('playState', (playState) => console.log("playState", playState));
             lastBeat = beat;
             }
          //console.log(link.bpm);
+         
          numUsers = link.numPeers;
          io.emit('numUsers',{numUsers});
          test = link.isPlayStateSync;
          io.emit('test',{test});
+         io.emit('yesi',{yesi}); // 
+         
          prev_beat_time = curr_beat_time;
     });
     
@@ -98,7 +158,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         });
     });
 
-server.listen(8080, "192.168.0.128", () => {
+server.listen(8080, "192.168.1.47", () => {
 //server.listen(8080, "172.20.10.2", () => {
-    console.log("access to http://192.168.0.128:8080 !!");
+    console.log("access to http://192.168.0.100    :8000 !!");
 });
