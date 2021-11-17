@@ -9,9 +9,12 @@ app.use(express.static('public'));
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 //const p5 = require('p5')(server);
+const dgram = require('dgram');
 
 let yesi = "halo welt";
 let stringy = "hey";
+
+let myIP = "42";
 
 // For Websockets
 const WebSocket = require('ws');
@@ -146,19 +149,59 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {  // start listening from events from the socket upon connection
     console.log('a user connected');
     
+    socket.on('mtmss', (data) => {
+        //var s = dgram.createSocket('udp4');
+        //s.send(Buffer.from('abc'), 3333, '192.168.0.101');
+        console.log(data);
+        });
+
     socket.on('chBPM', (data) => {
+        var s = dgram.createSocket('udp4');
+        s.send(Buffer.from('abc'), 3333, '192.168.0.101');
         console.log(data.bpm);
         console.log('current bpm : '+link.bpm);
         if (data.bpm > 0) {
             link.bpm++;
-        } else {
+            } else {
             link.bpm--;
-        }
-        
+            }
+            
         });
+
+    
     });
 
-server.listen(8080, "192.168.1.47", () => {
+    'use strict';
+
+    ///////// Get the computer's external IP ////////
+const os = require('os');
+
+let networkInterfaces = os.networkInterfaces();
+
+let nonLocalInterfaces = {};
+for (let inet in networkInterfaces) {
+  let addresses = networkInterfaces[inet];
+  for (let i=0; i<addresses.length; i++) {
+    let address = addresses[i];
+    console.log("address : "+address.address);
+
+    if(address.address.includes("192")){
+        //console.log("bingo");
+        myIP = address.address;
+    }
+
+    if (!address.internal) {
+      if (!nonLocalInterfaces[inet]) {
+        nonLocalInterfaces[inet] = [];
+      }
+      nonLocalInterfaces[inet].push(address);
+    }
+  }
+}
+
+console.log(nonLocalInterfaces);
+
+server.listen(8080, myIP, () => {
 //server.listen(8080, "172.20.10.2", () => {
-    console.log("access to http://192.168.0.100    :8000 !!");
+    console.log("access to "+myIP+":8080 !!");
 });

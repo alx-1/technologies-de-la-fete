@@ -40,6 +40,7 @@ const {
 } = require('internal/dgram');
 const { guessHandleType } = internalBinding('util');
 const {
+  ERR_BUFFER_OUT_OF_BOUNDS,
   ERR_INVALID_ARG_TYPE,
   ERR_MISSING_ARGS,
   ERR_SOCKET_ALREADY_BOUND,
@@ -487,6 +488,13 @@ function sliceBuffer(buffer, offset, length) {
 
   offset = offset >>> 0;
   length = length >>> 0;
+  if (offset > buffer.byteLength) {
+    throw new ERR_BUFFER_OUT_OF_BOUNDS('offset');
+  }
+
+  if (offset + length > buffer.byteLength) {
+    throw new ERR_BUFFER_OUT_OF_BOUNDS('length');
+  }
 
   return Buffer.from(buffer.buffer, buffer.byteOffset + offset, length);
 }
@@ -636,8 +644,8 @@ Socket.prototype.send = function(buffer,
   if (typeof address === 'function') {
     callback = address;
     address = undefined;
-  } else if (address && typeof address !== 'string') {
-    throw new ERR_INVALID_ARG_TYPE('address', ['string', 'falsy'], address);
+  } else if (address != null) {
+    validateString(address, 'address');
   }
 
   healthCheck(this);

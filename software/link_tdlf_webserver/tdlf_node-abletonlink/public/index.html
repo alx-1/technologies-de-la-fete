@@ -9,14 +9,12 @@
         <style> body {padding: 0; margin: 0;} </style>
     </head>
 <body>
-   
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/p5.min.js" type="text/javascript"></script>
     <script src ="js/p5.touchgui.js" type="text/javascript"></script>
    
-
     <script>
-
 
         var ws = new WebSocket("ws://192.168.0.110:9001/");
         let isOpen = false;
@@ -60,6 +58,7 @@
 
         var output;
     
+        let data;
         //var bd = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         var bd = [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
         let pitons = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"];
@@ -132,6 +131,8 @@
             print(this.label + " is pressed.");
             bd[this.label] = !bd[this.label] ;
             console.log(bd);
+            data =  bd;
+            socket.emit('mtmss', data);
         }
 
         socket.on('numUsers', function(data) {
@@ -312,17 +313,28 @@
             text('midi channel :        '+myMidi[myMidiIndex], sx+300, sy+3*off);
 
             text('Livepose :       '+yesi, sx, sy+13*off);
+
+            /* if (a.isPressed){
+                print("seq but 0 pressed."); 
+                data =  { bpm:1 }; 
+                socket.emit('mtmss', data);
+            }
+            else if (b.isPressed){
+                print("seq but 0 pressed.");
+                data =  { bpm:1 }; 
+                socket.emit('mtmss', data); 
+            } */
   
             if (minus.isPressed) {
             // Print a message when Button is pressed.
             print(minus.label + " pressed.");
-            var data =  { bpm:-1 };
+            data =  { bpm:-1 };
                 socket.emit('chBPM', data);
             }
             if (plus.isPressed) {
             // Print a message when Button is pressed.
             print(plus.label + " pressed.");
-            var data =  { bpm:1 };
+            data =  { bpm:1 };
            // var data =  { isPlaying:false };
            socket.emit('chBPM', data);
             }

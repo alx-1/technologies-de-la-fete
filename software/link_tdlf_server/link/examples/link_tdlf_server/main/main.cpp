@@ -94,6 +94,10 @@ static const char *MIDI_TAG = "Midi";
 #define MIDI_STOP 0xFC // 11111100 // 252
 
 char MIDI_NOTE_ON_CH[] = {0x99,0x90}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
+char MIDI_CONTROL_CHANGE_CH[] = {0xB0}; // send control change on channel 0
+char MIDI_CONTROL_NUMBER[] = {0x01}; // pitch bend
+
+
 
 char MIDI_NOTES[16]; // keep notes in memory along with interval at which to trigger the note off message
 int MIDI_NOTES_DELAYED_OFF[16] = {0};
@@ -124,6 +128,10 @@ int MIDI_NOTES_DELAYED_OFF[16] = {0};
 
 ///// seq /////
 bool loadedSeq[1264] = {}; // to store the loaded sequences
+//char* mstr = "test";
+int sensorValue = 42;
+int test = 777;
+bool changeBPM;
 bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
 bool mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
 
@@ -201,6 +209,10 @@ int bpm;  // BPM in tenths of a BPM!!
 int tappedBPM = 0;
 int minimumTapInterval = 50;
 int maximumTapInterval = 1500;
+
+/* char numToASCII(int num) {
+  return (char)num;
+  } */
 
 
 ///////////// I2C Display ////////////
@@ -509,10 +521,30 @@ extern "C" {
             //mstr devrait être 79 valeurs;
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-            //for (int i = 0; i < sizeof(mstr);i++){
-            //    ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
-            //}
-            ESP_LOGE(SOCKET_TAG, " "); // new line
+           //ESP_LOGE(SOCKET_TAG, mstr);
+           //ESP_LOGI(SOCKET_TAG, "%s", mstr);
+           for (int i = 0; i < sizeof(mstr);i++){
+               ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
+           }
+            
+            test = mstr[0];
+            //test = (mstr[7] - '0')*10 + mstr[8] - '0';
+            //ESP_LOGE(SOCKET_TAG, "test %d", test);
+            //ESP_LOGE(SOCKET_TAG, "teste %c", teste);
+
+              sensorValue = test; //+int(mstr[8]);
+              ESP_LOGE(SOCKET_TAG, "sensorValue %i", sensorValue);
+              ESP_LOGE(SOCKET_TAG, "test %i", test);
+
+              if('s' == test){
+              ESP_LOGE(SOCKET_TAG,"we have another sensor message");
+              }
+
+              if(98 == test){ //  
+              ESP_LOGE(SOCKET_TAG,"new BPM !");
+              newBPM = (mstr[4] - '0')*10 + mstr[5] - '0';
+              changeBPM = true;
+              }
 
             // Filter the array input and populate mtmss
 
@@ -534,7 +566,7 @@ extern "C" {
             }
       
             channel = tmpTotal;
-            ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
+            // ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
   
             ////// note ///////
             tmpTotal = 0; // reset before counting
@@ -553,7 +585,7 @@ extern "C" {
             }
 
             note = tmpTotal; // only 8 note values for the moment
-            ESP_LOGI(SOCKET_TAG, "note : %i", note); 
+            // ESP_LOGI(SOCKET_TAG, "note : %i", note); 
 
 
             ////// noteDuration ///////
@@ -573,7 +605,7 @@ extern "C" {
             }
             noteDuration = duration[tmpTotal]; // only 8 noteDuration values for the moment
 
-            ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
+            // ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
           
 
             // read in bar value from mst[8] and mst[9] and save it as int for the corresponding note
@@ -582,11 +614,11 @@ extern "C" {
             else if(mstr[12]==false && mstr[13]==true){bar[note] = 3;} 
             else {bar[note] = 4;} // true && true 
 
-            ESP_LOGI(SOCKET_TAG, "bar[note] : %i", bar[note]); 
+            // ESP_LOGI(SOCKET_TAG, "bar[note] : %i", bar[note]); 
 
             // read in the bit value for mute and store 
             muteRecords[note] = mstr[14];
-            ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
+            // ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
          
 
             // calcul de l'offset 
@@ -594,7 +626,7 @@ extern "C" {
             int offset = channel * 79 + note * 79; // no comprendo? // copy into mtmss offset = channel * 79 + note * 79...
 
 
-            ESP_LOGI(SOCKET_TAG, "offset: %i", offset); 
+            // ESP_LOGI(SOCKET_TAG, "offset: %i", offset); 
 
 
             for( int i=0; i<79; i++ ){
@@ -615,7 +647,7 @@ extern "C" {
                     inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
               }
                 
-            ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
+           //  ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
                 
             //inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
                 
@@ -1134,6 +1166,16 @@ void tickTask(void* userParam)
 
     }
 
+    if ( changeBPM == true ) {
+      auto mySession = link.captureAppSessionState();
+      const auto timez = link.clock().micros();
+      mySession.setTempo(newBPM,timez); // setTempo()'s second arg format is : const std::chrono::microseconds atTime
+      link.commitAppSessionState(mySession); 
+      const auto tempo = state.tempo(); // quelle est la valeur de tempo?
+      myNoteDuration = ((60/(tempo*4))*1000)*noteDuration; // calculate noteDuration as a function of BPM // 60 BPM * 4 steps per beat = 240 steps per minute // 60 seconds / 240 steps = 0,25 secs or 250 milliseconds per step // ((60 seconds / (BPM * 4 steps per beat))*1000 ms)*noteDuration
+      ESP_LOGI(LINK_TAG, "BPM changed %i", int(newBPM));
+    }
+
     if ( tempoINC == true ) {
       const auto tempo = state.tempo(); // quelle est la valeur de tempo?
       newBPM = tempo + 1;
@@ -1254,6 +1296,14 @@ void tickTask(void* userParam)
     const double curr_phase = fmod(curr_beat_time, 4);  // const double
 
     if ( curr_beat_time > prev_beat_time ) {
+
+      // try sending cc messages here 
+      char zedata1[] = { MIDI_CONTROL_CHANGE_CH[0] }; // send CC message on midi channel 0
+      uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
+      char zedata2[] = {MIDI_CONTROL_NUMBER[0]};      //  1 = pitch bend
+      uart_write_bytes(UART_NUM_1, zedata2, 1); 
+      char zedata3[] = { (char)sensorValue }; // need to convert sensorValue to hexadecimal! 
+      uart_write_bytes(UART_NUM_1, zedata3, 1); 
       
       const double prev_phase = fmod(prev_beat_time, 4);
       const double prev_step = floor(prev_phase * 4);
