@@ -16,13 +16,13 @@
    
     <script>
 
-        var ws = new WebSocket("ws://192.168.0.110:9001/");
+       //// for livepose, not needed anymore as we have 'chataigne' var ws = new WebSocket("ws://192.168.0.110:9001/");
         let isOpen = false;
 
-        ws.onopen = function(event) {
+     /*    ws.onopen = function(event) {
             console.log("WebSocket is open now.");
             isOpen = true;
-            };
+            }; */
         
         var gui; // p5.touchgui
 
@@ -102,6 +102,8 @@
             minus = createButton("-", sx+50, sy+2*off-16, 20, 20);
             plus = createButton("+", sx+130, sy+2*off-16, 20, 20);
 
+            startStop = createButton("Start/Stop", sx+130, sy+3*off-16, 20, 20);
+
             minusBar = createButton("-", sx+400, sy+off-16, 20, 20);
             plusBar = createButton("+", sx+470, sy+off-16, 20, 20);
 
@@ -132,7 +134,7 @@
             bd[this.label] = !bd[this.label] ;
             console.log(bd);
             data =  bd;
-            socket.emit('mtmss', data);
+            socket.emit('interface', data);
         }
 
         socket.on('numUsers', function(data) {
@@ -144,11 +146,11 @@
         // console.log("test : "+myPlayState);
         });
 
-        socket.on('yesi', function(data) { // trying to get the playState
+        /* socket.on('yesi', function(data) { // trying to get the playState
         yesi = data.yesi;
-        //console.log("yesi : "+yesi);
+        //console.log("yesi : "+yesi); */
 
-        if(yesi.includes("NOSE")){
+       /*  if(yesi.includes("NOSE")){
             // NOSE: [484.7156677246094, 129.638916015625, 0.34381017088890076]
             // need to split this message to retrieve the x and y values
             liveposeData = yesi.split("[");
@@ -170,9 +172,9 @@
             }
         } // only try to send data if the socket is open
 
-        }
+        } */
 
-        else if(yesi.includes("LEFT_SHOULDER")){
+        /* else if(yesi.includes("LEFT_SHOULDER")){
        
             liveposeData = yesi.split("[");
             console.log(liveposeData[1]);
@@ -220,20 +222,16 @@
 
    // Éric contrôleur
    if(isOpen){
-       
            ws.send(["Eric_X", eric_X]);
            ws.send(["Eric_Y", eric_Y]);
        
         }  // only try to send data if the socket is open
-
-  
-        
     }); 
+     */
     
-
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-            console.log(data);
+            // console.log("monData : "+data);
             step = data;
             // change border color fo the active button
             
@@ -288,7 +286,7 @@
 
             if(mouseX > 555 && mouseX < 800 && mouseY > 5 && mouseY < 250) {
 
-                console.log("oh yeah!!)");
+                // console.log("oh yeah!!)");
                 //console.log(mouseX);
                 //console.log(mouseY);
                 text('Éric', mouseX, mouseY);
@@ -305,14 +303,15 @@
             text('BPM :       '+myBPM, sx, sy+2*off);
             //text('phase :     '+round(myPhase), sx, sy+3*off);
 
-           
+            text('Start/Stop', sx, sy+3*off);
+            //text('phase :     '+round(myPhase), sx, sy+3*off);
             
             text('bar :                        '+bar, sx+300, sy+off );
             text('clients :                   '+numUsers, sx+300, sy+2*off);
             //text('step :        '+step, sx+250, sy+3*off);
             text('midi channel :        '+myMidi[myMidiIndex], sx+300, sy+3*off);
 
-            text('Livepose :       '+yesi, sx, sy+13*off);
+           ///// text('Livepose :       '+yesi, sx, sy+13*off);
 
             /* if (a.isPressed){
                 print("seq but 0 pressed."); 
@@ -367,6 +366,11 @@
     
             }
 
+            if (startStop.isPressed) {
+                data =  true;
+                socket.emit('startStop', data);
+                console.log("start/stop")
+            }
         } // fin de draw
 
 

@@ -16,10 +16,17 @@ let stringy = "hey";
 
 let myIP = "42";
 
+let mtmss = new Array (75); // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
+for (let i = 0; i < mtmss.length; i++) {
+    mtmss[i] = false;
+    // console.log(mtmss[i]);
+  }
+
+
 // For Websockets
 const WebSocket = require('ws');
 const socketteserver = new WebSocket.Server({
-  port: 8000
+  port: 8001
 });
 
 
@@ -149,15 +156,21 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {  // start listening from events from the socket upon connection
     console.log('a user connected');
     
-    socket.on('mtmss', (data) => {
-        //var s = dgram.createSocket('udp4');
-        //s.send(Buffer.from('abc'), 3333, '192.168.0.101');
+    socket.on('interface', (data) => {
+      
         console.log(data);
+        // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
+        var s = dgram.createSocket('udp4');
+        for (let i = 0; i < data.length; i++) {
+            mtmss[i+15] = data[i];
+        s.send(Buffer.from(mtmss), 3333, '192.168.0.100');
+        }
+
         });
 
     socket.on('chBPM', (data) => {
-        var s = dgram.createSocket('udp4');
-        s.send(Buffer.from('abc'), 3333, '192.168.0.101');
+        //var s = dgram.createSocket('udp4');
+        //s.send(Buffer.from('bpm 90'), 3333, '192.168.0.101');
         console.log(data.bpm);
         console.log('current bpm : '+link.bpm);
         if (data.bpm > 0) {
@@ -167,6 +180,12 @@ io.on('connection', (socket) => {  // start listening from events from the socke
             }
             
         });
+
+    socket.on('startStop', (data) => {
+        console.log('link.playstate : '+link.playstate);
+            link.playState = true;
+            console.log(data);
+        }); 
 
     
     });
@@ -201,7 +220,7 @@ for (let inet in networkInterfaces) {
 
 console.log(nonLocalInterfaces);
 
-server.listen(8080, myIP, () => {
+server.listen(8082, myIP, () => {
 //server.listen(8080, "172.20.10.2", () => {
-    console.log("access to "+myIP+":8080 !!");
+    console.log("access to "+myIP+":8082 !!");
 });

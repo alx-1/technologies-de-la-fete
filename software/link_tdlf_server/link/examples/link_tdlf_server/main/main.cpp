@@ -93,7 +93,7 @@ static const char *MIDI_TAG = "Midi";
 #define MIDI_START 0xFA // 11111010 // 250
 #define MIDI_STOP 0xFC // 11111100 // 252
 
-char MIDI_NOTE_ON_CH[] = {0x99,0x90}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
+char MIDI_NOTE_ON_CH[] = {0x99,0x99}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
 char MIDI_CONTROL_CHANGE_CH[] = {0xB0}; // send control change on channel 0
 char MIDI_CONTROL_NUMBER[] = {0x01}; // pitch bend
 
@@ -132,7 +132,9 @@ bool loadedSeq[1264] = {}; // to store the loaded sequences
 int sensorValue = 42;
 int test = 777;
 bool changeBPM;
+bool changedMstr = false;
 bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
+bool oldmstr[79] = {1}; 
 bool mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
 
 int channel; // 4 bits midi channel (0-7) -> (10,1,2,3,4,5,6,7) // drums + más
@@ -164,6 +166,7 @@ bool changeLink = false;
 bool tempoINC = false; // si le tempo doit être augmenté
 bool tempoDEC = false; // si le tempo doit être réduit
 double newBPM; // send to setTempo();
+double oldBPM; 
 double curr_beat_time;
 double prev_beat_time;
 
@@ -513,7 +516,7 @@ extern "C" {
 
         while (1) {
 
-            // ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
+            ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
 
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
@@ -521,11 +524,29 @@ extern "C" {
             //mstr devrait être 79 valeurs;
             int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
+           changedMstr = false; // reset the flag
+           // lets try to do this only once!
+           for(int i = 0; i<sizeof(mstr); i++){
+            if (mstr[i] != oldmstr[i]){
+            ESP_LOGI(SOCKET_TAG, "mstr changed !");
+            changedMstr = true;
+            break; 
+            }            
+          }
+
+          for(int i = 0; i<sizeof(mstr); i++){
+            oldmstr[i] = mstr[i];  ///// copy the mstr array into the old one to prevent spurious readings form the UDP port
+            }
+
+        if ( changedMstr == true ) {
+
+        
            //ESP_LOGE(SOCKET_TAG, mstr);
            //ESP_LOGI(SOCKET_TAG, "%s", mstr);
            for (int i = 0; i < sizeof(mstr);i++){
-               ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
-           }
+              ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
+              // ESP_LOGE(SOCKET_TAG, "oldmstr %i :%i", i, oldmstr[i]);
+              }
             
             test = mstr[0];
             //test = (mstr[7] - '0')*10 + mstr[8] - '0';
@@ -542,9 +563,19 @@ extern "C" {
 
               if(98 == test){ //  
               ESP_LOGE(SOCKET_TAG,"new BPM !");
+              if (mstr[6]== false){
               newBPM = (mstr[4] - '0')*10 + mstr[5] - '0';
-              changeBPM = true;
               }
+              else{
+              newBPM = (mstr[4] - '0')*100 + (mstr[5] - '0')*10 + mstr[6] - '0' ;
+              
+              }
+
+              if (newBPM != oldBPM){ // 
+                changeBPM = true;
+              }
+
+            }
 
             // Filter the array input and populate mtmss
 
@@ -636,6 +667,8 @@ extern "C" {
 
             // ESP_LOGI(SOCKET_TAG, "note %i : ", note);
           
+        } // end of if changedMstr == true
+
 
             // Error occurred during receiving
             if (len < 0) {
@@ -655,7 +688,7 @@ extern "C" {
               
               int checkIPExist = clientIPCheck(addr_str); // Does it exist in the array?
 
-              ESP_LOGI(SOCKET_TAG, "result of clientIPCheck : %i", checkIPExist);
+             // ESP_LOGI(SOCKET_TAG, "result of clientIPCheck : %i", checkIPExist);
 
               if ( checkIPExist == 42 ) { // if it doesn't exist, add it
               
@@ -1170,16 +1203,19 @@ void tickTask(void* userParam)
       auto mySession = link.captureAppSessionState();
       const auto timez = link.clock().micros();
       mySession.setTempo(newBPM,timez); // setTempo()'s second arg format is : const std::chrono::microseconds atTime
+      
       link.commitAppSessionState(mySession); 
       const auto tempo = state.tempo(); // quelle est la valeur de tempo?
       myNoteDuration = ((60/(tempo*4))*1000)*noteDuration; // calculate noteDuration as a function of BPM // 60 BPM * 4 steps per beat = 240 steps per minute // 60 seconds / 240 steps = 0,25 secs or 250 milliseconds per step // ((60 seconds / (BPM * 4 steps per beat))*1000 ms)*noteDuration
       ESP_LOGI(LINK_TAG, "BPM changed %i", int(newBPM));
+      oldBPM = newBPM; // store this to avoid spurious calls
     }
 
     if ( tempoINC == true ) {
       const auto tempo = state.tempo(); // quelle est la valeur de tempo?
       newBPM = tempo + 1;
       ESP_LOGI(LINK_TAG, "BPM changed %i", int(newBPM));
+      oldBPM = newBPM; // store this to avoid spurious calls
       auto mySession = link.captureAppSessionState();
       const auto timez = link.clock().micros();
       mySession.setTempo(newBPM,timez); // setTempo()'s second arg format is : const std::chrono::microseconds atTime
@@ -1194,6 +1230,7 @@ void tickTask(void* userParam)
       const auto tempo = state.tempo(); // quelle est la valeur de tempo?
       newBPM = tempo - 1;
       ESP_LOGI(LINK_TAG, "BPM changed %i", int(newBPM));
+      oldBPM = newBPM; // store this to avoid spurious calls
       auto mySession = link.captureAppSessionState();
       const auto timez = link.clock().micros();
       mySession.setTempo(newBPM,timez); // setTempo()'s second arg format is : const std::chrono::microseconds atTime
@@ -1465,7 +1502,7 @@ void tickTask(void* userParam)
            
               myBar =  mtmss[i*79+12] + (mtmss[i*79+13])*2; // 0, 1, 2, 3 bars // how many bars for this note?
               
-              //ESP_LOGI(LINK_TAG, "myBar : %i", myBar);
+              // ESP_LOGI(LINK_TAG, "myBar : %i", myBar);
               //ESP_LOGI(LINK_TAG, "stepsLength[myBar] : %i", stepsLength[myBar]);
               dubStep = step%stepsLength[myBar]; // modulo 16 // 32 // 48 // 64
               
@@ -1480,7 +1517,7 @@ void tickTask(void* userParam)
 
               // if (mtmss[i*79 + dubStep + 10] == 1){ 
               if (mtmss[currStep] == 1){ // send midi note out // mute to be implemented // && !muteRecords[i]){ 
-                // ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
+              //ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
                 if (channel == 0){ // are we playing drumz ?
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
