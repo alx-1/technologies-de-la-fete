@@ -2,6 +2,7 @@
 ////// ESP32 Ableton Link node // midi clock // BPM (+ - )// Start/Stop 
 ////// Smart config NVS enabled to set the wifi credentials from ESPTouch app if no IP is attributed
 
+//// The BOM price difference between MCP4822 (2 Channels) ($4.60) and DAC8564 (4 channels) ($20) is hard to justify given the performance demonstrated.
 
 #include "mstrpck.h"
 #include <ableton/Link.hpp>
@@ -43,14 +44,14 @@ extern "C" {
 #define USE_SOCKETS // we receive data from the seq clients
 
 extern "C" {
-static const char *SOCKET_TAG = "Socket";
-static const char *TOUCH_TAG = "Touch pad";
-static const char *SMART_TAG = "Smart config";
-static const char *NVS_TAG = "NVS";
-static const char *WIFI_TAG = "Wifi";
-static const char *LINK_TAG = "Link";
-static const char *TAP_TAG = "Tap";
-static const char *MIDI_TAG = "Midi";
+  static const char *SOCKET_TAG = "Socket";
+  static const char *TOUCH_TAG = "Touch pad";
+  static const char *SMART_TAG = "Smart config";
+  static const char *NVS_TAG = "NVS";
+  static const char *WIFI_TAG = "Wifi";
+  static const char *LINK_TAG = "Link";
+  static const char *TAP_TAG = "Tap";
+  static const char *MIDI_TAG = "Midi";
 }
 
 /////// sockette server ///////
@@ -60,7 +61,7 @@ static const char *MIDI_TAG = "Midi";
   #include "lwip/sockets.h"
   #include "lwip/sys.h"
   #include <lwip/netdb.h>
-  }
+}
   #define PORT 3333
 
   char clientIPAddresses[8][21]; // 8 potential clients, IPv6 format + 1 for string termination by strncat
@@ -94,10 +95,8 @@ static const char *MIDI_TAG = "Midi";
 #define MIDI_STOP 0xFC // 11111100 // 252
 
 char MIDI_NOTE_ON_CH[] = {0x99,0x99}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
-char MIDI_CONTROL_CHANGE_CH[] = {0xB0}; // send control change on channel 0
-char MIDI_CONTROL_NUMBER[] = {0x01}; // pitch bend
-
-
+char MIDI_CONTROL_CHANGE_CH[] = {0xB0,0x36,0x37}; // send control change on channel 0, stutter time (volca beats), stutter delay(volca beats)
+char MIDI_CONTROL_NUMBER[] = {0x01}; // pitch bend 
 
 char MIDI_NOTES[16]; // keep notes in memory along with interval at which to trigger the note off message
 int MIDI_NOTES_DELAYED_OFF[16] = {0};
@@ -320,8 +319,8 @@ static void tp_example_read_task(void *pvParameter) {
      
     touch_pad_intr_enable();
 
-        if (s_pad_activated[0] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d activated!", 0);  // Wait a while for the pad being released
+        if (s_pad_activated[2] == true) { // 0
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 2);  // Wait a while for the pad being released // 0
 
         if(loadSeq == true ) { // if we had a previous touch then save that thang
           loadSeqConf = true;
@@ -354,10 +353,10 @@ static void tp_example_read_task(void *pvParameter) {
         }
       
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
-        s_pad_activated[0] = false; // Reset the counter triggering a message // that application is running
+        s_pad_activated[2] = false; // Reset the counter triggering a message // that application is running // 0
    
-        } else if (s_pad_activated[2] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d activated!", 2);  // Wait a while for the pad being released
+        } else if (s_pad_activated[3] == true) { // 2
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 3);  // Wait a while for the pad being released // 2
         
         if ( saveBPM == true ) {
           tapeArch = true; // flag for saving 
@@ -376,26 +375,26 @@ static void tp_example_read_task(void *pvParameter) {
      
 
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
-        s_pad_activated[2] = false; // Reset the counter triggering a message // that application is running
+        s_pad_activated[3] = false; // Reset the counter triggering a message // that application is running // 2
         
-        } else if (s_pad_activated[3] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d activated!", 3);  // Wait a while for the pad being released
+        } else if (s_pad_activated[5] == true) { // 3
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 5);  // Wait a while for the pad being released // 3
         //ESP_LOGI(TOUCH_TAG, "TAP!");
         toTapped = true;
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
-        s_pad_activated[3] = false; // Reset the counter triggering a message // that application is running
+        s_pad_activated[5] = false; // Reset the counter triggering a message // that application is running // 3
 
-        } else if (s_pad_activated[5] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d piton!", 5);  
+        } else if (s_pad_activated[7] == true) { // 5
+        ESP_LOGI(TOUCH_TAG, "T%d piton!", 7);  // 5
         startStopState = !startStopState; 
         changePiton = true;
         ESP_LOGI(TOUCH_TAG, "startStopState : %i ", startStopState);
         ESP_LOGI(TOUCH_TAG, "changePiton : %i ", changePiton);
         vTaskDelay(300 / portTICK_PERIOD_MS);  
-        s_pad_activated[5] = false;  
+        s_pad_activated[7] = false;  // 5
         
-        } else if (s_pad_activated[7] == true) {
-        ESP_LOGI(TOUCH_TAG, "T%d activated!", 7);  
+        } else if (s_pad_activated[0] == true) { // 7
+        ESP_LOGI(TOUCH_TAG, "T%d activated!", 0);  // 7
           if (loadSeq == true){
             selectedSeq--;
             delset = esp_timer_get_time()+3000000;
@@ -408,7 +407,7 @@ static void tp_example_read_task(void *pvParameter) {
           }
         
         vTaskDelay(300 / portTICK_PERIOD_MS);  
-        s_pad_activated[7] = false; 
+        s_pad_activated[0] = false; // 7
 
 
         } else if (s_pad_activated[9] == true) {
@@ -526,7 +525,7 @@ extern "C" {
            
            changedMstr = false; // reset the flag
            // lets try to do this only once!
-           for(int i = 0; i<sizeof(mstr); i++){
+          for(int i = 0; i<sizeof(mstr); i++){
             if (mstr[i] != oldmstr[i]){
             ESP_LOGI(SOCKET_TAG, "mstr changed !");
             changedMstr = true;
@@ -543,22 +542,29 @@ extern "C" {
         
            //ESP_LOGE(SOCKET_TAG, mstr);
            //ESP_LOGI(SOCKET_TAG, "%s", mstr);
-           for (int i = 0; i < sizeof(mstr);i++){
-              ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
-              // ESP_LOGE(SOCKET_TAG, "oldmstr %i :%i", i, oldmstr[i]);
-              }
+       /*    for (int i = 0; i < sizeof(mstr);i++){
+            ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
+            ESP_LOGE(SOCKET_TAG, "oldmstr %i :%i", i, oldmstr[i]);
+          } */
             
             test = mstr[0];
             //test = (mstr[7] - '0')*10 + mstr[8] - '0';
-            //ESP_LOGE(SOCKET_TAG, "test %d", test);
-            //ESP_LOGE(SOCKET_TAG, "teste %c", teste);
+            ESP_LOGE(SOCKET_TAG, "test %d", test);
+            ESP_LOGE(SOCKET_TAG, "teste %c", test);
 
               sensorValue = test; //+int(mstr[8]);
               ESP_LOGE(SOCKET_TAG, "sensorValue %i", sensorValue);
               ESP_LOGE(SOCKET_TAG, "test %i", test);
 
+
+
               if('s' == test){
               ESP_LOGE(SOCKET_TAG,"we have another sensor message");
+              // 54 stutter time
+              ESP_LOGE(SOCKET_TAG, "test %d", mstr[1]);
+              ESP_LOGE(SOCKET_TAG, "test %d", mstr[2]);
+              // 55 stutter delay
+
               }
 
               if(98 == test){ //  
@@ -599,24 +605,28 @@ extern "C" {
             channel = tmpTotal;
             // ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
   
-            ////// note ///////
+            ////// note // bit 4,5,6,7 /////
             tmpTotal = 0; // reset before counting
 
             for(int i=0;i<4;i++){ // 
 
-              if(i==3 && mstr[3+4] == true){
+              if(i==0 && mstr[4] == true){
                 tmpTotal = tmpTotal+1;
+              } 
+              else if(i==1 && mstr[1+4] == true){
+                tmpTotal = tmpTotal+2;
                 }
               else if(i==2 && mstr[2+4] == true){
-                tmpTotal = tmpTotal + 2;
-                }
-              else if(i==1 && mstr[1+4] == true){
                 tmpTotal = tmpTotal + 4;
+                }
+              else if(i==3 && mstr[3+4] == true){
+                tmpTotal = tmpTotal + 8;
                 }  
+            
             }
 
             note = tmpTotal; // only 8 note values for the moment
-            // ESP_LOGI(SOCKET_TAG, "note : %i", note); 
+            ESP_LOGI(SOCKET_TAG, "note : %i", note); 
 
 
             ////// noteDuration ///////
@@ -654,8 +664,8 @@ extern "C" {
 
             // calcul de l'offset 
 
-            int offset = channel * 79 + note * 79; // no comprendo? // copy into mtmss offset = channel * 79 + note * 79...
-
+            int offset = note * 79; // no comprendo? // copy into mtmss offset = channel * 79 + note * 79...
+            // int offset = channel * 79 + note * 79; // no comprendo? // copy into mtmss offset = channel * 79 + note * 79...
 
             // ESP_LOGI(SOCKET_TAG, "offset: %i", offset); 
 
@@ -736,8 +746,8 @@ extern "C" {
             
             } 
 
-            int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
-            ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
+            //int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+            //ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
 
             if (err < 0) {
               ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
@@ -1502,22 +1512,23 @@ void tickTask(void* userParam)
            
               myBar =  mtmss[i*79+12] + (mtmss[i*79+13])*2; // 0, 1, 2, 3 bars // how many bars for this note?
               
-              // ESP_LOGI(LINK_TAG, "myBar : %i", myBar);
+              //ESP_LOGI(LINK_TAG, "myBar : %i", myBar);
               //ESP_LOGI(LINK_TAG, "stepsLength[myBar] : %i", stepsLength[myBar]);
               dubStep = step%stepsLength[myBar]; // modulo 16 // 32 // 48 // 64
               
               //ESP_LOGI(LINK_TAG, "nouveau 'dub'Step : %i", dubStep);
 
               currStep = (i*79)+dubStep+15; // 15 is where the step info starts
-              //ESP_LOGI(LINK_TAG, "currStep : %i", currStep);
+              // ESP_LOGI(LINK_TAG, "currStep : %i", currStep);
 
-               //for(int j = 0; j<79;j++){
-               //     ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
-               //}
+               /* for(int j = 0; j<79;j++){
+                    ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
+               } */
 
-              // if (mtmss[i*79 + dubStep + 10] == 1){ 
               if (mtmss[currStep] == 1){ // send midi note out // mute to be implemented // && !muteRecords[i]){ 
               //ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
+              ESP_LOGI(LINK_TAG, "Note on, %i", i);
+
                 if (channel == 0){ // are we playing drumz ?
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.

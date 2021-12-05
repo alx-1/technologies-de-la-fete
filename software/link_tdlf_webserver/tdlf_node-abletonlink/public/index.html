@@ -1,6 +1,5 @@
 <html>
 
-
     <head>
         <meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
         <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
@@ -16,17 +15,8 @@
    
     <script>
 
-       //// for livepose, not needed anymore as we have 'chataigne' var ws = new WebSocket("ws://192.168.0.110:9001/");
         let isOpen = false;
-
-     /*    ws.onopen = function(event) {
-            console.log("WebSocket is open now.");
-            isOpen = true;
-            }; */
-        
         var gui; // p5.touchgui
-
-        // let img; // trying to get a nice background going
   
         let plus;
         let minus;
@@ -35,47 +25,75 @@
         var myBeat = 42;
         var myBPM = 66.6;
 
-        var myPhase = 0;
+        //var myPhase = 0;
         var numUsers = 0;
         let step = 0;
+        let monStep = 0;
         let bar = 0;
         let myMidiIndex = 0; 
 
         let base = 32; // button x offset from edge
         let sx = base; // text x offset idem
-        let sy = 20;
-        let off = 20;
+        let sy = 10;
+        let off = 28;
         let boff = 62 // button offset
         let trowy = 110;
         let browy = 172;
-        let bsize = 55;
+        let hbutton = 30;
+        let vbutton = 23;
+        let bsize = 60;
         var myPlayState;
 
-        let yesi = "halo welt";
-        let liveposeData = "hey";
-        let eric_X = 0;
-        let eric_Y = 0;
-
+        let eric_X = 118+555;
+        let eric_Y = 129;
+        
         var output;
     
         let data;
-        //var bd = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-        var bd = [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
-        let pitons = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"];
-        //let myMidiNfo = ["10(Drums)","5(Base)"];
-        let myMidi = [10,5]; // have to encode all this!
+        let note;
 
+        let ccData = ['s',120,42];
+
+        
+        let mstr = new Array(79); // Array to send to the node.js server
+        for (let i = 0; i < mstr.length; i++) {
+            mstr[i] = false;
+            // console.log(mstr[i]);
+        }
+
+        let mtmss = new Array(632);   // 79 x 8 array to store the 8 instruments 
+        for (let i = 0; i < mtmss.length; i++) {
+            mtmss[i] = false;
+            // console.log(mtmss[i]);
+        }
+
+        let pitons = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"];
+        let instr = ["   bd  ", " snare ", "low tom", " hi tom", " cl hat", " op hat", "  clap ", " claves"]
+        let myInstr = 0;
+        let myMidi = [10,5]; // have to encode all this!
 
         function touchMoved() { // prevent scrolling on mobile devices
             // do some stuff
          return false;
         }
+
+        function noteEncode(note) {
+
+            let tmpTotal = note.toString(2);
+            console.log ("note:"+note);
+            console.log ("note in binary :"+note.toString(2));
+            for (i = 0;i<3;i++){
+                mtmss[4+i] = tmpTotal.charAt(i);
+                console.log ("tmpTotal :"+tmpTotal.charAt(i));
+            }
+        }   
+
         
         function setup() {
             createCanvas(windowWidth,windowHeight);
             setMoveThreshold(0.1);
 
-            //img = loadImage('freeliner.jpg'); // Load the image
+            // img = loadImage('freeliner.jpg'); // Load the image
            
             gui = createGui();
             gui.loadStyle("Rose");
@@ -99,16 +117,19 @@
             o = createButton("14",base+6*boff,browy, bsize, bsize);
             p = createButton("15",base+7*boff,browy, bsize, bsize);
 
-            minus = createButton("-", sx+50, sy+2*off-16, 20, 20);
-            plus = createButton("+", sx+130, sy+2*off-16, 20, 20);
+            minus = createButton("-", sx+55, sy+2*off-16, hbutton, vbutton);
+            plus = createButton("+", sx+150, sy+2*off-16, hbutton, vbutton);
 
-            startStop = createButton("Start/Stop", sx+130, sy+3*off-16, 20, 20);
+            //startStop = createButton("Start/Stop", sx+130, sy+3*off-16, 20, 20);
 
-            minusBar = createButton("-", sx+400, sy+off-16, 20, 20);
-            plusBar = createButton("+", sx+470, sy+off-16, 20, 20);
+            minusBar = createButton("-", sx+350, sy+off-16, hbutton,vbutton);
+            plusBar = createButton("+", sx+465, sy+off-16, hbutton,vbutton);
 
-            minusMidi = createButton("-", sx+400, sy+3*off-16, 20, 20);
-            plusMidi = createButton("+", sx+470, sy+3*off-16, 20, 20);
+            minusMidi = createButton("-", sx+350, sy+2*off-16, hbutton, vbutton);
+            plusMidi = createButton("+", sx+465, sy+2*off-16, hbutton, vbutton);
+
+            minusInstr= createButton("-", sx+350, sy+3*off-16, hbutton, vbutton);
+            plusInstr = createButton("+", sx+465, sy+3*off-16, hbutton, vbutton);
 
             // Callbacks can also be assigned to existing, user-defined functions.
             for(x = 0; x < 16 ; x++){
@@ -127,13 +148,79 @@
 
             background(25);
             noLoop(); // don't update draw
-        }
+        } // end of setup
 
         function nouvCol() {
             print(this.label + " is pressed.");
-            bd[this.label] = !bd[this.label] ;
-            console.log(bd);
-            data =  bd;
+            let numberPressed = int(this.label); // Otherwise it contatenates a number as text
+            // console.log("numberPressed : " +numberPressed);
+            mtmss[numberPressed+15+(myInstr*79)] = !mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
+            mstr[numberPressed+15] = mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
+            
+            console.log("myInstr : "+myInstr);
+
+            // get the myInstr value, use as multiplicator to write to the correct part of the database
+            // send that mstr (79) values part of the database to the node.js server to relay to the tdlf server.
+            
+            //////////// fix noteEncode for an elegant solution ////
+            if (myInstr == 7){
+                mstr[4] = true;  // 1
+                mstr[5] = true;  // 2
+                mstr[6] = true;  // 4
+                mstr[7] = false; // 8
+            }
+            else if (myInstr == 6){
+                mstr[4] = false;  
+                mstr[5] = true;  
+                mstr[6] = true;  
+                mstr[7] = false;  
+            }
+            else if (myInstr == 5){
+                mstr[4] = true;  
+                mstr[5] = false;  
+                mstr[6] = true;  
+                mstr[7] = false;  
+            }
+            else if (myInstr == 4){
+                mstr[4] = false;  
+                mstr[5] = false;  
+                mstr[6] = true; 
+                mstr[7] = false;  
+            }
+            else if (myInstr == 3){
+                mstr[4] = true;  
+                mstr[5] = true;  
+                mstr[6] = false;
+                mstr[7] = false;  
+            }
+            else if (myInstr == 2){
+                mstr[4] = false;  
+                mstr[5] = true;  
+                mstr[6] = false;  
+                mstr[7] = false;  
+            }
+            else if (myInstr == 1){
+                mstr[4] = true;  
+                mstr[5] = false;  
+                mstr[6] = false;  
+                mstr[7] = false;  
+            }
+            else if (myInstr == 0){
+                mstr[4] = false;  
+                mstr[5] = false;  
+                mstr[6] = false;  
+                mstr[7] = false; 
+            } 
+
+            //////////// fix noteEncode for an elegant solution, problem seems to be using for loops here ////
+            
+            /* for(i=15;i<32;i++){ // just get the 16 steps of interest
+                mstr[i] = mtmss[i+myInstr*79];
+            } */ // this doesn't work, no llips allowed...
+
+            data = mstr;
+
+            // console.log("mstr : "+mstr);
             socket.emit('interface', data);
         }
 
@@ -141,103 +228,22 @@
             numUsers = data.numUsers;
         });
     
-        socket.on('test', function(data) { // trying to get the playState
-        myPlayState = data.test;
-        // console.log("test : "+myPlayState);
-        });
-
-        /* socket.on('yesi', function(data) { // trying to get the playState
-        yesi = data.yesi;
-        //console.log("yesi : "+yesi); */
-
-       /*  if(yesi.includes("NOSE")){
-            // NOSE: [484.7156677246094, 129.638916015625, 0.34381017088890076]
-            // need to split this message to retrieve the x and y values
-            liveposeData = yesi.split("[");
-            console.log(liveposeData[1]);
-            liveposeData = liveposeData[1].split(",");
-
-           //console.log("livepose_NoseX : "+int(liveposeData[0]));
-           //console.log("livepose_NoseY : "+int(liveposeData[1]));
-
-           if(isOpen){
-            if (int(liveposeData[0])!=0){
-                ws.send(["livepose_Nose_X", int(liveposeData[0])]);
-            }   
-        } // only try to send data if the socket is open
-
-        if(isOpen){
-            if (int(liveposeData[1])!=0){
-                ws.send(["livepose_Nose_Y", int(liveposeData[1])]);
-            }
-        } // only try to send data if the socket is open
-
-        } */
-
-        /* else if(yesi.includes("LEFT_SHOULDER")){
-       
-            liveposeData = yesi.split("[");
-            console.log(liveposeData[1]);
-            liveposeData = liveposeData[1].split(",");
-
-            //console.log("livepose_LEFT_SHOULDER_X : "+int(liveposeData[0]));
-            //console.log("livepose_LEFT_SHOULDER_Y : "+int(liveposeData[1]));
-
-        if(isOpen){
-            if (int(liveposeData[0])!=0){
-                ws.send(["livepose_LEFT_SHOULDER_X", int(liveposeData[0])]);
-            }   
-        } // only try to send data if the socket is open
-
-        if(isOpen){
-            if (int(liveposeData[1])!=0){
-                ws.send(["livepose_LEFT_SHOUDLER_Y", int(liveposeData[1])]);
-            }
-        } // only try to send data if the socket is open
-
-        }
-
-        else if(yesi.includes("RIGHT_SHOULDER")){
-       
-       liveposeData = yesi.split("[");
-       console.log(liveposeData[1]);
-       liveposeData = liveposeData[1].split(",");
-
-       //console.log("livepose_RIGHT_SHOULDER_X : "+int(liveposeData[0]));
-       //console.log("livepose_RIGHT_SHOULDER_Y : "+int(liveposeData[1]));
-
-   if(isOpen){
-       if (int(liveposeData[0])!=0){
-           ws.send(["livepose_RIGHT_SHOULDER_X", int(liveposeData[0])]);
-       }   
-   } // only try to send data if the socket is open
-
-   if(isOpen){
-       if (int(liveposeData[1])!=0){
-           ws.send(["livepose_RIGHT_SHOUDLER_Y", int(liveposeData[1])]);
-       }
-   } // only try to send data if the socket is open
-
-   } //End of right shoulder
-
-   // Éric contrôleur
-   if(isOpen){
-           ws.send(["Eric_X", eric_X]);
-           ws.send(["Eric_Y", eric_Y]);
-       
-        }  // only try to send data if the socket is open
-    }); 
-     */
+        //socket.on('test', function(data) { // trying to get the playState
+        //myPlayState = data.test;
+        //console.log("test : "+myPlayState);
+        //});
     
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-            // console.log("monData : "+data);
+           // console.log("mon step : "+data);
             step = data;
+            //console.log("step là : "+step);
             // change border color fo the active button
             
 
           for(x = 0; x < 16 ; x++){
-            if(bd[x]==true){
+            
+            if(mtmss[x+15+(myInstr*79)]==true){
                 eval(pitons[x]).setStyle("fillBg", color(250, 210, 250)); 
                 eval(pitons[x]).setStyle("fillLabel", color(240, 210, 250));
 
@@ -245,16 +251,17 @@
             else{
             eval(pitons[x]).setStyle("fillBg", color("#DD8806")); 
             eval(pitons[x]).setStyle("fillLabel", color("#DD8810"));
+            }
 
-        }
-     
         }
         
-           eval(pitons[step]).setStyle("fillBg", color(255, 255, 255));
-           eval(pitons[step]).setStyle("fillLabel", color(253, 250, 253));
+        //console.log("pitons[step] : "+pitons[step]);
+        //console.log("  ");
+        eval(pitons[step]).setStyle("fillBg", color(120, 255, 255));
+        eval(pitons[step]).setStyle("fillLabel", color(253, 250, 253));
       
-
-            redraw();
+        redraw();
+        
         });
 
         socket.on('beat', function(data) {
@@ -262,9 +269,10 @@
             myBeat = data.beat;
             //console.log("myBeat : "+myBeat);
             myBPM = data.bpm;
+            //console.log("myBPM : "+myBPM);
             myBPM = myBPM.toFixed(2);
-            myPhase = data.phase;
-            myPhase = myPhase.toFixed(1);
+            //myPhase = data.phase;
+            //myPhase = myPhase.toFixed(1);
             
             redraw();
         });
@@ -282,36 +290,54 @@
 
 
             fill("#DDBB44");
-            textSize(16);
+            textSize(18);
 
             if(mouseX > 555 && mouseX < 800 && mouseY > 5 && mouseY < 250) {
 
                 // console.log("oh yeah!!)");
-                //console.log(mouseX);
-                //console.log(mouseY);
-                text('Éric', mouseX, mouseY);
-                // save mouseX y mouseY
-                eric_X = mouseX-555;
-                eric_Y = mouseY-5;
+                // console.log(mouseX);
+                // console.log(mouseY);
+                //stroke(255,255,0);
+                //text('Éric', mouseX, mouseY);
+                //ellipse(mouseX,mouseY,30,30);
+                rect(mouseX,mouseY-10,4,24);
+                rect(mouseX-10,mouseY,24,4);
+                
+                // save mouseX y mouseY when mouse is down
+              
+                if (mouseIsPressed) {
+                    //stroke(255);
+                    eric_X = mouseX-555;
+                    eric_Y = mouseY-5;
+                    console.log("eric_X : "+eric_X);
+                    console.log("eric_Y : "+eric_Y);
+
+                    data = ccData;
+                    socket.emit('interface', data);
+                }
+
+                rect(eric_X+555,eric_Y-10+5,4,24);
+                rect(eric_X-10+555,eric_Y+5,24,4);
+
+
+                
+               
 
             }
           
-
             text('technologies de la fête', sx, sy+off);
+            text('BPM :        '+myBPM, sx, sy+2*off);
+            text('clients :               '+numUsers, sx, sy+3*off);
+            
             // text('beat :        '+myBeat, sx, sy+2*off);
+            // text('Start/Stop', sx, sy+3*off);
+            // text('phase :     '+round(myPhase), sx, sy+4*off);
             
-            text('BPM :       '+myBPM, sx, sy+2*off);
-            //text('phase :     '+round(myPhase), sx, sy+3*off);
+            text('bar :                          '+bar, sx+250, sy+off );
+            text('midi :                       '+myMidi[myMidiIndex], sx+250, sy+2*off);
+            text('instrument :          '+instr[myInstr], sx+250, sy+3*off);
 
-            text('Start/Stop', sx, sy+3*off);
-            //text('phase :     '+round(myPhase), sx, sy+3*off);
-            
-            text('bar :                        '+bar, sx+300, sy+off );
-            text('clients :                   '+numUsers, sx+300, sy+2*off);
-            //text('step :        '+step, sx+250, sy+3*off);
-            text('midi channel :        '+myMidi[myMidiIndex], sx+300, sy+3*off);
-
-           ///// text('Livepose :       '+yesi, sx, sy+13*off);
+            //text('step :        '+step, sx+300, sy+4*off);
 
             /* if (a.isPressed){
                 print("seq but 0 pressed."); 
@@ -366,11 +392,68 @@
     
             }
 
-            if (startStop.isPressed) {
+            if (plusInstr.isPressed) {
+                myInstr++;
+
+                if (myInstr == instr.length){
+                    myInstr = 0 ;
+                }
+
+              // load the right data into mstr !
+              // no for loop as that results in a weird error
+              mstr[15] = mtmss[myInstr*79+15];
+              mstr[16] = mtmss[myInstr*79+16];
+              mstr[17] = mtmss[myInstr*79+17];
+              mstr[18] = mtmss[myInstr*79+18];
+              mstr[19] = mtmss[myInstr*79+19];
+              mstr[20] = mtmss[myInstr*79+20];
+              mstr[21] = mtmss[myInstr*79+21];
+              mstr[22] = mtmss[myInstr*79+22];
+              mstr[23] = mtmss[myInstr*79+23];
+              mstr[24] = mtmss[myInstr*79+24];
+              mstr[25] = mtmss[myInstr*79+25];
+              mstr[26] = mtmss[myInstr*79+26];
+              mstr[27] = mtmss[myInstr*79+27];
+              mstr[28] = mtmss[myInstr*79+28];
+              mstr[29] = mtmss[myInstr*79+29];
+              mstr[30] = mtmss[myInstr*79+30];
+
+                console.log("myInstr : "+myInstr);
+                //noteEncode(myInstr);
+            }
+
+            if (minusInstr.isPressed) {
+                myInstr--;
+                if (myInstr == -1){
+                    myInstr = instr.length-1; 
+                }
+
+              mstr[15] = mtmss[myInstr*79+15];
+              mstr[16] = mtmss[myInstr*79+16];
+              mstr[17] = mtmss[myInstr*79+17];
+              mstr[18] = mtmss[myInstr*79+18];
+              mstr[19] = mtmss[myInstr*79+19];
+              mstr[20] = mtmss[myInstr*79+20];
+              mstr[21] = mtmss[myInstr*79+21];
+              mstr[22] = mtmss[myInstr*79+22];
+              mstr[23] = mtmss[myInstr*79+23];
+              mstr[24] = mtmss[myInstr*79+24];
+              mstr[25] = mtmss[myInstr*79+25];
+              mstr[26] = mtmss[myInstr*79+26];
+              mstr[27] = mtmss[myInstr*79+27];
+              mstr[28] = mtmss[myInstr*79+28];
+              mstr[29] = mtmss[myInstr*79+29];
+              mstr[30] = mtmss[myInstr*79+30];
+                console.log("myInstr : "+myInstr);
+                //noteEncode(myInstr);
+            }
+            
+           /*  if (startStop.isPressed) {
                 data =  true;
                 socket.emit('startStop', data);
                 console.log("start/stop")
-            }
+            } */
+
         } // fin de draw
 
 

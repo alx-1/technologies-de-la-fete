@@ -15432,7 +15432,7 @@ Source: http://www.diodes.com/datasheets/ds23001.pdf</description>
 <parts>
 <part name="TFT" library="SparkFun-Connectors" library_urn="urn:adsk.eagle:library:6242394" deviceset="M04" device="PTH" package3d_urn="urn:adsk.eagle:package:6242978/1"/>
 <part name="51_OHMS" library="SparkFun-Resistors" library_urn="urn:adsk.eagle:library:532" deviceset="RESISTOR" device="1206" package3d_urn="urn:adsk.eagle:package:39654/1" value=" "/>
-<part name="51K" library="SparkFun-Resistors" library_urn="urn:adsk.eagle:library:532" deviceset="RESISTOR" device="1206" package3d_urn="urn:adsk.eagle:package:39654/1" value=" "/>
+<part name="51" library="SparkFun-Resistors" library_urn="urn:adsk.eagle:library:532" deviceset="RESISTOR" device="1206" package3d_urn="urn:adsk.eagle:package:39654/1" value=" "/>
 <part name="PWR_10" library="parts_aman" deviceset="POWER_SIMPLE" device="10"/>
 <part name="F1" library="parts_aman" deviceset="FERRITE-BEAD" device="0805" value="Würth Electronics 742792664"/>
 <part name="P+4" library="parts_aman" deviceset="+12V" device=""/>
@@ -15508,7 +15508,7 @@ Source: http://www.diodes.com/datasheets/ds23001.pdf</description>
 <attribute name="NAME" x="215.9" y="113.284" size="1.778" layer="95" font="vector" align="bottom-center"/>
 <attribute name="VALUE" x="213.36" y="115.316" size="1.778" layer="96" font="vector" align="top-center"/>
 </instance>
-<instance part="51K" gate="G$1" x="213.36" y="119.38" smashed="yes">
+<instance part="51" gate="G$1" x="213.36" y="119.38" smashed="yes">
 <attribute name="NAME" x="213.36" y="120.904" size="1.778" layer="95" font="vector" align="bottom-center"/>
 <attribute name="VALUE" x="213.36" y="115.316" size="1.778" layer="96" font="vector" align="top-center"/>
 </instance>
@@ -15892,7 +15892,7 @@ Source: http://www.diodes.com/datasheets/ds23001.pdf</description>
 </net>
 <net name="PIN27" class="0">
 <segment>
-<pinref part="51K" gate="G$1" pin="2"/>
+<pinref part="51" gate="G$1" pin="2"/>
 <pinref part="MIDI_OUT" gate="G$1" pin="2"/>
 <wire x1="218.44" y1="119.38" x2="220.98" y2="119.38" width="0.1524" layer="91"/>
 </segment>
@@ -15979,9 +15979,9 @@ Source: http://www.diodes.com/datasheets/ds23001.pdf</description>
 <wire x1="55.88" y1="33.02" x2="60.96" y2="33.02" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="TFT" gate="G$1" pin="4"/>
-<wire x1="35.56" y1="106.68" x2="43.18" y2="106.68" width="0.1524" layer="91"/>
-<label x="38.1" y="106.68" size="1.778" layer="95"/>
+<label x="38.1" y="104.14" size="1.778" layer="95"/>
+<pinref part="TFT" gate="G$1" pin="3"/>
+<wire x1="43.18" y1="104.14" x2="35.56" y2="104.14" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="SPI_CLK" class="0">
@@ -16021,9 +16021,9 @@ Source: http://www.diodes.com/datasheets/ds23001.pdf</description>
 <wire x1="55.88" y1="35.56" x2="60.96" y2="35.56" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="TFT" gate="G$1" pin="3"/>
-<wire x1="35.56" y1="104.14" x2="43.18" y2="104.14" width="0.1524" layer="91"/>
-<label x="38.1" y="104.14" size="1.778" layer="95"/>
+<label x="38.1" y="106.68" size="1.778" layer="95"/>
+<wire x1="43.18" y1="106.68" x2="35.56" y2="106.68" width="0.1524" layer="91"/>
+<pinref part="TFT" gate="G$1" pin="4"/>
 </segment>
 </net>
 <net name="DAC2" class="0">
@@ -16033,7 +16033,7 @@ Source: http://www.diodes.com/datasheets/ds23001.pdf</description>
 <wire x1="55.88" y1="38.1" x2="66.04" y2="38.1" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<pinref part="51K" gate="G$1" pin="1"/>
+<pinref part="51" gate="G$1" pin="1"/>
 <wire x1="208.28" y1="119.38" x2="200.66" y2="119.38" width="0.1524" layer="91"/>
 <label x="200.66" y="119.38" size="1.778" layer="95"/>
 </segment>

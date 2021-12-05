@@ -1,7 +1,5 @@
 const path = require('path');
 
-//const app = require('express')();
-
 const express = require('express');
 const app = express();
 app.use(express.static('public'));
@@ -11,73 +9,13 @@ const io = require('socket.io')(server);
 //const p5 = require('p5')(server);
 const dgram = require('dgram');
 
-let yesi = "halo welt";
-let stringy = "hey";
-
 let myIP = "42";
 
-let mtmss = new Array (75); // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
-for (let i = 0; i < mtmss.length; i++) {
-    mtmss[i] = false;
+let mstr = new Array (79); // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
+for (let i = 0; i < mstr.length; i++) {
+    mstr[i] = false; // instantiate everything as false
     // console.log(mtmss[i]);
-  }
-
-
-// For Websockets
-const WebSocket = require('ws');
-const socketteserver = new WebSocket.Server({
-  port: 8001
-});
-
-
-let sockets = [];
-socketteserver.on('connection', function(socket) {
-  sockets.push(socket);
-
-  // console.log("une nouvelle sockette");
-
-  // When you receive a message, send that message to every socket.
-  socket.on('message', function(msg) {
-    //console.log(""+msg);
-
-    // send the whole message as data for now 
-    stringy = (""+msg);
-    //stringy = ("something else is there");
-    let resultat = false;
-    let total = 0;
-
-    // if string matches part of the string don't send out 
-
-    const mesStrings = ["something","HIP","BIG","RIGHT_ELBOW","ANKLE","KNEE","TOE","HEEL"]; // RIGHT_HIP/LEFT_HIP/RIGHT_BIG_TOE/RIGHT_ELBOW/LEFT_ELBOW/LEFT_BIG_TOE
-
-    for (let i = 0; i < mesStrings.length; i++){
-
-        resultat = false;   
-        resultat = stringy.includes(mesStrings[i]);
-        // console.log("argh : "+stringy.includes(mesStrings[i]));
-        total = resultat+total;
-
     }
-
-    if(total > 0 ){
-        //console.log("filtre"); 
-        sockets.forEach(s => s.send("junk"));
-    }
-
-    else { // donc la string n'est pas trouvée
-        sockets.forEach(s => s.send(msg));
-        console.log("sending " +stringy); 
-        yesi = stringy;
-    }
-   
-  });
-
-  // When a socket closes, or disconnects, remove it from the array.
-  socket.on('close', function() {
-    sockets = sockets.filter(s => s !== socket);
-  });
-});
-
 
 function fmod(a, b){
     var x = Math.floor(a/b);
@@ -90,7 +28,7 @@ io.on('connection', function(client){
 });
 
 const abletonlink = require('abletonlink');
-const link = new abletonlink(bpm = 120.0, quantum = 8.0, enable = true);
+const link = new abletonlink(bpm = 60.0, quantum = 4.0, enable = true);
 
 link.on('numPeers', (numPeers) => console.log("numPeers", numPeers));
 link.on('playState', (playState) => console.log("playState", playState));
@@ -108,37 +46,37 @@ link.on('playState', (playState) => console.log("playState", playState));
     link.enablePlayStateSync;
     
     var test = link.isPlayStateSync;
-    console.log('test : '+test);
+    console.log('link.isPlayStateSync : '+test);
     
      link.startUpdate(4, (beat, phase, bpm, playState) => { // playState // changed update freq from 60 to 8
         //console.log("curr_beat_time : "+beat);
         curr_beat_time = beat;
+        //maPhase = phase;
+        //console.log("Phase : "+ phase);
         prev_phase = fmod(prev_beat_time,4);
-        //console.log("prev_phase : "+prev_phase);
+        //console.log("prev_phase : "+ prev_phase);
         prev_step = Math.floor(prev_phase * 4);
         //console.log("prev_step : "+prev_step);
         if(prev_step != curr_step){
-        
             curr_step = prev_step;
-            //io.emit('step', { curr_step });
+            io.emit('step', { curr_step });
             io.send(curr_step);
-            //console.log("curr_step : "+curr_step);
-
+            
+           //console.log("            curr_step : "+curr_step);
         }
 
         beat = 0 ^ beat;
         //console.log("beat? : "+beat);
         if(0 < beat - lastBeat) {
             io.emit('beat', { beat, phase, bpm, playState }); // playState returns 'undefined' regardless
+            console.log("beat? : "+beat);  
             lastBeat = beat;
             }
          //console.log(link.bpm);
-         
          numUsers = link.numPeers;
-         io.emit('numUsers',{numUsers});
+         io.emit('numUsers',{ numUsers });
          test = link.isPlayStateSync;
          io.emit('test',{test});
-         io.emit('yesi',{yesi}); // 
          
          prev_beat_time = curr_beat_time;
     });
@@ -158,19 +96,21 @@ io.on('connection', (socket) => {  // start listening from events from the socke
     
     socket.on('interface', (data) => {
       
-        console.log(data);
+        
         // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
         var s = dgram.createSocket('udp4');
+        // console.log("data : "+data);
         for (let i = 0; i < data.length; i++) {
-            mtmss[i+15] = data[i];
-        s.send(Buffer.from(mtmss), 3333, '192.168.0.100');
+            mstr[i] = data[i];
         }
+        s.send(Buffer.from(mstr), 3333, '192.168.1.239'); // 
+        console.log("mstr envoyé : "+mstr);
 
         });
 
     socket.on('chBPM', (data) => {
         //var s = dgram.createSocket('udp4');
-        //s.send(Buffer.from('bpm 90'), 3333, '192.168.0.101');
+        //s.send(Buffer.from('bpm 90'), 3333, '192.168.1.239');
         console.log(data.bpm);
         console.log('current bpm : '+link.bpm);
         if (data.bpm > 0) {
