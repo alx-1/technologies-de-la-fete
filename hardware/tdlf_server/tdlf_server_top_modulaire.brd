@@ -185,7 +185,7 @@
 <layer number="255" name="routoute" color="7" fill="1" visible="yes" active="yes"/>
 </layers>
 <board>
-<fusionsync huburn="a.cGVyc29uYWw6dWUyYTYyMmQz" projecturn="a.cGVyc29uYWw6dWUyYTYyMmQzIzIwMjAwMTA4MjUzMTkwODgx" f3durn="urn:adsk.wipprod:dm.lineage:EJ7CIL_8QPSL4HfMM387xA" pcbguid="" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="1e268f09-bdda-4e8c-a022-348851f8809f" lastsyncedrevisionid="1e268f09-bdda-4e8c-a022-348851f8809f" lastboardhashguid="10110adf-730a-8ede-3051-079abd0e3524" lastpushedtime="2021-04-02T02:38:33Z" linktopcb3d="false"/>
+<fusionsync huburn="a.cGVyc29uYWw6dWUyYTYyMmQz" projecturn="a.cGVyc29uYWw6dWUyYTYyMmQzIzIwMjAwMTA4MjUzMTkwODgx" f3durn="urn:adsk.wipprod:dm.lineage:EJ7CIL_8QPSL4HfMM387xA" pcbguid="" lastpulledtime="" lastsyncedchangeguid="" latestrevisionid="1e268f09-bdda-4e8c-a022-348851f8809f" lastsyncedrevisionid="1e268f09-bdda-4e8c-a022-348851f8809f" lastboardhashguid="10110adf-730a-8ede-3051-079abd0e3524" lastpushedtime="2021-04-02T02:38:33Z" linktopcb3d="true"/>
 <plain>
 <wire x1="0" y1="-14.25" x2="0" y2="114.25" width="0.1524" layer="20"/>
 <wire x1="0" y1="114.25" x2="30" y2="114.25" width="0.1524" layer="20"/>
@@ -213,7 +213,7 @@
 <circle x="22.81" y="-11.25" radius="1.7" width="0.4064" layer="29"/>
 <text x="6.8" y="102.2" size="1.9304" layer="29" font="vector">Technologies
 de la fête</text>
-<text x="18.6" y="102.2" size="1.016" layer="29" font="vector"> v 0.4</text>
+<text x="18.6" y="102.2" size="1.016" layer="29" font="vector"> v 0.5</text>
 <circle x="7.5" y="7.8" radius="3.25" width="0.254" layer="20"/>
 <circle x="22.8" y="7.8" radius="3.25" width="0.254" layer="20"/>
 <circle x="7.5" y="22.2" radius="3.25" width="0.254" layer="20"/>
