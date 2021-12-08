@@ -95,8 +95,8 @@ extern "C" {
 #define MIDI_STOP 0xFC // 11111100 // 252
 
 char MIDI_NOTE_ON_CH[] = {0x99,0x99}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
-char MIDI_CONTROL_CHANGE_CH[] = {0xB0,0x36,0x37}; // send control change on channel 0, stutter time (volca beats), stutter delay(volca beats)
-char MIDI_CONTROL_NUMBER[] = {0x01}; // pitch bend 
+char MIDI_CONTROL_CHANGE_CH[] = {0xB0}; // send control change on channel 1, 
+char MIDI_CONTROL_NUMBER[] = {0x36}; // stutter time (volca beats)
 
 char MIDI_NOTES[16]; // keep notes in memory along with interval at which to trigger the note off message
 int MIDI_NOTES_DELAYED_OFF[16] = {0};
@@ -537,6 +537,27 @@ extern "C" {
             oldmstr[i] = mstr[i];  ///// copy the mstr array into the old one to prevent spurious readings form the UDP port
             }
 
+          test = mstr[0];
+          //test = (mstr[7] - '0')*10 + mstr[8] - '0';
+          //ESP_LOGE(SOCKET_TAG, "test %d", test);
+          //ESP_LOGE(SOCKET_TAG, "teste %c", test);
+          sensorValue = test; //+int(mstr[8]);
+          //ESP_LOGE(SOCKET_TAG, "sensorValue %i", sensorValue);
+          ESP_LOGE(SOCKET_TAG, "test %i", test); // somehow necessary for the following if statement to work !?
+
+          if('s' == test){
+
+            ESP_LOGE(SOCKET_TAG,"we have another sensor message");
+            // 54 stutter time
+            sensorValue = (mstr[1]-'0')*10 + (mstr[2]-'0');
+            ESP_LOGE(SOCKET_TAG, "test %d", mstr[1]-'0');
+            ESP_LOGE(SOCKET_TAG, "test %d", mstr[2]-'0');
+            ESP_LOGE(SOCKET_TAG, "test %d", mstr[3]-'0');
+            ESP_LOGE(SOCKET_TAG, "test %d", mstr[4]-'0');
+            // 55 stutter delay
+
+            }
+
         if ( changedMstr == true ) {
 
         
@@ -547,25 +568,7 @@ extern "C" {
             ESP_LOGE(SOCKET_TAG, "oldmstr %i :%i", i, oldmstr[i]);
           } */
             
-            test = mstr[0];
-            //test = (mstr[7] - '0')*10 + mstr[8] - '0';
-            ESP_LOGE(SOCKET_TAG, "test %d", test);
-            ESP_LOGE(SOCKET_TAG, "teste %c", test);
-
-              sensorValue = test; //+int(mstr[8]);
-              ESP_LOGE(SOCKET_TAG, "sensorValue %i", sensorValue);
-              ESP_LOGE(SOCKET_TAG, "test %i", test);
-
-
-
-              if('s' == test){
-              ESP_LOGE(SOCKET_TAG,"we have another sensor message");
-              // 54 stutter time
-              ESP_LOGE(SOCKET_TAG, "test %d", mstr[1]);
-              ESP_LOGE(SOCKET_TAG, "test %d", mstr[2]);
-              // 55 stutter delay
-
-              }
+            
 
               if(98 == test){ //  
               ESP_LOGE(SOCKET_TAG,"new BPM !");
@@ -1345,10 +1348,13 @@ void tickTask(void* userParam)
     if ( curr_beat_time > prev_beat_time ) {
 
       // try sending cc messages here 
-      char zedata1[] = { MIDI_CONTROL_CHANGE_CH[0] }; // send CC message on midi channel 0
+      char zedata1[] = { MIDI_CONTROL_CHANGE_CH[0] }; // send CC message on midi channel 1 '0xB0'
       uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
-      char zedata2[] = {MIDI_CONTROL_NUMBER[0]};      //  1 = pitch bend
+      
+      char zedata2[] = {MIDI_CONTROL_NUMBER[0]};      //  '0x36' trying for Volca Beats Stutter time
       uart_write_bytes(UART_NUM_1, zedata2, 1); 
+      
+      // char zedata3[] = { (char)sensorValue }; // need to convert sensorValue to hexadecimal! 
       char zedata3[] = { (char)sensorValue }; // need to convert sensorValue to hexadecimal! 
       uart_write_bytes(UART_NUM_1, zedata3, 1); 
       
