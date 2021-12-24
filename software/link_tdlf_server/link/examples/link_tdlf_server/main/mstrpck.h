@@ -1,4 +1,4 @@
-// test d'organisation
+// test to organize the code
 
 #ifndef MSTRPCK_H_INCLUDED
 
@@ -8,7 +8,7 @@
 char zeDrums[] = {0x24,0x26,0x2B,0x32,0x2A,0x2E,0x27,0x4B,0x43,0x31}; // midi drum notes in hexadecimal format
 char zeDark[] = {0x3D,0x3F,0x40,0x41,0x42,0x44,0x46,0x47}; // A#(70)(0x46), B(71)(0x47), C#(61)(0x3D), D#(63)(0x3F), E(64)(0x40), F(65)(0x41), F#(66)(0x42), G#(68)(0x44)
 
-// signature de la fonction
-void my_test(void); // int ou autre
+// function signature
+void my_test(void); // int or other
 
 #endif

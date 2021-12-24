@@ -1,6 +1,5 @@
 //// 08/16/2021
 //// tdlf client // 16 touch pads // 16 leds // envoi des données de un array au client
-//// dois ajouter une sélection automatique du point d'accès lorsque l'IP change
 
 // LEDS driver from https://github.com/limitz/esp-apa102
 // Based on the ESP32 Ableton Link port by Mathias Bredholt https://github.com/mathiasbredholt/link-esp
@@ -77,7 +76,7 @@ unsigned char colourList[9*3]={maxValuePerColour,0,0, maxValuePerColour,maxValue
 struct apa102LEDStrip leds;
 struct colourObject dynColObject;
 
-//SPI Vars
+// SPI Vars
 spi_device_handle_t spi;
 spi_transaction_t spiTransObject;
 esp_err_t ret;

@@ -1,4 +1,4 @@
-// test de fonction 
+// function test
 
 #include "mstrpck.h"
 #include <cstdio>

@@ -1,0 +1,49 @@
+{
+  "name": "node-osc",
+  "description": "pyOSC inspired library for sending and receiving OSC messages",
+  "version": "6.1.11",
+  "exports": {
+    "require": "./dist/lib/index.js",
+    "default": "./lib/index.mjs"
+  },
+  "author": {
+    "name": "Myles Borins",
+    "email": "myles.borins@gmail.com"
+  },
+  "engines": {
+    "node": "^12.22 || ^14.13 || >=16"
+  },
+  "license": "LGPL-2.1",
+  "scripts": {
+    "clean": "rm -rf dist/",
+    "build": "npm run clean && rollup --config rollup.config.mjs",
+    "prepublishOnly": "npm run build",
+    "lint": "eslint \"lib/**/*.mjs\" test/* examples/*",
+    "test": "npm run lint && npm run build && npm run test:esm && npm run test:cjs",
+    "test:esm": "c8 tap --no-coverage -j1 test/test-*.mjs",
+    "test:cjs": "tap --no-coverage -j1 dist/test/test-*.js"
+  },
+  "contributors": [
+    "Hans Hübner <hans.huebner@gmail.com>",
+    "Andy Smith <jabber@term.ie>",
+    "Myles Borins <myles.borins@gmail.com>"
+  ],
+  "keywords": [
+    "osc",
+    "udp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/MylesBorins/node-osc.git"
+  },
+  "dependencies": {
+    "osc-min": "^1.1.1"
+  },
+  "devDependencies": {
+    "c8": "^7.3.0",
+    "eslint": "^8.2.0",
+    "get-port": "^6.0.0",
+    "rollup": "^2.23.0",
+    "tap": "^15.0.4"
+  }
+}

@@ -52,7 +52,9 @@
         let data;
         let note;
 
-        let ccData = ['s',120,42];
+        //let ccData = ['s',120,42];
+
+        let ccData = ['s',eric_X,eric_Y];
 
         
         let mstr = new Array(79); // Array to send to the node.js server
@@ -153,7 +155,7 @@
         function nouvCol() {
             print(this.label + " is pressed.");
             let numberPressed = int(this.label); // Otherwise it contatenates a number as text
-            // console.log("numberPressed : " +numberPressed);
+            console.log("numberPressed : " +numberPressed);
             mtmss[numberPressed+15+(myInstr*79)] = !mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
             mstr[numberPressed+15] = mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
             
@@ -312,8 +314,10 @@
                     console.log("eric_X : "+eric_X);
                     console.log("eric_Y : "+eric_Y);
 
+                    ccData = ['s',eric_X,eric_Y];
+
                     data = ccData;
-                    socket.emit('interface', data);
+                    socket.emit('CCData', data);
                 }
 
                 rect(eric_X+555,eric_Y-10+5,4,24);

@@ -11,6 +11,14 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
+//// For the MPRLS Adafruit pressure sensor ////
+//#include <Wire.h> // Already included for the TFT screen
+#include "Adafruit_MPRLS.h"
+// You dont *need* a reset and EOC pin for most uses, so we set to -1 and don't connect
+#define RESET_PIN  -1  // set to any GPIO pin # to hard-reset on begin()
+#define EOC_PIN    -1  // set to any GPIO pin to read end-of-conversion by pin
+Adafruit_MPRLS mpr = Adafruit_MPRLS(RESET_PIN, EOC_PIN);
+
 // WiFi network name and password: // same as the tdlf server
 const char * networkName = "link";
 const char * networkPswd = "nidieunimaitre";
@@ -69,23 +77,44 @@ void setup() {
   // Clear the buffer
   display.clearDisplay();
   ////////////////////////////////
+
+  ///// Init MPRLS pressure sensor ////
+   Serial.println("MPRLS Simple Test");
+  if (! mpr.begin()) {
+    Serial.println("Failed to communicate with MPRLS sensor, check wiring?");
+    while (1) {
+      delay(10);
+    }
+  }
+  Serial.println("Found MPRLS sensor");
+  /////////////////////////////////////
 }
 
 void loop() {
   // Serial.println("testing");
 
-  sensorValue = analogRead(35);
-  // Serial.println(sensorValue);
+  float pressure_hPa = mpr.readPressure();
+  Serial.print("Pressure (hPa): "); Serial.println(pressure_hPa);
 
-  sensorValue = map(sensorValue,0,4095,0,255);
+  //sensorValue = analogRead(35);
+  sensorValue = pressure_hPa-990;
+  Serial.println(sensorValue);
+
+  sensorValue = map(sensorValue,-90,90,0,255);
   analogWrite(LED_BUILTIN, sensorValue);
   
   //sensorValue2 = analogRead(33);
   //sensorValue3 = analogRead(32);
   //Serial.println(sensorValue2);
   //Serial.println(sensorValue3);
-  
-    msg = myDataType+String(sensorValue);
+
+    if (sensorValue < 100){
+      msg = myDataType+String(0)+String(sensorValue);
+    }
+    else {
+      msg = myDataType+String(sensorValue);
+    }
+    
     // msg = myDataType+String(nmb); // for testing
     // Serial.println(msg);
   
@@ -113,7 +142,7 @@ void loop() {
     display.setCursor(5, 40);
     display.println(sensorValue);
     display.display();
-
+    //Serial.println("sensor Value : " + String(sensorValue));
     delay(50);
 
 //    nmb++;

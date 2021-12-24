@@ -80,14 +80,18 @@ extern "C" {
 #endif
 ////// sockette server //////
 
+// CV Outputs //
+#define CV_23  (GPIO_NUM_23) 
+#define CV_18  (GPIO_NUM_18) 
+#define CV_5  (GPIO_NUM_5) 
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<CV_23) | (1ULL<<CV_18) | (1ULL<<CV_5) )
+bool CV_TIMING_CLOCK = true; 
 
 // Serial midi
 #define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
 #define ECHO_TEST_CTS (UART_PIN_NO_CHANGE)
 #define ECHO_TEST_TXD  (GPIO_NUM_26) // was TTGO touch  pin 4 (GPIO_NUM_17) // 13 // change for GPIO_NUM_17 // GPIO_NUM_26
-//#define ECHO_TEST_TXD  (GPIO_NUM_17) // was TTGO touch  pin 4 (GPIO_NUM_17) // 13 // change for GPIO_NUM_17 // GPIO_NUM_26
-
-#define ECHO_TEST_RXD  (GPIO_NUM_5)
+#define ECHO_TEST_RXD  (GPIO_NUM_19) 
 #define BUF_SIZE (1024)
 #define MIDI_TIMING_CLOCK 0xF8
 #define MIDI_NOTE_OFF 0x80 // 10000000 // 128
@@ -95,11 +99,21 @@ extern "C" {
 #define MIDI_STOP 0xFC // 11111100 // 252
 
 char MIDI_NOTE_ON_CH[] = {0x99,0x99}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
-char MIDI_CONTROL_CHANGE_CH[] = {0xB0}; // send control change on channel 1, 
-char MIDI_CONTROL_NUMBER[] = {0x36}; // stutter time (volca beats)
+
+//////// CC messages config //////////
+// Load MIDI CC config from NVS if it exists and turn this off is a cfg exists //
+bool need2configCC = true; // Keep an eye out for sensor messages, if so, start the config of midi CC messages
+bool configCC = false; // maybe only one of these two is needed !
+bool configCCChannel = false;
+int CCChannel = 1;
+char MIDI_CONTROL_CHANGE_CH[] = {0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF}; // send control change on channel 1-16, 
+bool configCCmessage = false;
+int CCmessage = 0;
+char MIDI_CONTROL_NUMBER[] = {0x36,0x37}; // stutter time (volca beats), stutter depth (volca beats) // find another way to cfg this
 
 char MIDI_NOTES[16]; // keep notes in memory along with interval at which to trigger the note off message
 int MIDI_NOTES_DELAYED_OFF[16] = {0};
+int CV_TRIGGER_OFF[16] = {0};
 // char zeDrums[] = {0x24,0x26,0x2B,0x32,0x2A,0x2E,0x27,0x4B,0x43,0x31}; // midi drum notes in hexadecimal format
 // char zeDark[] = {0x3D,0x3F,0x40,0x41,0x42,0x44,0x46,0x47}; // A#(70)(0x46), B(71)(0x47), C#(61)(0x3D), D#(63)(0x3F), E(64)(0x40), F(65)(0x41), F#(66)(0x42), G#(68)(0x44)
 
@@ -127,8 +141,8 @@ int MIDI_NOTES_DELAYED_OFF[16] = {0};
 
 ///// seq /////
 bool loadedSeq[1264] = {}; // to store the loaded sequences
-//char* mstr = "test";
-int sensorValue = 42;
+
+int sensorValue = -42;
 int test = 777;
 bool changeBPM;
 bool changedMstr = false;
@@ -176,6 +190,7 @@ int loadedClients = 0;
 
 int nmbrSeq = 0; // the number of sequences in nvs
 char sequence[8][10] = {{"sequence"},{"seq1"},{"seq2"},{"seq3"},{"seq4"},{"seq5"},{"seq6"},{"seq7"}};
+
 
 ///////////// INTERACTIONS ///////////
 ///
@@ -349,7 +364,6 @@ static void tp_example_read_task(void *pvParameter) {
           //       nvs_entry_find or nvs_entry_next function return NULL, indicating no other
           //       element for specified criteria was found.
 
-          
         }
       
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
@@ -358,6 +372,18 @@ static void tp_example_read_task(void *pvParameter) {
         } else if (s_pad_activated[3] == true) { // 2
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 3);  // Wait a while for the pad being released // 2
         
+        if ( configCC == true && configCCChannel == true ){
+          configCCChannel = false; // Current selected channel is frozen
+          ESP_LOGI(TOUCH_TAG, "Channel is selected");
+        }
+        else if ( configCC == true && configCCmessage == true ){
+          configCCmessage = false; // No more changes to the CC messages
+          configCC = false; 
+          need2configCC = false; 
+        }
+        
+        else {
+
         if ( saveBPM == true ) {
           tapeArch = true; // flag for saving 
         }
@@ -372,8 +398,9 @@ static void tp_example_read_task(void *pvParameter) {
           ESP_LOGI(TAP_TAG, "saveSeq open until : %i", delset); 
         }
 
-     
+        }
 
+     
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
         s_pad_activated[3] = false; // Reset the counter triggering a message // that application is running // 2
         
@@ -395,11 +422,26 @@ static void tp_example_read_task(void *pvParameter) {
         
         } else if (s_pad_activated[0] == true) { // 7
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 0);  // 7
+
           if (loadSeq == true){
             selectedSeq--;
             delset = esp_timer_get_time()+3000000;
             if (selectedSeq < 0 ){
               selectedSeq = nmbrSeq-1; // loop it
+            }
+          }
+          else if ( configCC == true && configCCChannel == true ){ // config midi CC channel
+            CCChannel--;
+            if(CCChannel < 1){
+              CCChannel = 16; 
+            }
+            ESP_LOGI(TOUCH_TAG, "CC Channel : %d", CCChannel);
+          }
+          else if (configCC == true && configCCChannel == false && configCCmessage == true){ // config midi CC message
+            CCmessage--;
+            if(CCmessage < 0){
+              CCmessage = 127; 
+              ESP_LOGI(TOUCH_TAG, "CC Message : %d", CCmessage);
             }
           }
           else{
@@ -413,6 +455,7 @@ static void tp_example_read_task(void *pvParameter) {
         } else if (s_pad_activated[9] == true) {
         ESP_LOGI(TOUCH_TAG, "T%d activated!", 9);  // Wait a while for the pad being released
 
+          
           if (loadSeq == true){
             selectedSeq++;
             delset = esp_timer_get_time()+3000000;
@@ -421,9 +464,23 @@ static void tp_example_read_task(void *pvParameter) {
             selectedSeq = 0; // loop it
             }
           }
-            else{
+          else if ( configCC == true && configCCChannel == true ){ // config midi CC channel
+            CCChannel++;
+            if(CCChannel > 16){
+              CCChannel = 1; 
+            }
+            ESP_LOGI(TOUCH_TAG, "CC Channel : %d", CCChannel);
+          }
+          else if (configCC == true && configCCChannel == false && configCCmessage == true){ // config midi CC message
+            CCmessage++;
+            if(CCmessage > 127){
+              CCmessage = 0; 
+            }
+            ESP_LOGI(TOUCH_TAG, "CC Message : %d", CCmessage);
+          }
+          else{
             tempoINC= true;  // pour que le audio loop le prenne en compte
-            }     
+          }     
 
         vTaskDelay(300 / portTICK_PERIOD_MS);  // Clear information on pad activation
         s_pad_activated[9] = false; // Reset the counter triggering a message // that application is running
@@ -515,7 +572,7 @@ extern "C" {
 
         while (1) {
 
-            ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
+            // ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
 
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
@@ -547,41 +604,49 @@ extern "C" {
 
           if('s' == test){
 
-            ESP_LOGE(SOCKET_TAG,"we have another sensor message");
-            // 54 stutter time
-            sensorValue = (mstr[1]-'0')*10 + (mstr[2]-'0');
-            ESP_LOGE(SOCKET_TAG, "test %d", mstr[1]-'0');
-            ESP_LOGE(SOCKET_TAG, "test %d", mstr[2]-'0');
-            ESP_LOGE(SOCKET_TAG, "test %d", mstr[3]-'0');
-            ESP_LOGE(SOCKET_TAG, "test %d", mstr[4]-'0');
-            // 55 stutter delay
+            // First time getting sensor data, go into config mode for CC or CV out //
+            // set a flag for this
+            if (need2configCC == true){ // If an eventual config in NVS exists we won't need this
+            // Get a long press of the skull and tape to erase that cfg and change it ?
+              // ESP_LOGE(SOCKET_TAG, "Configuring CC messages"); 
+              
+              configCC = true; // here we go
+              configCCChannel = true;
+              configCCmessage = true;
+              need2configCC = false;
 
+            } 
+          
+            // ESP_LOGE(SOCKET_TAG,"we have another sensor message");
+            
+            sensorValue = int( ( (mstr[1]-'0')*100 + (mstr[2]-'0')*10 + (mstr[2]-'0') ) /2); // Divide by 2 to get things in 0-127 range for midi 
+            //ESP_LOGE(SOCKET_TAG, "sensorValue :  %d", sensorValue);
+            //ESP_LOGE(SOCKET_TAG, "test %d", mstr[1]-'0');
+            //ESP_LOGE(SOCKET_TAG, "test %d", mstr[2]-'0');
+            //ESP_LOGE(SOCKET_TAG, "test %d", mstr[3]-'0');
+            
             }
 
-        if ( changedMstr == true ) {
+          if ( changedMstr == true ) {
 
-        
-           //ESP_LOGE(SOCKET_TAG, mstr);
-           //ESP_LOGI(SOCKET_TAG, "%s", mstr);
-       /*    for (int i = 0; i < sizeof(mstr);i++){
+            //ESP_LOGE(SOCKET_TAG, mstr);
+            //ESP_LOGI(SOCKET_TAG, "%s", mstr);
+            /*    for (int i = 0; i < sizeof(mstr);i++){
             ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
             ESP_LOGE(SOCKET_TAG, "oldmstr %i :%i", i, oldmstr[i]);
           } */
             
-            
-
-              if(98 == test){ //  
+            if ( 98 == test ) { 
               ESP_LOGE(SOCKET_TAG,"new BPM !");
               if (mstr[6]== false){
               newBPM = (mstr[4] - '0')*10 + mstr[5] - '0';
               }
               else{
               newBPM = (mstr[4] - '0')*100 + (mstr[5] - '0')*10 + mstr[6] - '0' ;
-              
-              }
+            }
 
-              if (newBPM != oldBPM){ // 
-                changeBPM = true;
+            if ( newBPM != oldBPM ) {  
+              changeBPM = true;
               }
 
             }
@@ -936,12 +1001,6 @@ extern "C" { static void smartconfig_example_task(void * parm)
     ESP_ERROR_CHECK( esp_smartconfig_start(&smtcfg) );
     ESP_LOGI(SMART_TAG,"normalement on a démarré le smartconfig");
 
-    #if defined USE_I2C_DISPLAY   
-    SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
-    SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Use", SSD_COLOR_WHITE );
-    SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "ESPTouch", SSD_COLOR_WHITE );
-    #endif
-
     while (1) {
 
       vTaskDelay(500 / portTICK_PERIOD_MS); // 35000 // 15000 // 5000 besoin d'un long délai ça l'air
@@ -971,7 +1030,7 @@ extern "C" { void wifi_init_sta(void)
 
         printf( "BUS Init lookin good...\n" );
        
-        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
+        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13 );
         SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Technologies", SSD_COLOR_WHITE );
         SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "de la fete", SSD_COLOR_WHITE );
         SSD1306_SetVFlip( &I2CDisplay, 1 ); 
@@ -1033,17 +1092,32 @@ extern "C" { void wifi_init_sta(void)
     /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
      * happened. */
     if (bits & WIFI_CONNECTED_BIT) {
+
         ESP_LOGI(WIFI_TAG, "Connected to WiFI");
         
         #if defined USE_I2C_DISPLAY   
-        SetupDemo( &I2CDisplay, &Font_droid_sans_mono_13x24 );
-        SayHello( &I2CDisplay, "Link!" );
+          SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
+          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13 );
+          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, str_ip, SSD_COLOR_WHITE ); 
+          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24 );
+          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "Link!", SSD_COLOR_WHITE );
+          SSD1306_Update( &I2CDisplay );  
         #endif 
         
     } else if (bits & WIFI_FAIL_BIT) {
+
         ESP_LOGE(WIFI_TAG, "Failed to connect to SSID:%s, password:%s",
         wifi_config.sta.ssid, wifi_config.sta.password);
         goSMART = true; // pour la suite des choses
+
+        #if defined USE_I2C_DISPLAY 
+          SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
+          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13 );
+          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Use", SSD_COLOR_WHITE );
+          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "ESPTouch", SSD_COLOR_WHITE );
+          SSD1306_Update( &I2CDisplay ); 
+        #endif
+        
     } else {
         ESP_LOGE(WIFI_TAG, "UNEXPECTED EVENT");
     }
@@ -1102,16 +1176,6 @@ void timerGroup0Init(int timerPeriodUS, void* userParam)
 void tempoChanged(double tempo) {
     ESP_LOGI(LINK_TAG, "tempochanged");
     double midiClockMicroSecond = ((60000 / tempo) / 24) * 1000;
-
-/* #if defined USE_I2C_DISPLAY
-    char buf[10];
-    snprintf(buf, 10 , "%i", (int) round( tempo ) );
-    SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
-    SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24); // &Font_droid_sans_mono_7x13
-    SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, " BPM", SSD_COLOR_WHITE );
-    SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, buf, SSD_COLOR_WHITE );
-    SSD1306_Update( &I2CDisplay );   
-#endif */
 
     esp_timer_handle_t periodic_timer_handle = (esp_timer_handle_t) periodic_timer;
     ESP_ERROR_CHECK(esp_timer_stop(periodic_timer_handle));
@@ -1348,15 +1412,18 @@ void tickTask(void* userParam)
     if ( curr_beat_time > prev_beat_time ) {
 
       // try sending cc messages here 
-      char zedata1[] = { MIDI_CONTROL_CHANGE_CH[0] }; // send CC message on midi channel 1 '0xB0'
+      if (sensorValue > -42 && configCC == false){
+
+      char zedata1[] = { MIDI_CONTROL_CHANGE_CH[CCChannel-1] }; // send CC message on midi channel 1 '0xB0'
       uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
       
-      char zedata2[] = {MIDI_CONTROL_NUMBER[0]};      //  '0x36' trying for Volca Beats Stutter time
+      char zedata2[] = { (char)CCmessage};  //  '0x36' (54) trying for Volca Beats Stutter time
       uart_write_bytes(UART_NUM_1, zedata2, 1); 
       
-      // char zedata3[] = { (char)sensorValue }; // need to convert sensorValue to hexadecimal! 
       char zedata3[] = { (char)sensorValue }; // need to convert sensorValue to hexadecimal! 
       uart_write_bytes(UART_NUM_1, zedata3, 1); 
+
+      }
       
       const double prev_phase = fmod(prev_beat_time, 4);
       const double prev_step = floor(prev_phase * 4);
@@ -1408,6 +1475,7 @@ void tickTask(void* userParam)
 
         char tmpOHbuf[20];
         char top[20];
+        char ipa[16];
 
         if ( seqSaved == true ) {
           snprintf(tmpOHbuf, 20 , "Sequence"); 
@@ -1452,6 +1520,7 @@ void tickTask(void* userParam)
           }
 
         }
+
     
 
       //ESP_LOGI(LINK_TAG, "%i", halo_welt); 
@@ -1474,17 +1543,44 @@ void tickTask(void* userParam)
         ESP_LOGI(LINK_TAG, "phases not assigned correctly"); 
       }
 
-        snprintf(top, 20, "clients:%i  %s", nmbrClients, phases);
-        
-        SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
+        if ( configCC == true ){
 
-        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, top, SSD_COLOR_WHITE ); 
+          snprintf(top, 20, "Midi CC Config");
+          if (configCCChannel == true && configCCmessage == true) {
+            snprintf(tmpOHbuf, 20 , "> Channel %i ?", CCChannel ); 
+            snprintf(current_phase_step, 20, "Message %i", CCmessage );
+          }
+          else if (configCCChannel == false && configCCmessage == true) {
+            snprintf(tmpOHbuf, 20 , "Channel %i", CCChannel ); 
+            snprintf(current_phase_step, 20, "> Message %i ?", CCmessage );
+          }
 
-        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24); // &Font_droid_sans_mono_13x24 // &Font_droid_sans_fallback_15x17
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, tmpOHbuf, SSD_COLOR_WHITE );
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_South, current_phase_step, SSD_COLOR_WHITE );
-        SSD1306_Update( &I2CDisplay );  
+          SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
+
+          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
+
+          SSD1306_FontDrawString( &I2CDisplay, 10, 1, top, SSD_COLOR_WHITE );
+          SSD1306_FontDrawString (&I2CDisplay, 10, 16, tmpOHbuf, SSD_COLOR_WHITE );
+          SSD1306_FontDrawString (&I2CDisplay, 10, 31, current_phase_step, SSD_COLOR_WHITE );
+          SSD1306_FontDrawString (&I2CDisplay, 10, 46, "Save to tape", SSD_COLOR_WHITE );
+          
+          SSD1306_Update( &I2CDisplay );  
+
+        } else {
+
+          snprintf(top, 20, "clients:%i  %s", nmbrClients, phases);
+          SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
+
+          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
+          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, top, SSD_COLOR_WHITE ); 
+
+          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24); // &Font_droid_sans_mono_13x24 // &Font_droid_sans_fallback_15x17
+          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, tmpOHbuf, SSD_COLOR_WHITE );
+          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_South, current_phase_step, SSD_COLOR_WHITE );
+          SSD1306_Update( &I2CDisplay );  
+
+        }
+      
 
         if (startStopCB){ // isPlaying and did we send that note out? 
 
@@ -1497,7 +1593,13 @@ void tickTask(void* userParam)
       //for( int i = 0; i < 8; i++ ) {
         //if( MIDI_NOTES_DELAYED_OFF[i] > 0 && MIDI_NOTES_DELAYED_OFF[i] < monTemps ) {
 
-     if( MIDI_NOTES_DELAYED_OFF[0] > 0 && MIDI_NOTES_DELAYED_OFF[0] < monTemps ) {
+      if( CV_TRIGGER_OFF[0] > 0 && CV_TRIGGER_OFF[0] < monTemps ) {
+          gpio_set_level(CV_23, 0); // DAC_C // CV Out
+          gpio_set_level(CV_18, 0); // DAC_D // CV Out
+          // gpio_set_level(CV_5, 0); // DAC_B // CV Clock Out
+        }
+
+      if( MIDI_NOTES_DELAYED_OFF[0] > 0 && MIDI_NOTES_DELAYED_OFF[0] < monTemps ) {
         // ESP_LOGI(MIDI_TAG, "Should attempt to turn this off : %i", i);
         // ESP_LOGI(MIDI_TAG, "Should attempt to turn this off ");
 
@@ -1529,7 +1631,7 @@ void tickTask(void* userParam)
 
                /* for(int j = 0; j<79;j++){
                     ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
-               } */
+               }  */
 
               if (mtmss[currStep] == 1){ // send midi note out // mute to be implemented // && !muteRecords[i]){ 
               //ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
@@ -1542,7 +1644,13 @@ void tickTask(void* userParam)
                   uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
                   char zedata3[] = { MIDI_NOTE_VEL };
                   uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
+
+                  gpio_set_level(CV_23, 1);
+                  gpio_set_level(CV_18, 1);
+                  // gpio_set_level(CV_5, 1);
+                  CV_TRIGGER_OFF[0] = int((esp_timer_get_time()/1000)+(myNoteDuration/64)); // set trigger duration
                 }
+
               else if (channel == 1){ // synth, here channel 1 is midi channel '0' per the channel array 'char MIDI_NOTE_ON_CH[] = {0x99,0x90};'
 
                 char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme midi channel channel 0 
@@ -1608,8 +1716,10 @@ void tickTask(void* userParam)
 static void periodic_timer_callback(void* arg)
 {
     char zedata[] = { MIDI_TIMING_CLOCK };
-    //ESP_LOGI(LINK_TAG, "MIDI_TIMING_CLOCK");
+    // ESP_LOGI(LINK_TAG, "MIDI_TIMING_CLOCK");
     uart_write_bytes(UART_NUM_1, zedata, 1);
+    gpio_set_level(CV_5, CV_TIMING_CLOCK); // CV Clock Out // 
+    CV_TIMING_CLOCK = !CV_TIMING_CLOCK;
 }
 
 
@@ -1714,6 +1824,23 @@ extern "C" { void app_main()
     touch_pad_isr_register(tp_example_rtc_intr, NULL); // Register touch interrupt ISR
     xTaskCreate(&tp_example_read_task, "touch_pad_read_task", 2048, NULL, 5, NULL); // Start a task to show what pads have been touched
   #endif
+
+  // CV out 
+  //zero-initialize the config structure.
+  gpio_config_t io_conf = {};
+  //disable interrupt
+  io_conf.intr_type = GPIO_INTR_DISABLE;
+  //set as output mode
+  io_conf.mode = GPIO_MODE_OUTPUT;
+  //bit mask of the pins that you want to set,e.g.GPIO18/19
+  io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+  //disable pull-down mode
+  //io_conf.pull_down_en = 0; // got an error here 
+  //disable pull-up mode
+  //io_conf.pull_up_en = 0; // got an error here
+  //configure GPIO with the given settings
+  gpio_config(&io_conf);
+
 
   // serial
   uart_config_t uart_config = {

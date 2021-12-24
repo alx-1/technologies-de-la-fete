@@ -9,7 +9,14 @@ const io = require('socket.io')(server);
 //const p5 = require('p5')(server);
 const dgram = require('dgram');
 
+//require { Bundle, Client } from 'node-osc';
+Bundle = require('node-osc').Bundle;
+Client = require('node-osc').Client;
+const client = new Client('192.168.0.128', 8000);
+
 let myIP = "42";
+
+let CCDatas = new Array (3); // For midi CC
 
 let mstr = new Array (79); // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
 for (let i = 0; i < mstr.length; i++) {
@@ -93,6 +100,23 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {  // start listening from events from the socket upon connection
     console.log('a user connected');
+
+    socket.on('CCData', (data) => {
+      
+        // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
+        var s = dgram.createSocket('udp4');
+        console.log("data : "+data);
+        for (let i = 0; i < data.length; i++) {
+            CCDatas[i] = data[i];
+        }
+        //s.send(Buffer.from(mstr), 3333, '192.168.1.239'); // 
+        ///s.send(Buffer.from(CCDatas), 8000, '192.168.0.128'); // 
+        // a bundle without an explicit time tag
+        const bundle = new Bundle(['/CC1', CCDatas[1]], ['/CC2', CCDatas[2]]);
+        client.send(bundle);
+        console.log("CCData envoyé : "+CCDatas);
+
+        });
     
     socket.on('interface', (data) => {
       
@@ -103,7 +127,8 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         for (let i = 0; i < data.length; i++) {
             mstr[i] = data[i];
         }
-        s.send(Buffer.from(mstr), 3333, '192.168.1.239'); // 
+        s.send(Buffer.from(mstr), 3333, '192.168.0.101'); // 
+        //s.send(Buffer.from(mstr), 10000, '192.168.0.101'); // 
         console.log("mstr envoyé : "+mstr);
 
         });
