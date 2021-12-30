@@ -1031,8 +1031,8 @@ extern "C" { void wifi_init_sta(void)
         printf( "BUS Init lookin good...\n" );
        
         SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13 );
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Technologies", SSD_COLOR_WHITE );
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "de la fete", SSD_COLOR_WHITE );
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Magnifigue", SSD_COLOR_WHITE );
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "Heather", SSD_COLOR_WHITE );
         SSD1306_SetVFlip( &I2CDisplay, 1 ); 
         SSD1306_SetHFlip( &I2CDisplay, 1 ); //void SSD1306_SetHFlip( struct SSD1306_Device* DeviceHandle, bool On );
         SSD1306_Update( &I2CDisplay );  
