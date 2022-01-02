@@ -110,10 +110,11 @@ io.on('connection', (socket) => {  // start listening from events from the socke
             CCDatas[i] = data[i];
         }
         //s.send(Buffer.from(mstr), 3333, '192.168.1.239'); // 
-        ///s.send(Buffer.from(CCDatas), 8000, '192.168.0.128'); // 
         // a bundle without an explicit time tag
         const bundle = new Bundle(['/CC1', CCDatas[1]], ['/CC2', CCDatas[2]]);
         client.send(bundle);
+        s.send(Buffer.from(CCDatas), 3333, '192.168.0.100'); // 
+
         console.log("CCData envoyé : "+CCDatas);
 
         });
@@ -127,7 +128,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         for (let i = 0; i < data.length; i++) {
             mstr[i] = data[i];
         }
-        s.send(Buffer.from(mstr), 3333, '192.168.0.101'); // 
+        s.send(Buffer.from(mstr), 3333, '192.168.0.100'); // 
         //s.send(Buffer.from(mstr), 10000, '192.168.0.101'); // 
         console.log("mstr envoyé : "+mstr);
 

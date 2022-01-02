@@ -72,7 +72,7 @@
         let pitons = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"];
         let instr = ["   bd  ", " snare ", "low tom", " hi tom", " cl hat", " op hat", "  clap ", " claves"]
         let myInstr = 0;
-        let myMidi = [10,5]; // have to encode all this!
+        let myMidi = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; // have to encode all this!
 
         function touchMoved() { // prevent scrolling on mobile devices
             // do some stuff
@@ -383,7 +383,7 @@
 
             if (plusMidi.isPressed) {
                 myMidiIndex = myMidiIndex +1;
-                if (myMidiIndex == 2){
+                if (myMidiIndex == 16){
                     myMidiIndex = 1; // the maximum
                 }
     

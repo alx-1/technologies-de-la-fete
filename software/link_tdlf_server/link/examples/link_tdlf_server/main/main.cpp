@@ -86,6 +86,7 @@ extern "C" {
 #define CV_5  (GPIO_NUM_5) 
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<CV_23) | (1ULL<<CV_18) | (1ULL<<CV_5) )
 bool CV_TIMING_CLOCK = true; 
+float CV_PITCH = 0.5;
 
 // Serial midi
 #define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
@@ -596,9 +597,9 @@ extern "C" {
 
           test = mstr[0];
           //test = (mstr[7] - '0')*10 + mstr[8] - '0';
-          //ESP_LOGE(SOCKET_TAG, "test %d", test);
+          ESP_LOGE(SOCKET_TAG, "test %d", test);
           //ESP_LOGE(SOCKET_TAG, "teste %c", test);
-          sensorValue = test; //+int(mstr[8]);
+          //sensorValue = test; //+int(mstr[8]);
           //ESP_LOGE(SOCKET_TAG, "sensorValue %i", sensorValue);
           ESP_LOGE(SOCKET_TAG, "test %i", test); // somehow necessary for the following if statement to work !?
 
@@ -608,7 +609,7 @@ extern "C" {
             // set a flag for this
             if (need2configCC == true){ // If an eventual config in NVS exists we won't need this
             // Get a long press of the skull and tape to erase that cfg and change it ?
-              // ESP_LOGE(SOCKET_TAG, "Configuring CC messages"); 
+              ESP_LOGE(SOCKET_TAG, "Configuring CC messages"); 
               
               configCC = true; // here we go
               configCCChannel = true;
@@ -620,7 +621,7 @@ extern "C" {
             // ESP_LOGE(SOCKET_TAG,"we have another sensor message");
             
             sensorValue = int( ( (mstr[1]-'0')*100 + (mstr[2]-'0')*10 + (mstr[2]-'0') ) /2); // Divide by 2 to get things in 0-127 range for midi 
-            //ESP_LOGE(SOCKET_TAG, "sensorValue :  %d", sensorValue);
+            ESP_LOGE(SOCKET_TAG, "sensorValue :  %d", sensorValue);
             //ESP_LOGE(SOCKET_TAG, "test %d", mstr[1]-'0');
             //ESP_LOGE(SOCKET_TAG, "test %d", mstr[2]-'0');
             //ESP_LOGE(SOCKET_TAG, "test %d", mstr[3]-'0');
@@ -1031,8 +1032,8 @@ extern "C" { void wifi_init_sta(void)
         printf( "BUS Init lookin good...\n" );
        
         SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13 );
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Magnifigue", SSD_COLOR_WHITE );
-        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "Heather", SSD_COLOR_WHITE );
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, "Technologies", SSD_COLOR_WHITE );
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, "de la fete", SSD_COLOR_WHITE );
         SSD1306_SetVFlip( &I2CDisplay, 1 ); 
         SSD1306_SetHFlip( &I2CDisplay, 1 ); //void SSD1306_SetHFlip( struct SSD1306_Device* DeviceHandle, bool On );
         SSD1306_Update( &I2CDisplay );  
@@ -1423,6 +1424,13 @@ void tickTask(void* userParam)
       char zedata3[] = { (char)sensorValue }; // need to convert sensorValue to hexadecimal! 
       uart_write_bytes(UART_NUM_1, zedata3, 1); 
 
+        CV_PITCH = CV_PITCH + 0.01;
+                  if(CV_PITCH > 1){
+                    CV_PITCH = 0.2;
+                  }
+      //  sensorValue / 127; // Gives a float between 0 and 1.
+      gpio_set_level(CV_23, CV_PITCH); // DAC_C // CV PITCH ! // Convert sensorValue in CV pitch float 0-1
+
       }
       
       const double prev_phase = fmod(prev_beat_time, 4);
@@ -1594,9 +1602,9 @@ void tickTask(void* userParam)
         //if( MIDI_NOTES_DELAYED_OFF[i] > 0 && MIDI_NOTES_DELAYED_OFF[i] < monTemps ) {
 
       if( CV_TRIGGER_OFF[0] > 0 && CV_TRIGGER_OFF[0] < monTemps ) {
-          gpio_set_level(CV_23, 0); // DAC_C // CV Out
-          gpio_set_level(CV_18, 0); // DAC_D // CV Out
+          gpio_set_level(CV_18, 0); // DAC_D // CV Trigger
           // gpio_set_level(CV_5, 0); // DAC_B // CV Clock Out
+          // gpio_set_level(CV_23, 0); // DAC_C // CV Pitch
         }
 
       if( MIDI_NOTES_DELAYED_OFF[0] > 0 && MIDI_NOTES_DELAYED_OFF[0] < monTemps ) {
@@ -1645,9 +1653,19 @@ void tickTask(void* userParam)
                   char zedata3[] = { MIDI_NOTE_VEL };
                   uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
 
-                  gpio_set_level(CV_23, 1);
-                  gpio_set_level(CV_18, 1);
-                  // gpio_set_level(CV_5, 1);
+                  gpio_set_level(CV_18, 1); // DAC_D // CV Trigger !
+                  CV_PITCH = CV_PITCH + 0.05;
+                  if(CV_PITCH > 1){
+                    CV_PITCH = 0;
+                  }
+                  
+                  ESP_LOGI(MIDI_TAG, "CV_PITCH, %f", CV_PITCH);
+
+      //  sensorValue / 127; // Gives a float between 0 and 1.
+      gpio_set_level(CV_23, CV_PITCH); // DAC_C // CV PITCH ! // Convert sensorValue in CV pitch float 0-1
+
+                  // gpio_set_level(CV_23, 1); // DAC_C // CV PITCH !
+                  // gpio_set_level(CV_5, 1); // DAC_B // CV Clock !
                   CV_TRIGGER_OFF[0] = int((esp_timer_get_time()/1000)+(myNoteDuration/64)); // set trigger duration
                 }
 
@@ -1685,6 +1703,13 @@ void tickTask(void* userParam)
                 else{
                   ESP_LOGI(MIDI_TAG, "Midi channel other than 0 or 1"); // new line
                   // ajouter d'autres gammes (scales)
+                  CV_PITCH = CV_PITCH + 0.01;
+                  if(CV_PITCH > 1){
+                    CV_PITCH = 0.2;
+                  }
+                  //float CV_PITCH = sensorValue / 127; // Gives a float between 0 and 1.
+                  gpio_set_level(CV_23, CV_PITCH); // DAC_C // CV PITCH ! // Convert sensorValue in CV pitch float 0-1
+
                 } 
                 
                 //char zedata3[] = { MIDI_NOTE_VEL };
