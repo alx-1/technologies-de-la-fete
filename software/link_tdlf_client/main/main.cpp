@@ -312,7 +312,7 @@ void tickTask(void* userParam)
     
     while (true)
     { // while (true)
-        xSemaphoreTake(userParam, portMAX_DELAY);
+        xSemaphoreTake((QueueHandle_t)userParam, portMAX_DELAY);
 
         const auto state = link.captureAudioSessionState();
         isPlaying = state.isPlaying();
@@ -713,7 +713,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         ESP_LOGI(NVS_TAG,"wifi_config.sta.ssid NVS :%s",wifi_config.sta.password); 
 
         ESP_ERROR_CHECK( esp_wifi_disconnect() );
-        ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+        ESP_ERROR_CHECK( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
         esp_wifi_connect();
 
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED && goSMART == false) {
@@ -828,7 +828,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
       ////////////////////*/
 
       ESP_ERROR_CHECK( esp_wifi_disconnect() );
-      ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+      ESP_ERROR_CHECK( esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
       ESP_ERROR_CHECK( esp_wifi_connect() );
 
     } // end of writing ssid + password to nvs from smartcfg
@@ -914,7 +914,7 @@ extern "C" { void wifi_init_sta(void)
     wifi_config_t wifi_config;
  
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
     ESP_ERROR_CHECK(esp_wifi_start() );
 
     ESP_LOGI(TAG, "wifi_init_sta finished.");

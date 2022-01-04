@@ -1,3 +1,0 @@
-file(REMOVE_RECURSE
-  "libESP32APA102Driver.a"
-)
