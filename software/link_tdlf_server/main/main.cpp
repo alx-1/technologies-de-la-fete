@@ -7,19 +7,22 @@
 #include <driver/gpio.h>
 #include <driver/timer.h>
 #include <esp_event.h>
-#include <freertos/FreeRTOS.h>
+//#include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
-#include <freertos/task.h>
+// #include <freertos/task.h>
 #include <nvs_flash.h>
 #include <protocol_examples_common.h>
 #include "driver/uart.h"
-#include <stdio.h>
+//#include <stdio.h>
 #include "esp_timer.h" // for tap tempo
 #include "esp_sleep.h"
 
 #include <chrono> // for setTempo()
 
 extern "C" {
+  #include <stdio.h>
+  #include <freertos/FreeRTOS.h>
+  #include <freertos/task.h>
 #include <string.h> // from the station_example_main example
 #include "freertos/event_groups.h"
 #include "esp_system.h"
@@ -37,6 +40,8 @@ extern "C" {
 #include "esp_log.h"
 
 #include "driver/ledc.h" // For CV Pitch 
+#include "esp_err.h"
+
 }
 
 #define USE_TOUCH_PADS // touch_pad_2 (GPIO_NUM_2), touch_pad_3 (GPIO_NUM_15), touch_pad_4 (GPIO_NUM_14), touch_pad_5 (GPIO_NUM_12), touch_pad_7 (GPIO_NUM_27), touch_pad_9 (GPIO_NUM_32)
@@ -82,13 +87,10 @@ extern "C" {
 ////// sockette server //////
 
 // CV Outputs //
-//#define CV_23  (GPIO_NUM_23) 
 #define CV_18  (GPIO_NUM_18) 
 #define CV_5  (GPIO_NUM_5) 
-//#define GPIO_OUTPUT_PIN_SEL  ( (1ULL<<CV_23) | (1ULL<<CV_18) | (1ULL<<CV_5) )
 #define GPIO_OUTPUT_PIN_SEL  ( (1ULL<<CV_18) | (1ULL<<CV_5) )
 bool CV_TIMING_CLOCK = true; 
-float CV_PITCH = 0.5;
 
 // Serial midi
 #define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
@@ -101,7 +103,7 @@ float CV_PITCH = 0.5;
 #define MIDI_START 0xFA // 11111010 // 250
 #define MIDI_STOP 0xFC // 11111100 // 252
 
-char MIDI_NOTE_ON_CH[] = {0x99,0x99}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
+char MIDI_NOTE_ON_CH[] = {0x90,0x91,0x92,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F}; // note on, channel 10, note on, channel 0 // ajouter d'autres séries
 
 //////// CC messages config //////////
 // Load MIDI CC config from NVS if it exists and turn this off is a cfg exists //
@@ -142,60 +144,44 @@ int CV_TRIGGER_OFF[16] = {0};
 #define MIDI_NOTE_VEL_OFF 0x00 // 0 // note off
 #define MIDI_SONG_POSITION_POINTER 0xF2
 
-
-
-/* ///// LEDC for PWM // CV Pitch /////
+///// LEDC for PWM // CV Pitch /////
 extern "C" {
+
 #define LEDC_HS_TIMER          LEDC_TIMER_0
 #define LEDC_HS_MODE           LEDC_HIGH_SPEED_MODE
 #define LEDC_HS_CH0_GPIO       (23)
 #define LEDC_HS_CH0_CHANNEL    LEDC_CHANNEL_0
-#define LEDC_DUTY              (4095) // Set duty to 50%. ((2 ** 13) - 1) * 50% = 127
-#define LEDC_LS_TIMER          LEDC_TIMER_1
-#define LEDC_LS_MODE           LEDC_LOW_SPEED_MODE
+#define LEDC_DUTY              (4095) // Set duty to 50%. ((2 ** 13) - 1) * 50% = 4095
+// #define LEDC_LS_TIMER          LEDC_TIMER_1
+// #define LEDC_LS_MODE           LEDC_LOW_SPEED_MODE
 
 ledc_timer_config_t ledc_timer = {
-  .duty_resolution = LEDC_TIMER_13_BIT, // Resolution of PWM duty
-  .freq_hz = 5000,                      // Set output frequency at 5 kHz
-  .speed_mode = LEDC_HS_MODE,           // Timer mode
-  .timer_num = LEDC_HS_TIMER,            // Timer index
-  .clk_cfg = LEDC_AUTO_CLK,             // Auto select the source clock
+    .speed_mode = LEDC_HS_MODE,             // Timer mode
+    .duty_resolution = LEDC_TIMER_13_BIT,   // Resolution of PWM duty
+    .timer_num = LEDC_HS_TIMER,             // Timer index
+    .freq_hz = 5000,                        // Set output frequency at 5 kHz
+    .clk_cfg = LEDC_AUTO_CLK                // Auto select the source clock
   };
-  // Set configuration of timer0 for high speed channels
-  ledc_timer_config(&ledc_timer);
-} */
-/* static void example_ledc_init(void)
-{
-    // Prepare and then apply the LEDC PWM timer configuration
-    ledc_timer_config_t ledc_timer = {
-        .duty_resolution  = LEDC_TIMER_8_BIT,
-        .freq_hz          = 5000,  // Set output frequency at 5 kHz
-        .speed_mode       = LEDC_MODE,
-        .timer_num        = LEDC_TIMER,
-        .clk_cfg          = LEDC_AUTO_CLK,
-    };
-    ledc_timer_config(&ledc_timer);
 
-    // Prepare and then apply the LEDC PWM channel configuration
-    ledc_channel_config_t ledc_channel = {
-        .speed_mode     = LEDC_MODE,
-        .channel        = LEDC_CHANNEL,
-        .timer_sel      = LEDC_TIMER,
-        .intr_type      = LEDC_INTR_DISABLE,
-        .gpio_num       = LEDC_OUTPUT_IO,
-        .duty           = 0, // Set duty to 0%
-        .hpoint         = 0
-    };
-    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
-} */
+ledc_channel_config_t ledc_channel = {
+    .gpio_num   = LEDC_HS_CH0_GPIO,
+    .speed_mode = LEDC_HS_MODE,
+    .channel    = LEDC_HS_CH0_CHANNEL,
+    .timer_sel  = LEDC_HS_TIMER,
+    .duty       = 0,
+    .hpoint     = 0     
+  };
 
-//////////////////
+} // End Extern "C" 
+
+/////End Ledc // CV_PITCH ///////////
 
 
 ///// seq /////
 bool loadedSeq[1264] = {}; // to store the loaded sequences
 
 int sensorValue = -42;
+int previousSensorValue = 0;
 int test = 777;
 bool changeBPM;
 bool changedMstr = false;
@@ -203,7 +189,7 @@ bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (no
 bool oldmstr[79] = {1}; 
 bool mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
 
-int channel; // 4 bits midi channel (0-7) -> (10,1,2,3,4,5,6,7) // drums + más
+int channel; // 4 bits midi channel (0-15) -> // drums + más
 int note; // 4 bits note info // 8 notes correspond to 8 colors // (0-7) -> (36,38,43,50,42,46,39,75),67,49 // más de 8 !
 float duration[8] = {0.25,0.5,1,2,4,8,16,64}; // 4 bits note duration (0-7) -> (64,16,8,4,2,1,1/2,1/4)
 float noteDuration; 
@@ -625,16 +611,17 @@ extern "C" {
 
         while (1) {
 
-            // ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
+          // ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
 
-            struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
-            socklen_t socklen = sizeof(source_addr);
+          struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
+          socklen_t socklen = sizeof(source_addr);
             
-            //mstr devrait être 79 valeurs;
-            int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
+          //mstr should be 79 values long;
+          int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-           changedMstr = false; // reset the flag
+          changedMstr = false; // reset the flag
            // lets try to do this only once!
+
           for(int i = 0; i<sizeof(mstr); i++){
             if (mstr[i] != oldmstr[i]){
             ESP_LOGI(SOCKET_TAG, "mstr changed !");
@@ -643,18 +630,31 @@ extern "C" {
             }            
           }
 
-          for(int i = 0; i<sizeof(mstr); i++){
-            oldmstr[i] = mstr[i];  ///// copy the mstr array into the old one to prevent spurious readings form the UDP port
+          test = mstr[0];
+          ESP_LOGE(SOCKET_TAG, "yesss sensor data %d", test); // somehow needed for the condition below to eveluate
+          
+          if(42 == test){ // 42 is data sent from the web client
+            // ESP_LOGE(SOCKET_TAG, "yesss sensor data");
+            // ESP_LOGE(SOCKET_TAG, "mstr[1] %d", mstr[1]);
+            sensorValue = int(mstr[1]*100 ); // gets my values in pitch range
+            if (sensorValue < 0 ) {
+              sensorValue = previousSensorValue; // Filter out weird negative numbers that occur when incomplete data is read I guess
+            }
+            ESP_LOGE(SOCKET_TAG, "sensorValue :  %d", sensorValue);
+            
+            for(int i = 0; i<sizeof(mstr); i++){
+              mstr[i] = oldmstr[i];  // reset the old mstr values after extracting the sensor data !
+              // ESP_LOGE(SOCKET_TAG, "mstr was resetted");
             }
 
-          test = mstr[0];
-          //test = (mstr[7] - '0')*10 + mstr[8] - '0';
-          ESP_LOGE(SOCKET_TAG, "test %d", test);
-          //ESP_LOGE(SOCKET_TAG, "teste %c", test);
-          //sensorValue = test; //+int(mstr[8]);
-          //ESP_LOGE(SOCKET_TAG, "sensorValue %i", sensorValue);
-          ESP_LOGE(SOCKET_TAG, "test %i", test); // somehow necessary for the following if statement to work !?
-
+          }
+          else { // we didn't have data from the web client, carry on
+            for(int i = 0; i<sizeof(mstr); i++){
+            oldmstr[i] = mstr[i];  ///// copy the mstr array into the old one to prevent spurious readings form the UDP port
+            }
+          }
+          
+          /* 
           if('s' == test){
 
             // First time getting sensor data, go into config mode for CC or CV out //
@@ -668,18 +668,8 @@ extern "C" {
               configCCmessage = true;
               need2configCC = false;
 
-            } 
+            }  */
           
-            // ESP_LOGE(SOCKET_TAG,"we have another sensor message");
-            
-            sensorValue = int( ( (mstr[1]-'0')*100 + (mstr[2]-'0')*10 + (mstr[2]-'0') ) /2); // Divide by 2 to get things in 0-127 range for midi 
-            ESP_LOGE(SOCKET_TAG, "sensorValue :  %d", sensorValue);
-            //ESP_LOGE(SOCKET_TAG, "test %d", mstr[1]-'0');
-            //ESP_LOGE(SOCKET_TAG, "test %d", mstr[2]-'0');
-            //ESP_LOGE(SOCKET_TAG, "test %d", mstr[3]-'0');
-            
-            }
-
           if ( changedMstr == true ) {
 
             //ESP_LOGE(SOCKET_TAG, mstr);
@@ -712,19 +702,23 @@ extern "C" {
 
             for(int i=0;i<4;i++){ // up to 8 channels, could hold 16 values
 
-              if(i==3 && mstr[3] == true){
+             
+              if(i==0 && mstr[0] == true){
                 tmpTotal = tmpTotal+1;
               }
-              else if(i==2 && mstr[2] == true){
+              else if(i==1 && mstr[1] == true){
                 tmpTotal = tmpTotal + 2;
               }
-              else if(i==1 && mstr[1] == true){
+              else if(i==2 && mstr[2] == true){
                 tmpTotal = tmpTotal + 4;
+              }
+              else if(i==3 && mstr[3] == true){
+                tmpTotal = tmpTotal + 8;
               }
             }
       
-            channel = tmpTotal;
-            // ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
+            channel = tmpTotal+1;  // 1-16 midi channels
+            ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
   
             ////// note // bit 4,5,6,7 /////
             tmpTotal = 0; // reset before counting
@@ -1470,22 +1464,22 @@ void tickTask(void* userParam)
       // try sending cc messages here 
       if (sensorValue > -42 && configCC == false){
 
-      char zedata1[] = { MIDI_CONTROL_CHANGE_CH[CCChannel-1] }; // send CC message on midi channel 1 '0xB0'
-      uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
+        char zedata1[] = { MIDI_CONTROL_CHANGE_CH[CCChannel-1] }; // send CC message on midi channel 1 '0xB0'
+        uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
       
-      char zedata2[] = { (char)CCmessage};  //  '0x36' (54) trying for Volca Beats Stutter time
-      uart_write_bytes(UART_NUM_1, zedata2, 1); 
+        char zedata2[] = { (char)CCmessage};  //  '0x36' (54) trying for Volca Beats Stutter time
+        uart_write_bytes(UART_NUM_1, zedata2, 1); 
       
-      char zedata3[] = { (char)sensorValue }; // need to convert sensorValue to hexadecimal! 
-      uart_write_bytes(UART_NUM_1, zedata3, 1); 
+        char zedata3[] = { (char)sensorValue }; // need to convert sensorValue to hexadecimal! 
+        uart_write_bytes(UART_NUM_1, zedata3, 1); 
 
-        CV_PITCH = CV_PITCH + 0.01;
-                  if(CV_PITCH > 1){
-                    CV_PITCH = 0.2;
-                  }
-      //  sensorValue / 127; // Gives a float between 0 and 1.
-      // gpio_set_level(CV_23, CV_PITCH); // DAC_C // CV PITCH ! // Convert sensorValue in CV pitch float 0-1
-
+        if (sensorValue != previousSensorValue){
+        // ESP_LOGI(CV_TAG, "CV_PITCH, %i", int(sensorValue));
+        ledc_set_duty(ledc_channel.speed_mode, ledc_channel.channel, int(sensorValue)); // CV_PITCH
+        ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
+        previousSensorValue = sensorValue;
+        }
+        
       }
       
       const double prev_phase = fmod(prev_beat_time, 4);
@@ -1694,37 +1688,25 @@ void tickTask(void* userParam)
 
                /* for(int j = 0; j<79;j++){
                     ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
-               }  */
+               }  */ 
 
               if (mtmss[currStep] == 1){ // send midi note out // mute to be implemented // && !muteRecords[i]){ 
-              //ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
-              ESP_LOGI(LINK_TAG, "Note on, %i", i);
+              // ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
+              // ESP_LOGI(LINK_TAG, "Note on, %i", i);
 
-                if (channel == 0){ // are we playing drumz ?
+                if (channel == 10){ // are we playing drumz ?
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
                   char zedata2[] = {zeDrums[i]};      // arriver de 0-8
                   uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
                   char zedata3[] = { MIDI_NOTE_VEL };
                   uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
-
-                  gpio_set_level(CV_18, 1); // DAC_D // CV Trigger !
-                  CV_PITCH = CV_PITCH + 0.05;
-                  if(CV_PITCH > 1){
-                    CV_PITCH = 0;
-                  }
                   
-                  ESP_LOGI(MIDI_TAG, "CV_PITCH, %f", CV_PITCH);
-
-      //  sensorValue / 127; // Gives a float between 0 and 1.
-      //  CV_PITCH); // DAC_C // CV PITCH ! // Convert sensorValue in CV pitch float 0-1
-
-                  // gpio_set_level(CV_23, 1); // DAC_C // CV PITCH !
-                  // gpio_set_level(CV_5, 1); // DAC_B // CV Clock !
+                  gpio_set_level(CV_18,1); // DAC_D (CV_18) get that note out !    
                   CV_TRIGGER_OFF[0] = int((esp_timer_get_time()/1000)+(myNoteDuration/64)); // set trigger duration
                 }
 
-              else if (channel == 1){ // synth, here channel 1 is midi channel '0' per the channel array 'char MIDI_NOTE_ON_CH[] = {0x99,0x90};'
+              else if (channel == 5){ // synth, {0x99,0x90};
 
                 char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme midi channel channel 0 
                 // ESP_LOGI(MIDI_TAG, "MIDI_NOTE_ON_CH, %i", MIDI_NOTE_ON_CH[channel]);
@@ -1758,13 +1740,6 @@ void tickTask(void* userParam)
                 else{
                   ESP_LOGI(MIDI_TAG, "Midi channel other than 0 or 1"); // new line
                   // ajouter d'autres gammes (scales)
-                  CV_PITCH = CV_PITCH + 0.01;
-                  if(CV_PITCH > 1){
-                    CV_PITCH = 0.2;
-                  }
-                  //float CV_PITCH = sensorValue / 127; // Gives a float between 0 and 1.
-                  // gpio_set_level(CV_23, CV_PITCH); // DAC_C // CV PITCH ! // Convert sensorValue in CV pitch float 0-1
-
                 } 
                 
                 //char zedata3[] = { MIDI_NOTE_VEL };
@@ -1805,6 +1780,7 @@ static void periodic_timer_callback(void* arg)
 
 extern "C" { void app_main()
 { 
+
   //Initialize and read in wifi credentials from NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -1951,8 +1927,23 @@ extern "C" { void app_main()
   //} // fin de goLINK
 
   //// LEDC //// PWM //// CV Pitch ////
-  // Set the LEDC peripheral configuration
-  //example_ledc_init();
+  
+  /* ledc_timer_config_t ledc_timer = {
+    .speed_mode = LEDC_HS_MODE,             // Timer mode
+    .duty_resolution = LEDC_TIMER_13_BIT,   // Resolution of PWM duty
+    .timer_num = LEDC_HS_TIMER,             // Timer index
+    .freq_hz = 5000,                        // Set output frequency at 5 kHz
+    .clk_cfg = LEDC_AUTO_CLK                // Auto select the source clock
+  }; */
+
+  ledc_timer_config(&ledc_timer);
+
+  ledc_channel_config(&ledc_channel);
+
+  ledc_fade_func_install(0);
+  
+  ///// End LEDC /////
+
 
   } // fin de extern "C"
 } // fin de main()

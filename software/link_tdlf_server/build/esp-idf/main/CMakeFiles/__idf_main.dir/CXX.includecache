@@ -669,11 +669,7 @@ driver/timer.h
 -
 esp_event.h
 -
-freertos/FreeRTOS.h
--
 freertos/semphr.h
--
-freertos/task.h
 -
 nvs_flash.h
 -
@@ -681,13 +677,17 @@ protocol_examples_common.h
 -
 driver/uart.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/driver/uart.h
-stdio.h
--
 esp_timer.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/esp_timer.h
 esp_sleep.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/esp_sleep.h
 chrono
+-
+stdio.h
+-
+freertos/FreeRTOS.h
+-
+freertos/task.h
 -
 string.h
 -
@@ -719,6 +719,8 @@ esp_log.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/esp_log.h
 driver/ledc.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/driver/ledc.h
+esp_err.h
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/esp_err.h
 lwip/err.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/lwip/err.h
 lwip/sockets.h
@@ -741,12 +743,6 @@ soc/rtc_periph.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/soc/rtc_periph.h
 soc/sens_periph.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/soc/sens_periph.h
-
-/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/mstrpck.cpp
-mstrpck.h
-/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/mstrpck.h
-cstdio
--
 
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/mstrpck.h
 

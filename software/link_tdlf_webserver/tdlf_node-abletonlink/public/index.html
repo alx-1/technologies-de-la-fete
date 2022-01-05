@@ -72,25 +72,35 @@
         let pitons = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"];
         let instr = ["   bd  ", " snare ", "low tom", " hi tom", " cl hat", " op hat", "  clap ", " claves"]
         let myInstr = 0;
-        let myMidi = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; // have to encode all this!
+        let midiChannel = 1;
 
         function touchMoved() { // prevent scrolling on mobile devices
             // do some stuff
-         return false;
+            return false;
         }
 
-        function noteEncode(note) {
+        function noteEncode(note) { // broken, I don't know why charAt(i) crashes 
 
             let tmpTotal = note.toString(2);
-            console.log ("note:"+note);
-            console.log ("note in binary :"+note.toString(2));
+            console.log ("note : "+note);
+            console.log ("note in binary : "+note.toString(2));
             for (i = 0;i<3;i++){
                 mtmss[4+i] = tmpTotal.charAt(i);
-                console.log ("tmpTotal :"+tmpTotal.charAt(i));
+                //console.log ("tmpTotal : "+tmpTotal.charAt(i));
             }
-        }   
-
+        }  
         
+        function midiEncode(myMidiIndex) { // broken, I don't know why charAt(i) crashes 
+             
+            let tmpTotal = midiChannel.toString(2);
+            console.log ("midiChannel : "+midiChannel);
+            console.log ("midiChannel in binary :"+tmpTotal);
+            for (i = 0;i<3;i++){
+                mtmss[i] = tmpTotal.charAt(i);
+                //console.log ("tmpTotal :"+tmpTotal.charAt(i));
+            }
+        } 
+
         function setup() {
             createCanvas(windowWidth,windowHeight);
             setMoveThreshold(0.1);
@@ -214,6 +224,115 @@
                 mstr[7] = false; 
             } 
 
+
+            ////// midi channel encoding /// fix midiEncode() for an elegant solution...
+
+            if (midiChannel-1 == 15){  
+                mstr[0] = true;  // 1
+                mstr[1] = true;  // 2
+                mstr[2] = true;  // 4
+                mstr[3] = true;  // 8
+            }
+
+            else if (midiChannel-1 == 14){  
+                mstr[0] = false; // 1 
+                mstr[1] = true; // 2  
+                mstr[2] = true; // 4  
+                mstr[3] = true; // 8   
+            }
+
+            else if (midiChannel-1 == 13){  
+                mstr[0] = true;  // 1
+                mstr[1] = false; // 2
+                mstr[2] = true;  // 4
+                mstr[3] = true;  // 8
+            }
+
+            else if (midiChannel-1 == 12){  
+                mstr[0] = false; // 1 
+                mstr[1] = false;  // 2
+                mstr[2] = true;  // 4
+                mstr[3] = true;  // 8
+            }
+
+            else if (midiChannel-1 == 11){  
+                mstr[0] = true;  // 1 
+                mstr[1] = true;  // 2
+                mstr[2] = false; // 4 
+                mstr[3] = true;  // 8
+            }
+
+            else if (midiChannel-1 == 10){  
+                mstr[0] = false;  // 1  
+                mstr[1] = true;   // 2
+                mstr[2] = false;  // 4
+                mstr[3] = true;   // 8
+            }
+            
+            else if (midiChannel-1 == 9){  
+                mstr[0] = true;  
+                mstr[1] = false;  
+                mstr[2] = false;  
+                mstr[3] = true;  
+            }
+            else if (midiChannel-1 == 8){  
+                mstr[0] = false;  
+                mstr[1] = false;  
+                mstr[2] = false;  
+                mstr[3] = true;  
+            }
+            else if (midiChannel-1 == 7){ 
+                mstr[0] = true;  
+                mstr[1] = true;  
+                mstr[2] = true;  
+                mstr[3] = false;  
+            }
+            else if (midiChannel-1 == 6){
+                mstr[0] = false;  
+                mstr[1] = true;  
+                mstr[2] = true;  
+                mstr[3] = false;  
+            }
+            else if (midiChannel-1 == 5){
+                mstr[0] = true;  
+                mstr[1] = false;  
+                mstr[2] = true;  
+                mstr[3] = false;  
+            }
+            else if (midiChannel-1 == 4){
+                mstr[0] = false;  
+                mstr[1] = false;  
+                mstr[2] = true;  
+                mstr[3] = false;  
+            }
+            else if (midiChannel-1 == 3){
+                mstr[0] = true;  
+                mstr[1] = true;  
+                mstr[2] = false;  
+                mstr[3] = false;  
+            }
+            else if (midiChannel-1 == 2){
+                mstr[0] = false;  
+                mstr[1] = true;  
+                mstr[2] = false;  
+                mstr[3] = false;  
+            }
+            
+            else if (midiChannel-1 == 1){
+                mstr[0] = true;  
+                mstr[1] = false;  
+                mstr[2] = false;  
+                mstr[3] = false;  
+            }
+            
+            else if (midiChannel-1 == 0){
+                mstr[0] = false;  
+                mstr[1] = false;  
+                mstr[2] = false;  
+                mstr[3] = false; 
+            }
+
+
             //////////// fix noteEncode for an elegant solution, problem seems to be using for loops here ////
             
             /* for(i=15;i<32;i++){ // just get the 16 steps of interest
@@ -314,7 +433,7 @@
                     console.log("eric_X : "+eric_X);
                     console.log("eric_Y : "+eric_Y);
 
-                    ccData = ['s',eric_X,eric_Y];
+                    ccData = [42,eric_X,eric_Y];
 
                     data = ccData;
                     socket.emit('CCData', data);
@@ -338,7 +457,7 @@
             // text('phase :     '+round(myPhase), sx, sy+4*off);
             
             text('bar :                          '+bar, sx+250, sy+off );
-            text('midi :                       '+myMidi[myMidiIndex], sx+250, sy+2*off);
+            text('midi :                       '+midiChannel, sx+250, sy+2*off);
             text('instrument :          '+instr[myInstr], sx+250, sy+3*off);
 
             //text('step :        '+step, sx+300, sy+4*off);
@@ -382,17 +501,21 @@
             }
 
             if (plusMidi.isPressed) {
-                myMidiIndex = myMidiIndex +1;
-                if (myMidiIndex == 16){
-                    myMidiIndex = 1; // the maximum
+                midiChannel =midiChannel +1;
+                if (midiChannel == 17){
+                    midiChannel = 1; // the maximum
                 }
+                print("Midi Channel : "+midiChannel);
+                //midiEncode(myMidiIndex);
     
             }
             if (minusMidi.isPressed) {
-                myMidiIndex = myMidiIndex -1;
-                if (myMidiIndex == -1){
-                    myMidiIndex =0; // the minimum
+                midiChannel = midiChannel -1;
+                if (midiChannel == 0){
+                    midiChannel = 16; // the minimum
                 }
+                print("Midi Channel : "+midiChannel);
+                //midiEncode(myMidiIndex);
     
             }
 
