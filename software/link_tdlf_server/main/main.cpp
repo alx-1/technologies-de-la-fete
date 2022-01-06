@@ -90,7 +90,7 @@ extern "C" {
 #define CV_18  (GPIO_NUM_18) 
 #define CV_5  (GPIO_NUM_5) 
 #define GPIO_OUTPUT_PIN_SEL  ( (1ULL<<CV_18) | (1ULL<<CV_5) )
-bool CV_TIMING_CLOCK = true; 
+int CV_TIMING_CLOCK = 0; 
 
 // Serial midi
 #define ECHO_TEST_RTS (UART_PIN_NO_CHANGE)
@@ -636,7 +636,7 @@ extern "C" {
           if(42 == test){ // 42 is data sent from the web client
             // ESP_LOGE(SOCKET_TAG, "yesss sensor data");
             // ESP_LOGE(SOCKET_TAG, "mstr[1] %d", mstr[1]);
-            sensorValue = int(mstr[1]*100 ); // gets my values in pitch range
+            sensorValue = int(mstr[1]*100 ); // gets my values in CV Pitch range
             if (sensorValue < 0 ) {
               sensorValue = previousSensorValue; // Filter out weird negative numbers that occur when incomplete data is read I guess
             }
@@ -1773,8 +1773,21 @@ static void periodic_timer_callback(void* arg)
     char zedata[] = { MIDI_TIMING_CLOCK };
     // ESP_LOGI(LINK_TAG, "MIDI_TIMING_CLOCK");
     uart_write_bytes(UART_NUM_1, zedata, 1);
-    gpio_set_level(CV_5, CV_TIMING_CLOCK); // CV Clock Out // 
-    CV_TIMING_CLOCK = !CV_TIMING_CLOCK;
+
+    // 24 times per second
+    // faire modulo 6 pour arriver à 4 ticks par beat
+    
+    if(CV_TIMING_CLOCK % 6 == 0 ){
+      gpio_set_level(CV_5, 1); // CV Clock Out
+      // ESP_LOGI(CV_TAG, "CLOCK 1");
+      CV_TIMING_CLOCK = 0;
+    } else {
+      gpio_set_level(CV_5, 0); 
+      // ESP_LOGI(CV_TAG, "CLOCK 0");
+    }  
+    CV_TIMING_CLOCK = CV_TIMING_CLOCK+1;
+    // ESP_LOGI(CV_TAG, "CV_TIMING_CLOCK, %i", CV_TIMING_CLOCK);
+
 }
 
 
