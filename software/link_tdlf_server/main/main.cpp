@@ -20,9 +20,9 @@
 #include <chrono> // for setTempo()
 
 extern "C" {
-  #include <stdio.h>
-  #include <freertos/FreeRTOS.h>
-  #include <freertos/task.h>
+#include <stdio.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include <string.h> // from the station_example_main example
 #include "freertos/event_groups.h"
 #include "esp_system.h"
@@ -42,10 +42,17 @@ extern "C" {
 #include "driver/ledc.h" // For CV Pitch 
 #include "esp_err.h"
 
+///// MDNS //////
+#include "mdns.h"//
+#include "netdb.h" //
+
+///// OSC ///////
+#include <tinyosc.h> // testing for speed !?
+
 }
 
 #define USE_TOUCH_PADS // touch_pad_2 (GPIO_NUM_2), touch_pad_3 (GPIO_NUM_15), touch_pad_4 (GPIO_NUM_14), touch_pad_5 (GPIO_NUM_12), touch_pad_7 (GPIO_NUM_27), touch_pad_9 (GPIO_NUM_32)
-#define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1) // SDA 21 SCL 22
+#define USE_I2C_DISPLAY // SDA GPIO_NUM_25 (D2), SCL GPIO_NUM_33 (D1) // or SDA 21 SCL 22 // set values in menuconfig!
 #define USE_SOCKETS // we receive data from the seq clients
 
 extern "C" {
@@ -58,6 +65,7 @@ extern "C" {
   static const char *TAP_TAG = "Tap";
   static const char *MIDI_TAG = "Midi";
   static const char *CV_TAG = "CV";
+  static const char *MDNS_TAG = "mDNS";
 }
 
 /////// sockette server ///////
@@ -567,6 +575,32 @@ static void tp_example_touch_pad_init(void) { // Before reading touch pad, we ne
 }    
 #endif
 
+//// From mdns_example_main.c ////
+static void initialise_mdns(void)
+{
+    char* hostname = strdup("tdlf-mdns");
+    //initialize mDNS
+    ESP_ERROR_CHECK( mdns_init() );
+    //set mDNS hostname (required if you want to advertise services)
+    ESP_ERROR_CHECK( mdns_hostname_set(hostname) );
+    ESP_LOGI(MDNS_TAG, "mdns hostname set to: [%s]", hostname);
+    //set default mDNS instance name
+    ESP_ERROR_CHECK( mdns_instance_name_set("tdlf-mDNS") );
+
+    //structure with TXT records
+    mdns_txt_item_t serviceTxtData[3] = {
+        {"board","esp32"},
+        {"u","user"},
+        {"p","password"}
+    };
+
+    //initialize service
+    ESP_ERROR_CHECK( mdns_service_add("tdlf", "_osc", "_udp", PORT, serviceTxtData, 3) );
+
+    free(hostname);
+}
+
+
 ////////////////////// sockette server ///////////////////////
 #if defined USE_SOCKETS
 
@@ -575,6 +609,7 @@ int sock;
 extern "C" {
   static void udp_server_task(void *pvParameters)
   {
+    char mstr[64];
     char addr_str[128];
     int addr_family = AF_INET6;
     int ip_protocol = IPPROTO_IPV6;
@@ -619,7 +654,55 @@ extern "C" {
           //mstr should be 79 values long;
           int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-          changedMstr = false; // reset the flag
+
+          /////////////////// FROM TINYOSC ///////////////////////
+          //tosc_printOscBuffer(rx_buffer, len);
+          tosc_printOscBuffer(mstr, len);
+
+
+            tosc_message osc; // declare the TinyOSC structure
+            char buffer[64]; // char buffer[1024]; declare a buffer into which to read the socket contents
+            //int oscLen = 0; // the number of bytes read from the socket
+
+            // tosc_parseMessage(&osc, rx_buffer, len);
+            tosc_parseMessage(&osc, mstr, len);
+
+            //tosc_printMessage(&osc);
+            tosc_getAddress(&osc),  // the OSC address string, e.g. "/button1"
+            tosc_getFormat(&osc);  // the OSC format string, e.g. "f"
+
+            //printf("%s %s", 
+            ////&osc->len,              // the number of bytes in the OSC message
+            //tosc_getAddress(&osc),  // the OSC address string, e.g. "/button1"
+            //tosc_getFormat(&osc));  // the OSC format string, e.g. "f"
+
+           //switch (tosc_getFormat(&osc)) {
+            switch(osc.format[0]) {
+    
+                case 'm': {
+                    unsigned char *m = tosc_getNextMidi(&osc);
+                    printf(" 0x%02X%02X%02X%02X", m[0], m[1], m[2], m[3]);
+                    printf("\n");
+                    CCChannel = m[0];
+                    sensorValue = m[1];
+                    CCmessage = m[2];
+
+                    //printf("%02X",m[0]);
+                    //printf("\n");
+      
+                    break;
+                }
+    
+                default:
+                    printf(" Unknown format: '%c'", osc.format[0]);
+                    break;
+                } 
+  
+                printf("\n");
+          /////////////////// END TINYOSC ///////////////////////
+
+          ///// Might not need to check if data needs to be entered into a larger sequence ///////
+          /* changedMstr = false; // reset the flag
            // lets try to do this only once!
 
           for(int i = 0; i<sizeof(mstr); i++){
@@ -628,9 +711,10 @@ extern "C" {
             changedMstr = true;
             break; 
             }            
-          }
+          } */
 
-          test = mstr[0];
+          ///// old tests on sensor values /////
+          /* test = mstr[0];
           ESP_LOGE(SOCKET_TAG, "yesss sensor data %d", test); // somehow needed for the condition below to eveluate
           
           if(42 == test){ // 42 is data sent from the web client
@@ -652,10 +736,10 @@ extern "C" {
             for(int i = 0; i<sizeof(mstr); i++){
             oldmstr[i] = mstr[i];  ///// copy the mstr array into the old one to prevent spurious readings form the UDP port
             }
-          }
+          } */
           
-          /* 
-          if('s' == test){
+          ///// Old configure for CC, now we just shoot midi messages and pass them /////
+          /* if('s' == test){
 
             // First time getting sensor data, go into config mode for CC or CV out //
             // set a flag for this
@@ -668,16 +752,31 @@ extern "C" {
               configCCmessage = true;
               need2configCC = false;
 
-            }  */
-          
-          if ( changedMstr == true ) {
+            }
+            // check if we have hundreds and more : mstr[0] = 's', mstr[1] = 100, mstr[2] = 10, mstr[3]= 1
+            if (mstr[3]==0){
+            //  ESP_LOGE(SOCKET_TAG, "We dont have a value above 100  %i :%i", mstr[3]);
+            ESP_LOGE(SOCKET_TAG, "We dont have a value above 100");
+
+            }
+            else {
+              ESP_LOGE(SOCKET_TAG, "We have a value above 100");
+            }
+
+
+          } */
+
+          ////// Need to change the following to accept midi messages //////
+          ////// Check on those values m[0] = 'm', m[1] = 0x90, m[2] = 0x3C, m[3] = 0x7F 
+          /* if ( changedMstr == true ) {
 
             //ESP_LOGE(SOCKET_TAG, mstr);
             //ESP_LOGI(SOCKET_TAG, "%s", mstr);
-            /*    for (int i = 0; i < sizeof(mstr);i++){
-            ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
-            ESP_LOGE(SOCKET_TAG, "oldmstr %i :%i", i, oldmstr[i]);
-          } */
+             // for (int i = 0; i < sizeof(mstr);i++){
+            for (int i = 12; i < 16;i++){ // mstr[12],13,14,15  
+              ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
+              // ESP_LOGE(SOCKET_TAG, "oldmstr %i :%i", i, oldmstr[i]);
+              } 
             
             if ( 98 == test ) { 
               ESP_LOGE(SOCKET_TAG,"new BPM !");
@@ -792,7 +891,7 @@ extern "C" {
 
             // ESP_LOGI(SOCKET_TAG, "note %i : ", note);
           
-        } // end of if changedMstr == true
+        } // end of if changedMstr == true */
 
 
             // Error occurred during receiving
@@ -1876,6 +1975,7 @@ extern "C" { void app_main()
   
   //ESP_ERROR_CHECK(esp_event_loop_create_default());
   
+   initialise_mdns(); // initialise mDNS
 
   #if defined USE_SOCKETS // yep sockette server //
     xTaskCreate(udp_server_task, "udp_server", 4096, NULL, 5, NULL);

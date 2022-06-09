@@ -1,0 +1,7 @@
+set(srcs
+    "tinyosc.c" "tarablessd1306/ssd1306.c" "tarablessd1306/ssd1306_font.c"
+)
+
+idf_component_register(SRCS ${srcs}
+    INCLUDE_DIRS "." "tarablessd1306"
+)

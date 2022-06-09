@@ -640,6 +640,13 @@
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tarablessd1306/CMakeFiles/install.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tarablessd1306/CMakeFiles/list_install_components.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tinyosc/CMakeFiles/install/local.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tinyosc/CMakeFiles/install/strip.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tinyosc/CMakeFiles/install.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tinyosc/CMakeFiles/list_install_components.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tinyosc/CMakeFiles/rebuild_cache.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tinyosc/CMakeFiles/edit_cache.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/main/CMakeFiles/install/local.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/main/CMakeFiles/__idf_main.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/main/CMakeFiles/rebuild_cache.dir

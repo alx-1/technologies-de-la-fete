@@ -32,10 +32,6 @@ stdbool.h
 stddef.h
 -
 
-/Users/alx/esp/esp-idf/components/esp_rom/include/esp32/rom/crc.h
-stdint.h
--
-
 /Users/alx/esp/esp-idf/components/esp_rom/include/esp32/rom/ets_sys.h
 stdint.h
 -
@@ -239,12 +235,6 @@ string.h
 -
 stddef.h
 -
-
-/Users/alx/esp/esp-idf/components/wear_levelling/crc32.cpp
-crc32.h
-/Users/alx/esp/esp-idf/components/wear_levelling/crc32.h
-esp32/rom/crc.h
-/Users/alx/esp/esp-idf/components/wear_levelling/esp32/rom/crc.h
 
 /Users/alx/esp/esp-idf/components/wear_levelling/crc32.h
 

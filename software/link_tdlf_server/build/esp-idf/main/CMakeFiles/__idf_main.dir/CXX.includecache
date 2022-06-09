@@ -34,6 +34,12 @@ stdint.h
 stdbool.h
 -
 
+../components/tinyosc/tinyosc.h
+stdbool.h
+-
+stdint.h
+-
+
 /Users/alx/Documents/GitHub/link/include/ableton/Link.hpp
 ableton/platforms/Config.hpp
 -
@@ -721,6 +727,12 @@ driver/ledc.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/driver/ledc.h
 esp_err.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/esp_err.h
+mdns.h
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/mdns.h
+netdb.h
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/netdb.h
+tinyosc.h
+-
 lwip/err.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/main/lwip/err.h
 lwip/sockets.h
@@ -9671,6 +9683,12 @@ lwip/sockets.h
 /Users/alx/esp/esp-idf/components/lwip/port/esp32/include/sys/lwip/sockets.h
 net/if.h
 -
+
+/Users/alx/esp/esp-idf/components/mdns/include/mdns.h
+esp_netif.h
+-
+esp_event.h
+/Users/alx/esp/esp-idf/components/mdns/include/esp_event.h
 
 /Users/alx/esp/esp-idf/components/newlib/platform_include/assert.h
 sdkconfig.h

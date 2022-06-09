@@ -574,8 +574,6 @@ mbconfig.h
 mbutils.h
 /Users/alx/esp/esp-idf/components/freemodbus/modbus/functions/mbutils.h
 
-/Users/alx/esp/esp-idf/components/freemodbus/modbus/functions/mbfuncdiag.c
-
 /Users/alx/esp/esp-idf/components/freemodbus/modbus/functions/mbfuncdisc.c
 stdlib.h
 /Users/alx/esp/esp-idf/components/freemodbus/modbus/functions/stdlib.h

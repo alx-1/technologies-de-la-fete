@@ -188,6 +188,7 @@ esp-idf/all: esp-idf/ulp/all
 esp-idf/all: esp-idf/wifi_provisioning/all
 esp-idf/all: esp-idf/protocol_examples_common/all
 esp-idf/all: esp-idf/tarablessd1306/all
+esp-idf/all: esp-idf/tinyosc/all
 esp-idf/all: esp-idf/main/all
 
 .PHONY : esp-idf/all
@@ -272,6 +273,7 @@ esp-idf/preinstall: esp-idf/ulp/preinstall
 esp-idf/preinstall: esp-idf/wifi_provisioning/preinstall
 esp-idf/preinstall: esp-idf/protocol_examples_common/preinstall
 esp-idf/preinstall: esp-idf/tarablessd1306/preinstall
+esp-idf/preinstall: esp-idf/tinyosc/preinstall
 esp-idf/preinstall: esp-idf/main/preinstall
 
 .PHONY : esp-idf/preinstall
@@ -356,6 +358,7 @@ esp-idf/clean: esp-idf/ulp/clean
 esp-idf/clean: esp-idf/wifi_provisioning/clean
 esp-idf/clean: esp-idf/protocol_examples_common/clean
 esp-idf/clean: esp-idf/tarablessd1306/clean
+esp-idf/clean: esp-idf/tinyosc/clean
 esp-idf/clean: esp-idf/main/clean
 
 .PHONY : esp-idf/clean
@@ -1832,6 +1835,24 @@ esp-idf/tcpip_adapter/clean: esp-idf/tcpip_adapter/CMakeFiles/__idf_tcpip_adapte
 .PHONY : esp-idf/tcpip_adapter/clean
 
 #=============================================================================
+# Directory level rules for directory esp-idf/tinyosc
+
+# Recursive "all" directory target.
+esp-idf/tinyosc/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
+
+.PHONY : esp-idf/tinyosc/all
+
+# Recursive "preinstall" directory target.
+esp-idf/tinyosc/preinstall:
+
+.PHONY : esp-idf/tinyosc/preinstall
+
+# Recursive "clean" directory target.
+esp-idf/tinyosc/clean: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/clean
+
+.PHONY : esp-idf/tinyosc/clean
+
+#=============================================================================
 # Directory level rules for directory esp-idf/tinyusb
 
 # Recursive "all" directory target.
@@ -2006,17 +2027,17 @@ CMakeFiles/size-components.dir/clean:
 # Target rules for target CMakeFiles/link_tdlf_server.elf.dir
 
 # All Build rule for target.
+CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/all
+CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: CMakeFiles/_project_elf_src.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all
+CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/cbor/CMakeFiles/__idf_cbor.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/unity/CMakeFiles/__idf_unity.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/cmock/CMakeFiles/__idf_cmock.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/coap/CMakeFiles/__idf_coap.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/console/CMakeFiles/__idf_console.dir/all
-CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
-CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/all
-CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/protocomm/CMakeFiles/__idf_protocomm.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/mdns/CMakeFiles/__idf_mdns.dir/all
@@ -2035,6 +2056,7 @@ CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/spiffs/CMakeFiles/__idf_spiffs.
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/all
+CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/link_tdlf_server.elf.dir/build.make CMakeFiles/link_tdlf_server.elf.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/link_tdlf_server.elf.dir/build.make CMakeFiles/link_tdlf_server.elf.dir/build
@@ -2446,12 +2468,12 @@ CMakeFiles/menuconfig.dir/clean:
 esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all: esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/build.make esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/build.make esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=21 "Built target __idf_esp_pm"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_esp_pm"
 .PHONY : esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/rule
@@ -2500,7 +2522,7 @@ esp-idf/mbedtls/CMakeFiles/custom_bundle.dir/clean:
 esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/all: esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/build.make esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/build.make esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=60 "Built target __idf_mbedtls"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_mbedtls"
 .PHONY : esp-idf/mbedtls/CMakeFiles/__idf_mbedtls.dir/all
 
 # Build rule for subdir invocation for target.
@@ -2559,7 +2581,7 @@ esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/all: esp-idf/esp_pm/CMakeFile
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/library/CMakeFiles/lib.dir/rule
@@ -2586,7 +2608,7 @@ esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/all: esp-idf/mbedtls/m
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 65
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/rule
@@ -2613,7 +2635,7 @@ esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/all: esp-idf/mbedtls/mbe
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 58
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 59
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/rule
@@ -2640,7 +2662,7 @@ esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/all: esp-idf/efuse/CMakeF
 
 # Build rule for subdir invocation for target.
 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 57
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 58
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/rule
@@ -2775,7 +2797,7 @@ esp-idf/efuse/CMakeFiles/__idf_efuse.dir/all: esp-idf/app_update/CMakeFiles/__id
 
 # Build rule for subdir invocation for target.
 esp-idf/efuse/CMakeFiles/__idf_efuse.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 56
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/efuse/CMakeFiles/__idf_efuse.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/efuse/CMakeFiles/__idf_efuse.dir/rule
@@ -2910,7 +2932,7 @@ esp-idf/app_update/CMakeFiles/__idf_app_update.dir/all: esp-idf/bootloader_suppo
 
 # Build rule for subdir invocation for target.
 esp-idf/app_update/CMakeFiles/__idf_app_update.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 56
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/app_update/CMakeFiles/__idf_app_update.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/app_update/CMakeFiles/__idf_app_update.dir/rule
@@ -2937,7 +2959,7 @@ esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/all: esp-idf/
 
 # Build rule for subdir invocation for target.
 esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 56
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 57
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/bootloader_support/CMakeFiles/__idf_bootloader_support.dir/rule
@@ -2964,7 +2986,7 @@ esp-idf/esp_ipc/CMakeFiles/__idf_esp_ipc.dir/all: esp-idf/spi_flash/CMakeFiles/_
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_ipc/CMakeFiles/__idf_esp_ipc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 55
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 56
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_ipc/CMakeFiles/__idf_esp_ipc.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_ipc/CMakeFiles/__idf_esp_ipc.dir/rule
@@ -2991,7 +3013,7 @@ esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/all: esp-idf/nvs_flash/CMakeFil
 
 # Build rule for subdir invocation for target.
 esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 55
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 56
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/rule
@@ -3013,12 +3035,12 @@ esp-idf/spi_flash/CMakeFiles/__idf_spi_flash.dir/clean:
 esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/all: esp-idf/pthread/CMakeFiles/__idf_pthread.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/build.make esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/build.make esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=65,66 "Built target __idf_nvs_flash"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=65 "Built target __idf_nvs_flash"
 .PHONY : esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 53
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 54
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/nvs_flash/CMakeFiles/__idf_nvs_flash.dir/rule
@@ -3045,7 +3067,7 @@ esp-idf/pthread/CMakeFiles/__idf_pthread.dir/all: esp-idf/esp_gdbstub/CMakeFiles
 
 # Build rule for subdir invocation for target.
 esp-idf/pthread/CMakeFiles/__idf_pthread.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 51
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 53
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/pthread/CMakeFiles/__idf_pthread.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/pthread/CMakeFiles/__idf_pthread.dir/rule
@@ -3072,7 +3094,7 @@ esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/all: esp-idf/esp_system/CMa
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 51
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 53
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_gdbstub/CMakeFiles/__idf_esp_gdbstub.dir/rule
@@ -3099,7 +3121,7 @@ esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/all: esp-idf/esp_rom/CMakeFil
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 50
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 52
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_system/CMakeFiles/__idf_esp_system.dir/rule
@@ -3126,7 +3148,7 @@ esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/all: esp-idf/hal/CMakeFiles/__idf_h
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 49
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 51
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/rule
@@ -3148,12 +3170,12 @@ esp-idf/esp_rom/CMakeFiles/__idf_esp_rom.dir/clean:
 esp-idf/hal/CMakeFiles/__idf_hal.dir/all: esp-idf/vfs/CMakeFiles/__idf_vfs.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/hal/CMakeFiles/__idf_hal.dir/build.make esp-idf/hal/CMakeFiles/__idf_hal.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/hal/CMakeFiles/__idf_hal.dir/build.make esp-idf/hal/CMakeFiles/__idf_hal.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=35,36,37,38 "Built target __idf_hal"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=34,35,36,37 "Built target __idf_hal"
 .PHONY : esp-idf/hal/CMakeFiles/__idf_hal.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/hal/CMakeFiles/__idf_hal.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 49
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 51
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/hal/CMakeFiles/__idf_hal.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/hal/CMakeFiles/__idf_hal.dir/rule
@@ -3180,7 +3202,7 @@ esp-idf/vfs/CMakeFiles/__idf_vfs.dir/all: esp-idf/esp_eth/CMakeFiles/__idf_esp_e
 
 # Build rule for subdir invocation for target.
 esp-idf/vfs/CMakeFiles/__idf_vfs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 45
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 47
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/vfs/CMakeFiles/__idf_vfs.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/vfs/CMakeFiles/__idf_vfs.dir/rule
@@ -3207,7 +3229,7 @@ esp-idf/esp_eth/CMakeFiles/__idf_esp_eth.dir/all: esp-idf/tcpip_adapter/CMakeFil
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_eth/CMakeFiles/__idf_esp_eth.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 45
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 47
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_eth/CMakeFiles/__idf_esp_eth.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_eth/CMakeFiles/__idf_esp_eth.dir/rule
@@ -3234,7 +3256,7 @@ esp-idf/tcpip_adapter/CMakeFiles/__idf_tcpip_adapter.dir/all: esp-idf/esp_netif/
 
 # Build rule for subdir invocation for target.
 esp-idf/tcpip_adapter/CMakeFiles/__idf_tcpip_adapter.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 44
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 46
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/tcpip_adapter/CMakeFiles/__idf_tcpip_adapter.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/tcpip_adapter/CMakeFiles/__idf_tcpip_adapter.dir/rule
@@ -3261,7 +3283,7 @@ esp-idf/esp_netif/CMakeFiles/__idf_esp_netif.dir/all: esp-idf/esp_event/CMakeFil
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_netif/CMakeFiles/__idf_esp_netif.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 44
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 46
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_netif/CMakeFiles/__idf_esp_netif.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_netif/CMakeFiles/__idf_esp_netif.dir/rule
@@ -3288,7 +3310,7 @@ esp-idf/esp_event/CMakeFiles/__idf_esp_event.dir/all: esp-idf/wpa_supplicant/CMa
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_event/CMakeFiles/__idf_esp_event.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 43
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 45
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_event/CMakeFiles/__idf_esp_event.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_event/CMakeFiles/__idf_esp_event.dir/rule
@@ -3315,7 +3337,7 @@ esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/all: esp-idf/esp_wifi
 
 # Build rule for subdir invocation for target.
 esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 42
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 44
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/wpa_supplicant/CMakeFiles/__idf_wpa_supplicant.dir/rule
@@ -3342,7 +3364,7 @@ esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/all: esp-idf/lwip/CMakeFiles/__id
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 35
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 37
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_wifi/CMakeFiles/__idf_esp_wifi.dir/rule
@@ -3369,7 +3391,7 @@ esp-idf/lwip/CMakeFiles/__idf_lwip.dir/all: esp-idf/log/CMakeFiles/__idf_log.dir
 
 # Build rule for subdir invocation for target.
 esp-idf/lwip/CMakeFiles/__idf_lwip.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 34
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 36
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/lwip/CMakeFiles/__idf_lwip.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/lwip/CMakeFiles/__idf_lwip.dir/rule
@@ -3391,12 +3413,12 @@ esp-idf/lwip/CMakeFiles/__idf_lwip.dir/clean:
 esp-idf/log/CMakeFiles/__idf_log.dir/all: esp-idf/heap/CMakeFiles/__idf_heap.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/log/CMakeFiles/__idf_log.dir/build.make esp-idf/log/CMakeFiles/__idf_log.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/log/CMakeFiles/__idf_log.dir/build.make esp-idf/log/CMakeFiles/__idf_log.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_log"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=50 "Built target __idf_log"
 .PHONY : esp-idf/log/CMakeFiles/__idf_log.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/log/CMakeFiles/__idf_log.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 25
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 27
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/log/CMakeFiles/__idf_log.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/log/CMakeFiles/__idf_log.dir/rule
@@ -3418,12 +3440,12 @@ esp-idf/log/CMakeFiles/__idf_log.dir/clean:
 esp-idf/heap/CMakeFiles/__idf_heap.dir/all: esp-idf/soc/CMakeFiles/__idf_soc.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/heap/CMakeFiles/__idf_heap.dir/build.make esp-idf/heap/CMakeFiles/__idf_heap.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/heap/CMakeFiles/__idf_heap.dir/build.make esp-idf/heap/CMakeFiles/__idf_heap.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_heap"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=38 "Built target __idf_heap"
 .PHONY : esp-idf/heap/CMakeFiles/__idf_heap.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/heap/CMakeFiles/__idf_heap.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 25
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 26
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/heap/CMakeFiles/__idf_heap.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/heap/CMakeFiles/__idf_heap.dir/rule
@@ -3472,7 +3494,7 @@ esp-idf/soc/CMakeFiles/__idf_soc.dir/clean:
 esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/all: esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/build.make esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/build.make esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=19 "Built target __idf_esp_hw_support"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=18,19 "Built target __idf_esp_hw_support"
 .PHONY : esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/all
 
 # Build rule for subdir invocation for target.
@@ -3499,12 +3521,12 @@ esp-idf/esp_hw_support/CMakeFiles/__idf_esp_hw_support.dir/clean:
 esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/all: esp-idf/driver/CMakeFiles/__idf_driver.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/build.make esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/build.make esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_esp_ringbuf"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=21 "Built target __idf_esp_ringbuf"
 .PHONY : esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 22
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 21
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir/rule
@@ -3531,7 +3553,7 @@ esp-idf/driver/CMakeFiles/__idf_driver.dir/all: esp-idf/xtensa/CMakeFiles/__idf_
 
 # Build rule for subdir invocation for target.
 esp-idf/driver/CMakeFiles/__idf_driver.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 22
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 20
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/driver/CMakeFiles/__idf_driver.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/driver/CMakeFiles/__idf_driver.dir/rule
@@ -3558,7 +3580,7 @@ esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all: esp-idf/espcoredump/CMakeFiles/_
 
 # Build rule for subdir invocation for target.
 esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 17
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/xtensa/CMakeFiles/__idf_xtensa.dir/rule
@@ -3585,7 +3607,7 @@ esp-idf/espcoredump/CMakeFiles/__idf_espcoredump.dir/all: esp-idf/perfmon/CMakeF
 
 # Build rule for subdir invocation for target.
 esp-idf/espcoredump/CMakeFiles/__idf_espcoredump.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 18
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 16
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/espcoredump/CMakeFiles/__idf_espcoredump.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/espcoredump/CMakeFiles/__idf_espcoredump.dir/rule
@@ -3612,7 +3634,7 @@ esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/all: esp-idf/esp32/CMakeFiles/__idf
 
 # Build rule for subdir invocation for target.
 esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/rule
@@ -3631,15 +3653,15 @@ esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/clean:
 # Target rules for target esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir
 
 # All Build rule for target.
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/all
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/cbor/CMakeFiles/__idf_cbor.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/unity/CMakeFiles/__idf_unity.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/cmock/CMakeFiles/__idf_cmock.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/coap/CMakeFiles/__idf_coap.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/console/CMakeFiles/__idf_console.dir/all
-esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
-esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/all
-esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/protocomm/CMakeFiles/__idf_protocomm.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/mdns/CMakeFiles/__idf_mdns.dir/all
@@ -3658,6 +3680,7 @@ esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/spiffs
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/all
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/build.make esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/build.make esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/build
@@ -3720,7 +3743,7 @@ esp-idf/esp32/CMakeFiles/__idf_esp32.dir/all: esp-idf/esp_common/CMakeFiles/__id
 
 # Build rule for subdir invocation for target.
 esp-idf/esp32/CMakeFiles/__idf_esp32.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp32/CMakeFiles/__idf_esp32.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp32/CMakeFiles/__idf_esp32.dir/rule
@@ -3747,7 +3770,7 @@ esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/all: esp-idf/esp_timer/CMakeF
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 16
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 14
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_common/CMakeFiles/__idf_esp_common.dir/rule
@@ -3774,7 +3797,7 @@ esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/all: esp-idf/freertos/CMakeFile
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/rule
@@ -3796,12 +3819,12 @@ esp-idf/esp_timer/CMakeFiles/__idf_esp_timer.dir/clean:
 esp-idf/freertos/CMakeFiles/__idf_freertos.dir/all: esp-idf/newlib/CMakeFiles/__idf_newlib.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/freertos/CMakeFiles/__idf_freertos.dir/build.make esp-idf/freertos/CMakeFiles/__idf_freertos.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/freertos/CMakeFiles/__idf_freertos.dir/build.make esp-idf/freertos/CMakeFiles/__idf_freertos.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=33,34 "Built target __idf_freertos"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=33 "Built target __idf_freertos"
 .PHONY : esp-idf/freertos/CMakeFiles/__idf_freertos.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/freertos/CMakeFiles/__idf_freertos.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 14
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 12
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/freertos/CMakeFiles/__idf_freertos.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/freertos/CMakeFiles/__idf_freertos.dir/rule
@@ -3828,7 +3851,7 @@ esp-idf/newlib/CMakeFiles/__idf_newlib.dir/all: esp-idf/cxx/CMakeFiles/__idf_cxx
 
 # Build rule for subdir invocation for target.
 esp-idf/newlib/CMakeFiles/__idf_newlib.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 12
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 11
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/newlib/CMakeFiles/__idf_newlib.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/newlib/CMakeFiles/__idf_newlib.dir/rule
@@ -3855,7 +3878,7 @@ esp-idf/cxx/CMakeFiles/__idf_cxx.dir/all: esp-idf/app_trace/CMakeFiles/__idf_app
 
 # Build rule for subdir invocation for target.
 esp-idf/cxx/CMakeFiles/__idf_cxx.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 10
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 9
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/cxx/CMakeFiles/__idf_cxx.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/cxx/CMakeFiles/__idf_cxx.dir/rule
@@ -3882,7 +3905,7 @@ esp-idf/app_trace/CMakeFiles/__idf_app_trace.dir/all: esp-idf/nghttp/CMakeFiles/
 
 # Build rule for subdir invocation for target.
 esp-idf/app_trace/CMakeFiles/__idf_app_trace.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 9
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 8
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/app_trace/CMakeFiles/__idf_app_trace.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/app_trace/CMakeFiles/__idf_app_trace.dir/rule
@@ -3909,7 +3932,7 @@ esp-idf/asio/CMakeFiles/__idf_asio.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_
 
 # Build rule for subdir invocation for target.
 esp-idf/asio/CMakeFiles/__idf_asio.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/asio/CMakeFiles/__idf_asio.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/asio/CMakeFiles/__idf_asio.dir/rule
@@ -3990,7 +4013,7 @@ esp-idf/cbor/CMakeFiles/__idf_cbor.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_
 
 # Build rule for subdir invocation for target.
 esp-idf/cbor/CMakeFiles/__idf_cbor.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/cbor/CMakeFiles/__idf_cbor.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/cbor/CMakeFiles/__idf_cbor.dir/rule
@@ -4017,7 +4040,7 @@ esp-idf/unity/CMakeFiles/__idf_unity.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_es
 
 # Build rule for subdir invocation for target.
 esp-idf/unity/CMakeFiles/__idf_unity.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/unity/CMakeFiles/__idf_unity.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/unity/CMakeFiles/__idf_unity.dir/rule
@@ -4045,7 +4068,7 @@ esp-idf/cmock/CMakeFiles/__idf_cmock.dir/all: esp-idf/unity/CMakeFiles/__idf_uni
 
 # Build rule for subdir invocation for target.
 esp-idf/cmock/CMakeFiles/__idf_cmock.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/cmock/CMakeFiles/__idf_cmock.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/cmock/CMakeFiles/__idf_cmock.dir/rule
@@ -4072,7 +4095,7 @@ esp-idf/coap/CMakeFiles/__idf_coap.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_
 
 # Build rule for subdir invocation for target.
 esp-idf/coap/CMakeFiles/__idf_coap.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 69
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/coap/CMakeFiles/__idf_coap.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/coap/CMakeFiles/__idf_coap.dir/rule
@@ -4099,7 +4122,7 @@ esp-idf/console/CMakeFiles/__idf_console.dir/all: esp-idf/esp_pm/CMakeFiles/__id
 
 # Build rule for subdir invocation for target.
 esp-idf/console/CMakeFiles/__idf_console.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/console/CMakeFiles/__idf_console.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/console/CMakeFiles/__idf_console.dir/rule
@@ -4126,7 +4149,7 @@ esp-idf/nghttp/CMakeFiles/__idf_nghttp.dir/all: esp-idf/esp-tls/CMakeFiles/__idf
 
 # Build rule for subdir invocation for target.
 esp-idf/nghttp/CMakeFiles/__idf_nghttp.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 9
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 8
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/nghttp/CMakeFiles/__idf_nghttp.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/nghttp/CMakeFiles/__idf_nghttp.dir/rule
@@ -4153,7 +4176,7 @@ esp-idf/esp-tls/CMakeFiles/__idf_esp-tls.dir/all: esp-idf/tcp_transport/CMakeFil
 
 # Build rule for subdir invocation for target.
 esp-idf/esp-tls/CMakeFiles/__idf_esp-tls.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 7
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp-tls/CMakeFiles/__idf_esp-tls.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp-tls/CMakeFiles/__idf_esp-tls.dir/rule
@@ -4180,7 +4203,7 @@ esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/all: esp-idf/esp_pm/CMakeFi
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/rule
@@ -4207,7 +4230,7 @@ esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all: esp-idf/esp_pm/CMakeFiles/__id
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/rule
@@ -4234,7 +4257,7 @@ esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/all: esp-idf/esp_http_c
 
 # Build rule for subdir invocation for target.
 esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/rule
@@ -4256,12 +4279,12 @@ esp-idf/tcp_transport/CMakeFiles/__idf_tcp_transport.dir/clean:
 esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/all: esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/build.make esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/build.make esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=17 "Built target __idf_esp_http_client"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_esp_http_client"
 .PHONY : esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 5
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 4
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/rule
@@ -4283,7 +4306,7 @@ esp-idf/esp_http_client/CMakeFiles/__idf_esp_http_client.dir/clean:
 esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/all: esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/build.make esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/build.make esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_esp_http_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=17 "Built target __idf_esp_http_server"
 .PHONY : esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4310,12 +4333,12 @@ esp-idf/esp_http_server/CMakeFiles/__idf_esp_http_server.dir/clean:
 esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/all: esp-idf/sdmmc/CMakeFiles/__idf_sdmmc.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/build.make esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/build.make esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=18 "Built target __idf_esp_https_ota"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_esp_https_ota"
 .PHONY : esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 4
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_https_ota/CMakeFiles/__idf_esp_https_ota.dir/rule
@@ -4342,7 +4365,7 @@ esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/all: esp-idf/esp_pm/CMakeFile
 
 # Build rule for subdir invocation for target.
 esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/rule
@@ -4371,7 +4394,7 @@ esp-idf/protocomm/CMakeFiles/__idf_protocomm.dir/all: esp-idf/protobuf-c/CMakeFi
 
 # Build rule for subdir invocation for target.
 esp-idf/protocomm/CMakeFiles/__idf_protocomm.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/protocomm/CMakeFiles/__idf_protocomm.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/protocomm/CMakeFiles/__idf_protocomm.dir/rule
@@ -4394,7 +4417,7 @@ esp-idf/mdns/CMakeFiles/__idf_mdns.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_
 esp-idf/mdns/CMakeFiles/__idf_mdns.dir/all: esp-idf/console/CMakeFiles/__idf_console.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/mdns/CMakeFiles/__idf_mdns.dir/build.make esp-idf/mdns/CMakeFiles/__idf_mdns.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/mdns/CMakeFiles/__idf_mdns.dir/build.make esp-idf/mdns/CMakeFiles/__idf_mdns.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_mdns"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=60 "Built target __idf_mdns"
 .PHONY : esp-idf/mdns/CMakeFiles/__idf_mdns.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4511,7 +4534,7 @@ esp-idf/esp_websocket_client/CMakeFiles/__idf_esp_websocket_client.dir/all: esp-
 
 # Build rule for subdir invocation for target.
 esp-idf/esp_websocket_client/CMakeFiles/__idf_esp_websocket_client.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/esp_websocket_client/CMakeFiles/__idf_esp_websocket_client.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/esp_websocket_client/CMakeFiles/__idf_esp_websocket_client.dir/rule
@@ -4592,7 +4615,7 @@ esp-idf/expat/CMakeFiles/__idf_expat.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_es
 
 # Build rule for subdir invocation for target.
 esp-idf/expat/CMakeFiles/__idf_expat.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/expat/CMakeFiles/__idf_expat.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/expat/CMakeFiles/__idf_expat.dir/rule
@@ -4619,7 +4642,7 @@ esp-idf/wear_levelling/CMakeFiles/__idf_wear_levelling.dir/all: esp-idf/esp_pm/C
 
 # Build rule for subdir invocation for target.
 esp-idf/wear_levelling/CMakeFiles/__idf_wear_levelling.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/wear_levelling/CMakeFiles/__idf_wear_levelling.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/wear_levelling/CMakeFiles/__idf_wear_levelling.dir/rule
@@ -4647,7 +4670,7 @@ esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/all: esp-idf/wear_levelling/CMakeFiles/
 
 # Build rule for subdir invocation for target.
 esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 69
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/fatfs/CMakeFiles/__idf_fatfs.dir/rule
@@ -4674,7 +4697,7 @@ esp-idf/freemodbus/CMakeFiles/__idf_freemodbus.dir/all: esp-idf/esp_pm/CMakeFile
 
 # Build rule for subdir invocation for target.
 esp-idf/freemodbus/CMakeFiles/__idf_freemodbus.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 72
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 71
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/freemodbus/CMakeFiles/__idf_freemodbus.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/freemodbus/CMakeFiles/__idf_freemodbus.dir/rule
@@ -4701,7 +4724,7 @@ esp-idf/jsmn/CMakeFiles/__idf_jsmn.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_
 
 # Build rule for subdir invocation for target.
 esp-idf/jsmn/CMakeFiles/__idf_jsmn.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/jsmn/CMakeFiles/__idf_jsmn.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/jsmn/CMakeFiles/__idf_jsmn.dir/rule
@@ -4723,12 +4746,12 @@ esp-idf/jsmn/CMakeFiles/__idf_jsmn.dir/clean:
 esp-idf/json/CMakeFiles/__idf_json.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/json/CMakeFiles/__idf_json.dir/build.make esp-idf/json/CMakeFiles/__idf_json.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/json/CMakeFiles/__idf_json.dir/build.make esp-idf/json/CMakeFiles/__idf_json.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=39 "Built target __idf_json"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_json"
 .PHONY : esp-idf/json/CMakeFiles/__idf_json.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/json/CMakeFiles/__idf_json.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/json/CMakeFiles/__idf_json.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/json/CMakeFiles/__idf_json.dir/rule
@@ -4750,12 +4773,12 @@ esp-idf/json/CMakeFiles/__idf_json.dir/clean:
 esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/build.make esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/build.make esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=40,41,42,43,44,45,46,47,48,49,50 "Built target __idf_libsodium"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=39,40,41,42,43,44,45,46,47,48,49 "Built target __idf_libsodium"
 .PHONY : esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/all
 
 # Build rule for subdir invocation for target.
 esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 78
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 77
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/libsodium/CMakeFiles/__idf_libsodium.dir/rule
@@ -4782,7 +4805,7 @@ esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_
 
 # Build rule for subdir invocation for target.
 esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/rule
@@ -4804,7 +4827,7 @@ esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/clean:
 esp-idf/openssl/CMakeFiles/__idf_openssl.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/openssl/CMakeFiles/__idf_openssl.dir/build.make esp-idf/openssl/CMakeFiles/__idf_openssl.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/openssl/CMakeFiles/__idf_openssl.dir/build.make esp-idf/openssl/CMakeFiles/__idf_openssl.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=67 "Built target __idf_openssl"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=66,67 "Built target __idf_openssl"
 .PHONY : esp-idf/openssl/CMakeFiles/__idf_openssl.dir/all
 
 # Build rule for subdir invocation for target.
@@ -4836,7 +4859,7 @@ esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_
 
 # Build rule for subdir invocation for target.
 esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/rule
@@ -4896,7 +4919,7 @@ esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all: esp-idf/js
 
 # Build rule for subdir invocation for target.
 esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 70
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 69
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/rule
@@ -4923,7 +4946,7 @@ esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/a
 
 # Build rule for subdir invocation for target.
 esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/rule
@@ -4950,7 +4973,7 @@ esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/all: esp-idf/esp_pm/C
 
 # Build rule for subdir invocation for target.
 esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 68
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 67
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
 .PHONY : esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/rule
@@ -4966,18 +4989,45 @@ esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/clean:
 .PHONY : esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/clean
 
 #=============================================================================
+# Target rules for target esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir
+
+# All Build rule for target.
+esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
+	$(MAKE) $(MAKESILENT) -f esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/build.make esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/depend
+	$(MAKE) $(MAKESILENT) -f esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/build.make esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_tinyosc"
+.PHONY : esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
+
+# Build rule for subdir invocation for target.
+esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 66
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles 0
+.PHONY : esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/rule
+
+# Convenience name for target.
+__idf_tinyosc: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/rule
+
+.PHONY : __idf_tinyosc
+
+# clean rule for target.
+esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/clean:
+	$(MAKE) $(MAKESILENT) -f esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/build.make esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/clean
+.PHONY : esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/clean
+
+#=============================================================================
 # Target rules for target esp-idf/main/CMakeFiles/__idf_main.dir
 
 # All Build rule for target.
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/all
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/cbor/CMakeFiles/__idf_cbor.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/unity/CMakeFiles/__idf_unity.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/cmock/CMakeFiles/__idf_cmock.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/coap/CMakeFiles/__idf_coap.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/console/CMakeFiles/__idf_console.dir/all
-esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
-esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/esp_adc_cal/CMakeFiles/__idf_esp_adc_cal.dir/all
-esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/esp_hid/CMakeFiles/__idf_esp_hid.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/protobuf-c/CMakeFiles/__idf_protobuf-c.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/protocomm/CMakeFiles/__idf_protocomm.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/mdns/CMakeFiles/__idf_mdns.dir/all
@@ -4996,6 +5046,7 @@ esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/spiffs/CMakeFiles/__idf_spif
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/all
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/main/CMakeFiles/__idf_main.dir/build.make esp-idf/main/CMakeFiles/__idf_main.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/main/CMakeFiles/__idf_main.dir/build.make esp-idf/main/CMakeFiles/__idf_main.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target __idf_main"

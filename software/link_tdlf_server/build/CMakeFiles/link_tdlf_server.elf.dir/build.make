@@ -174,6 +174,7 @@ link_tdlf_server.elf: esp-idf/ulp/libulp.a
 link_tdlf_server.elf: esp-idf/wifi_provisioning/libwifi_provisioning.a
 link_tdlf_server.elf: esp-idf/protocol_examples_common/libprotocol_examples_common.a
 link_tdlf_server.elf: esp-idf/tarablessd1306/libtarablessd1306.a
+link_tdlf_server.elf: esp-idf/tinyosc/libtinyosc.a
 link_tdlf_server.elf: esp-idf/main/libmain.a
 link_tdlf_server.elf: esp-idf/asio/libasio.a
 link_tdlf_server.elf: esp-idf/cbor/libcbor.a
@@ -201,6 +202,7 @@ link_tdlf_server.elf: esp-idf/console/libconsole.a
 link_tdlf_server.elf: esp-idf/json/libjson.a
 link_tdlf_server.elf: esp-idf/protocol_examples_common/libprotocol_examples_common.a
 link_tdlf_server.elf: esp-idf/tarablessd1306/libtarablessd1306.a
+link_tdlf_server.elf: esp-idf/tinyosc/libtinyosc.a
 link_tdlf_server.elf: esp-idf/esp_pm/libesp_pm.a
 link_tdlf_server.elf: esp-idf/mbedtls/libmbedtls.a
 link_tdlf_server.elf: esp-idf/efuse/libefuse.a

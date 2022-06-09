@@ -118,6 +118,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/wifi_provisioning/cmake_install.cmake")
   include("/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/protocol_examples_common/cmake_install.cmake")
   include("/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tarablessd1306/cmake_install.cmake")
+  include("/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/tinyosc/cmake_install.cmake")
   include("/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/esp-idf/main/cmake_install.cmake")
 
 endif()

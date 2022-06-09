@@ -57,7 +57,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
   Serial.begin(9600);  // works best in testing with 9600 or lower
- 
+
   //Connect to the WiFi network
   connectToWiFi(networkName, networkPswd);
 

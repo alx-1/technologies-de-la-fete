@@ -30,6 +30,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "flash_args.in"
   "ldgen_libraries.in"
   "../components/tarablessd1306/CMakeLists.txt"
+  "../components/tinyosc/CMakeLists.txt"
   "../main/CMakeLists.txt"
   "../partitions.csv"
   "../sdkconfig"
@@ -341,6 +342,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "esp-idf/wifi_provisioning/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/protocol_examples_common/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/tarablessd1306/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "esp-idf/tinyosc/CMakeFiles/CMakeDirectoryInformation.cmake"
   "esp-idf/main/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
@@ -454,5 +456,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/DependInfo.cmake"
   "esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/DependInfo.cmake"
   "esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/DependInfo.cmake"
+  "esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/DependInfo.cmake"
   "esp-idf/main/CMakeFiles/__idf_main.dir/DependInfo.cmake"
   )

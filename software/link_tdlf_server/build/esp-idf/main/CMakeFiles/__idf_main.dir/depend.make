@@ -6,6 +6,7 @@ esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/tarablessd130
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/tarablessd1306/ssd1306_draw.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/tarablessd1306/ssd1306_err.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/tarablessd1306/ssd1306_font.h
+esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/tinyosc/tinyosc.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/Documents/GitHub/link/include/ableton/Link.hpp
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/Documents/GitHub/link/include/ableton/Link.ipp
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/Documents/GitHub/link/include/ableton/discovery/InterfaceScanner.hpp
@@ -662,6 +663,7 @@ esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/comp
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/lwip/port/esp32/include/netinet/tcp.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/lwip/port/esp32/include/sntp/sntp_get_set_time.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/lwip/port/esp32/include/sys/socket.h
+esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/mdns/include/mdns.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/newlib/platform_include/assert.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/newlib/platform_include/endian.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/esp/esp-idf/components/newlib/platform_include/errno.h

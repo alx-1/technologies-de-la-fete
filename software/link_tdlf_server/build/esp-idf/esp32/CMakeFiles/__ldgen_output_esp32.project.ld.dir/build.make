@@ -171,6 +171,7 @@ esp-idf/esp32/ld/esp32.project.ld: esp-idf/ulp/libulp.a
 esp-idf/esp32/ld/esp32.project.ld: esp-idf/wifi_provisioning/libwifi_provisioning.a
 esp-idf/esp32/ld/esp32.project.ld: esp-idf/protocol_examples_common/libprotocol_examples_common.a
 esp-idf/esp32/ld/esp32.project.ld: esp-idf/tarablessd1306/libtarablessd1306.a
+esp-idf/esp32/ld/esp32.project.ld: esp-idf/tinyosc/libtinyosc.a
 esp-idf/esp32/ld/esp32.project.ld: esp-idf/main/libmain.a
 esp-idf/esp32/ld/esp32.project.ld: /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/sdkconfig
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating ld/esp32.project.ld"
