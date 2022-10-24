@@ -55,6 +55,7 @@ int sock;
 bool mstrpckIP = false;
 bool nouvSockette = false;
 bool bdChanged = false;
+bool sendData = false;
 
 
 int press;
@@ -66,6 +67,79 @@ int noteDuration = 0; // length of note stored in bits 8-11 of bd[]
 int barSelektor = 0; // à stocker
 int currentBar = 0; // pour l'affichage
 
+///// MDNS ////// <-- sad attempt at mdns client
+/* #include "mdns.h"//
+#include "netdb.h" //
+
+extern "C"{
+static void  query_mdns_host_with_gethostbyname(char *host);
+static void  query_mdns_host_with_getaddrinfo(char *host);
+
+//if(!oscServerFound) {
+      
+      //browseService("touchoscbridge", "udp");
+      //browseServicew("osc", "udp"); // _osc._udp
+     
+      //query_mdns_service("_osc", "_udp");
+      // browseService("http", "udp"); // for another ESP32 running mDNS_Web_Server (udp)
+      // browseService("http", "tcp"); // for another ESP32 running mDNS_Web_Server (tcp)
+//    }
+
+static void mdns_print_results(mdns_result_t *results)
+{
+    mdns_result_t *r = results;
+    mdns_ip_addr_t *a = NULL;
+    int i = 1, t;
+    while (r) {
+        printf("%d: Interface: %s, Type: %s, TTL: %u\n", i++, esp_netif_get_ifkey(r->esp_netif), ip_protocol_str[r->ip_protocol],
+               r->ttl);
+        if (r->instance_name) {
+            printf("  PTR : %s.%s.%s\n", r->instance_name, r->service_type, r->proto);
+        }
+        if (r->hostname) {
+            printf("  SRV : %s.local:%u\n", r->hostname, r->port);
+        }
+        if (r->txt_count) {
+            printf("  TXT : [%zu] ", r->txt_count);
+            for (t = 0; t < r->txt_count; t++) {
+                printf("%s=%s(%d); ", r->txt[t].key, r->txt[t].value ? r->txt[t].value : "NULL", r->txt_value_len[t]);
+            }
+            printf("\n");
+        }
+        a = r->addr;
+        while (a) {
+            if (a->addr.type == ESP_IPADDR_TYPE_V6) {
+                printf("  AAAA: " IPV6STR "\n", IPV62STR(a->addr.u_addr.ip6));
+            } else {
+                printf("  A   : " IPSTR "\n", IP2STR(&(a->addr.u_addr.ip4)));
+            }
+            a = a->next;
+        }
+        r = r->next;
+    }
+}
+
+static void query_mdns_service(const char *service_name, const char *proto)
+{
+    ESP_LOGI(TAG, "Query PTR: %s.%s.local", service_name, proto);
+
+    mdns_result_t *results = NULL;
+    esp_err_t err = mdns_query_ptr(service_name, proto, 3000, 20,  &results);
+    if (err) {
+        ESP_LOGE(TAG, "Query Failed: %s", esp_err_to_name(err));
+        return;
+    }
+    if (!results) {
+        ESP_LOGW(TAG, "No results found!");
+        return;
+    }
+
+    mdns_print_results(results);
+    //mdns_query_results_free(results);
+}
+
+ query_mdns_service("_osc", "_udp"); // _osc._udp
+} // Fin Extern "C" */
 
 ///////// DELS // SPI CONFIG TTGO // VSPI // SPI3 // MOSI 23 // SCK 18
 extern "C"{
@@ -91,6 +165,9 @@ unsigned char inColour[3] = {14,14,14}; // init indicator (wifi, broadcast, serv
 unsigned char selektorColour[10][3] = {{6,6,6},{7,7,7},{8,8,8},{9,9,9},{10,10,10},{11,11,11},{12,12,12},{13,13,13},{14,14,14},{15,15,15}}; // for feedback until knowing if it is a short or long touch
 }
 /////// END DELS //////
+
+///// OSC ///////
+#include <tinyosc.h> // testing for speed !?
 
 /////// SEQ ///////
 
@@ -488,13 +565,14 @@ static void udp_client_task(void *pvParameters)
 
     ///// SOCKETTE TASK //////
 	// upd init + timer
-	dest_addr.sin_addr.s_addr = inet_addr(HOST_IP_ADDR); //  "192.168.0.255"
+	dest_addr.sin_addr.s_addr = inet_addr(HOST_IP_ADDR); //  "255.255.255.255" "192.168.0.255"
 	dest_addr.sin_family = AF_INET;
 	dest_addr.sin_port = htons(PORT); // "3333"	
 	addr_family = AF_INET;
 	ip_protocol = IPPROTO_IP;
   	inet_ntoa_r(dest_addr.sin_addr, addr_str, sizeof(addr_str) - 1);
 
+   
     // Trying to send a broadcast message :/
     int enabled = 1;
     setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled));
@@ -506,48 +584,48 @@ static void udp_client_task(void *pvParameters)
   		}
 
   	ESP_LOGI(SOCKET_TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR, PORT);
+    ESP_LOGE(SOCKET_TAG, "sock vaut : %i", sock);
+
+    
 	
     ///// FIN SOCKETTE /////
    
-    while (1) { // bdChanged est un flag si bd[] a changé
+    while (1) { // sendData // bdChanged est un flag si bd[] a changé
 
-        for(int i = 0; i<sizeof(bd); i++){
+        /* for(int i = 0; i<sizeof(bd); i++){
             if (bd[i] != cbd[i]){
             ESP_LOGI(SOCKET_TAG, "bd changed 1!");
             bdChanged = true;
             break; 
             }
-        }
-
-        // check if a load sequence message is arriving
-
- /*        struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
-        socklen_t socklen = sizeof(source_addr);
-        int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
-                
-        ESP_LOGI(SOCKET_TAG, "what where on devrait recevoir quelque chose?");
-        // int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
-
-        ESP_LOGI(SOCKET_TAG, "...quelque chose?");
-
-        if (len < 0) {
-            ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
-            break;
-            }
-        else {
-            rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
-            ESP_LOGI(SOCKET_TAG, "Received mstr ? %d bytes from %s:", len, rx_buffer);
-        }  */
-            
+        } */
 
         if(!mstrpckIP){ 
-            int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)); // peut envoyer une string au lieu du tableau vide
-  
+            
+            ESP_LOGI(SOCKET_TAG, "not mstrpckIP");
+         
+            // Testing sending OSC messages on start, we don't have the server IP yet
+            char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
+            uint8_t midi[4];
+            midi[0] = 3;   // midi channel // 90 + midi channel (note on)
+            midi[1] = 42;   // midi note // BD // SN // LT // HT // CH // HH // CLAP // AG //
+            midi[2] = 23;   // Control Change message (11 is expression) // Pitch (note value)
+            midi[3] = 0;    // Extra                                         
+
+            int maLen = tosc_writeMessage(
+                monBuffer, sizeof(monBuffer),
+                "/midi", // the address
+                "m",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+                midi);
+
+            int err = sendto(sock, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr, sizeof(dest_addr));
+   
             if (err < 0) {
                 ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
                 break;
-                }
-            // ESP_LOGI(SOCKET_TAG, "Message sent");
+            } 
+    
+            ESP_LOGI(SOCKET_TAG, "Message sent");
 
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
@@ -576,7 +654,7 @@ static void udp_client_task(void *pvParameters)
 
             vTaskDelay(100 / portTICK_PERIOD_MS); // 500 
 
-        } // end if (!mstrpck)
+        } // end if (!mstrpckIP)
 
         else if (mstrpckIP && !nouvSockette){
 	        
@@ -603,28 +681,34 @@ static void udp_client_task(void *pvParameters)
 
         else if ( mstrpckIP && nouvSockette ) {
 
-            if ( bdChanged ) {
+            // ESP_LOGI(SOCKET_TAG, "we have a new socket and the IP of the server to send to");
 
-                ESP_LOGI(SOCKET_TAG, "bd changed 2!");
+            if ( sendData ) { // This results from a new button press on the sequencer
 
-                //for (int i = 0; i < sizeof(bd);i++){
-                //    ESP_LOGE(TAG, "bd : %i,  %i", i, bd[i]);
-                //}
+                // Testing sending OSC messages at the start
+                char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
+                uint8_t midi[4];
+                midi[0] = 4;   // midi channel // 90 + midi channel (note on)
+                midi[1] = 0;   // midi note // BD // SN // LT // HT // CH // HH // CLAP // AG //
+                midi[2] = 0;   // Control Change message (11 is expression) // Pitch (note value)
+                midi[3] = 0;    // Extra                                         
 
-                int err = sendto(sock, bd, sizeof(bd), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+                int maLen = tosc_writeMessage(
+                    monBuffer, sizeof(monBuffer),
+                    "/midi", // the address
+                    "m",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+                    midi);
 
-                for(int i = 0; i<sizeof(bd); i++){ // copy bd[] to cbd[] (changed bd)
-                    cbd[i] = bd[i];
-                    }
-
+                int err = sendto(sock, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr, sizeof(dest_addr));
+   
                 if (err < 0) {
                     ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
                     break;
-                }
-            
-                // ESP_LOGI(SOCKET_TAG, "Message sent");
+                } 
+    
+                ESP_LOGI(SOCKET_TAG, "Message sent");
 
-                struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
+                /* struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
                 socklen_t socklen = sizeof(source_addr);
                 //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
                 int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
@@ -657,17 +741,18 @@ static void udp_client_task(void *pvParameters)
                     
                     if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
                         // ESP_LOGI(SOCKET_TAG, "succès UDP");
-                    } 
+                    }  */
 
-                }
+
+                vTaskDelay(10 / portTICK_PERIOD_MS); // 500
+                
+                sendData = false; // The latest change was sent
+
+                } // Fin de if bd changed
 
                 vTaskDelay(10 / portTICK_PERIOD_MS); // 500
 
-                bdChanged = false;
-
-            }
-
-        }  // fin nouvelle sockette 
+        }  // fin mstrPuckIP && we have a nouvelle sockette 
         
     } // fin du while
 
@@ -729,7 +814,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP && goSMART == false) {  // do you things here
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
 
-        ESP_LOGI(WIFI_TAG, "Got IP: %d.%d.%d.%d", IP2STR(&event->ip_info.ip));
+        // ESP_LOGI(WIFI_TAG, "Got IP: %d.%d.%d.%d", IP2STR(&event->ip_info.ip));
 	    esp_ip4addr_ntoa(&event->ip_info.ip, str_ip, IP4ADDR_STRLEN_MAX);
 	    ESP_LOGI(WIFI_TAG, "I have a connection and my IP is %s!", str_ip); 
         s_retry_num = 0;
@@ -930,7 +1015,7 @@ extern "C" { void wifi_init_sta(void)
     /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually
      * happened. */
     if (bits & WIFI_CONNECTED_BIT) {
-        ESP_LOGI(TAG, "connected to WiFI");
+        // ESP_LOGI(TAG, "connected to WiFI");
 
         // LEDinDicator(4); // we have wifi
 

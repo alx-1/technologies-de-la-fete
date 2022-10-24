@@ -127,6 +127,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/Users/alx/esp/esp-idf/components/wifi_provisioning/include"
   "/Users/alx/esp/esp-idf/examples/common_components/protocol_examples_common/include"
   "../components/ESP32APA102Driver"
+  "../components/tinyosc"
   "/Users/alx/Documents/GitHub/link/include"
   "/Users/alx/Documents/GitHub/link/cmake_include/../modules/asio-standalone/asio/include"
   )
@@ -205,6 +206,7 @@ set(CMAKE_TARGET_LINKED_INFO_FILES
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/DependInfo.cmake"
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/DependInfo.cmake"
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/DependInfo.cmake"
+  "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/DependInfo.cmake"
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedtls.dir/DependInfo.cmake"
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedcrypto.dir/DependInfo.cmake"
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/mbedtls/mbedtls/library/CMakeFiles/mbedx509.dir/DependInfo.cmake"

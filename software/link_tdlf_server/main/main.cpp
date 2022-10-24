@@ -609,7 +609,7 @@ int sock;
 extern "C" {
   static void udp_server_task(void *pvParameters)
   {
-    char mstr[64];
+    char mstr[16]; // char mstr[64]
     char addr_str[128];
     int addr_family = AF_INET6;
     int ip_protocol = IPPROTO_IPV6;
@@ -646,7 +646,7 @@ extern "C" {
 
         while (1) {
 
-          // ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
+          ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
 
           struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
           socklen_t socklen = sizeof(source_addr);
@@ -654,14 +654,17 @@ extern "C" {
           //mstr should be 79 values long;
           int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
+          for(int i = 0; i<sizeof(mstr); i++){
+            test = mstr[i];
+            ESP_LOGE(SOCKET_TAG, "data %i", test); 
+          }  
 
           /////////////////// FROM TINYOSC ///////////////////////
           //tosc_printOscBuffer(rx_buffer, len);
           tosc_printOscBuffer(mstr, len);
 
-
             tosc_message osc; // declare the TinyOSC structure
-            char buffer[64]; // char buffer[1024]; declare a buffer into which to read the socket contents
+            char buffer[1024]; // char buffer[64]; declare a buffer into which to read the socket contents
             //int oscLen = 0; // the number of bytes read from the socket
 
             // tosc_parseMessage(&osc, rx_buffer, len);
@@ -699,202 +702,25 @@ extern "C" {
                 } 
   
                 printf("\n");
-          /////////////////// END TINYOSC ///////////////////////
+            /////////////////// END TINYOSC ///////////////////////
 
-          ///// Might not need to check if data needs to be entered into a larger sequence ///////
-          /* changedMstr = false; // reset the flag
-           // lets try to do this only once!
-
-          for(int i = 0; i<sizeof(mstr); i++){
-            if (mstr[i] != oldmstr[i]){
-            ESP_LOGI(SOCKET_TAG, "mstr changed !");
-            changedMstr = true;
-            break; 
-            }            
-          } */
-
-          ///// old tests on sensor values /////
-          /* test = mstr[0];
-          ESP_LOGE(SOCKET_TAG, "yesss sensor data %d", test); // somehow needed for the condition below to eveluate
-          
-          if(42 == test){ // 42 is data sent from the web client
-            // ESP_LOGE(SOCKET_TAG, "yesss sensor data");
-            // ESP_LOGE(SOCKET_TAG, "mstr[1] %d", mstr[1]);
-            sensorValue = int(mstr[1]*100 ); // gets my values in CV Pitch range
-            if (sensorValue < 0 ) {
-              sensorValue = previousSensorValue; // Filter out weird negative numbers that occur when incomplete data is read I guess
-            }
-            ESP_LOGE(SOCKET_TAG, "sensorValue :  %d", sensorValue);
-            
-            for(int i = 0; i<sizeof(mstr); i++){
-              mstr[i] = oldmstr[i];  // reset the old mstr values after extracting the sensor data !
-              // ESP_LOGE(SOCKET_TAG, "mstr was resetted");
-            }
-
-          }
-          else { // we didn't have data from the web client, carry on
-            for(int i = 0; i<sizeof(mstr); i++){
-            oldmstr[i] = mstr[i];  ///// copy the mstr array into the old one to prevent spurious readings form the UDP port
-            }
-          } */
-          
-          ///// Old configure for CC, now we just shoot midi messages and pass them /////
-          /* if('s' == test){
-
-            // First time getting sensor data, go into config mode for CC or CV out //
-            // set a flag for this
-            if (need2configCC == true){ // If an eventual config in NVS exists we won't need this
-            // Get a long press of the skull and tape to erase that cfg and change it ?
-              ESP_LOGE(SOCKET_TAG, "Configuring CC messages"); 
-              
-              configCC = true; // here we go
-              configCCChannel = true;
-              configCCmessage = true;
-              need2configCC = false;
-
-            }
-            // check if we have hundreds and more : mstr[0] = 's', mstr[1] = 100, mstr[2] = 10, mstr[3]= 1
-            if (mstr[3]==0){
-            //  ESP_LOGE(SOCKET_TAG, "We dont have a value above 100  %i :%i", mstr[3]);
-            ESP_LOGE(SOCKET_TAG, "We dont have a value above 100");
-
-            }
-            else {
-              ESP_LOGE(SOCKET_TAG, "We have a value above 100");
-            }
-
-
-          } */
-
-          ////// Need to change the following to accept midi messages //////
-          ////// Check on those values m[0] = 'm', m[1] = 0x90, m[2] = 0x3C, m[3] = 0x7F 
-          /* if ( changedMstr == true ) {
-
-            //ESP_LOGE(SOCKET_TAG, mstr);
-            //ESP_LOGI(SOCKET_TAG, "%s", mstr);
-             // for (int i = 0; i < sizeof(mstr);i++){
-            for (int i = 12; i < 16;i++){ // mstr[12],13,14,15  
-              ESP_LOGE(SOCKET_TAG, "mstr %i :%i", i, mstr[i]);
-              // ESP_LOGE(SOCKET_TAG, "oldmstr %i :%i", i, oldmstr[i]);
-              } 
-            
-            if ( 98 == test ) { 
-              ESP_LOGE(SOCKET_TAG,"new BPM !");
-              if (mstr[6]== false){
-              newBPM = (mstr[4] - '0')*10 + mstr[5] - '0';
-              }
-              else{
-              newBPM = (mstr[4] - '0')*100 + (mstr[5] - '0')*10 + mstr[6] - '0' ;
-            }
-
-            if ( newBPM != oldBPM ) {  
-              changeBPM = true;
-              }
-
-            }
-
-            // Filter the array input and populate mtmss
-
-            /////// midi channel ////////
-            channel = 0; // reset avant de recompter
-            int tmpTotal = 0;
-
-            for(int i=0;i<4;i++){ // up to 8 channels, could hold 16 values
-
-             
-              if(i==0 && mstr[0] == true){
-                tmpTotal = tmpTotal+1;
-              }
-              else if(i==1 && mstr[1] == true){
-                tmpTotal = tmpTotal + 2;
-              }
-              else if(i==2 && mstr[2] == true){
-                tmpTotal = tmpTotal + 4;
-              }
-              else if(i==3 && mstr[3] == true){
-                tmpTotal = tmpTotal + 8;
-              }
-            }
-      
-            channel = tmpTotal+1;  // 1-16 midi channels
+            ///// midi channel ///// 1-16 midi channels
             ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
   
-            ////// note // bit 4,5,6,7 /////
-            tmpTotal = 0; // reset before counting
-
-            for(int i=0;i<4;i++){ // 
-
-              if(i==0 && mstr[4] == true){
-                tmpTotal = tmpTotal+1;
-              } 
-              else if(i==1 && mstr[1+4] == true){
-                tmpTotal = tmpTotal+2;
-                }
-              else if(i==2 && mstr[2+4] == true){
-                tmpTotal = tmpTotal + 4;
-                }
-              else if(i==3 && mstr[3+4] == true){
-                tmpTotal = tmpTotal + 8;
-                }  
-            
-            }
-
-            note = tmpTotal; // only 8 note values for the moment
+            ///// note /////
             ESP_LOGI(SOCKET_TAG, "note : %i", note); 
 
-
-            ////// noteDuration ///////
-            tmpTotal = 0; // reset before counting
-
-            for(int i=0;i<4;i++){ // 
-
-              if(i==3 && mstr[3+8] == true){
-                tmpTotal = tmpTotal+1;
-                }
-              else if(i==2 && mstr[2+8] == true){
-                tmpTotal = tmpTotal + 2;
-                }
-              else if(i==1 && mstr[1+8] == true){
-                tmpTotal = tmpTotal + 4;
-                }  
-            }
-            noteDuration = duration[tmpTotal]; // only 8 noteDuration values for the moment
-
+            ///// noteDuration //////
             // ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
+
+            ///// Step ///// 0-63 steps
+            // Where is the note going in the sequence
           
-
-            // read in bar value from mst[8] and mst[9] and save it as int for the corresponding note
-            if(mstr[12]==false && mstr[13]==false){bar[note] = 1;} 
-            else if(mstr[12]==true && mstr[13]==false){bar[note] = 2;} 
-            else if(mstr[12]==false && mstr[13]==true){bar[note] = 3;} 
-            else {bar[note] = 4;} // true && true 
-
-            // ESP_LOGI(SOCKET_TAG, "bar[note] : %i", bar[note]); 
-
             // read in the bit value for mute and store 
             muteRecords[note] = mstr[14];
             // ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
-         
-
-            // calcul de l'offset 
-
-            int offset = note * 79; // no comprendo? // copy into mtmss offset = channel * 79 + note * 79...
-            // int offset = channel * 79 + note * 79; // no comprendo? // copy into mtmss offset = channel * 79 + note * 79...
-
-            // ESP_LOGI(SOCKET_TAG, "offset: %i", offset); 
-
-
-            for( int i=0; i<79; i++ ){
-              mtmss[i+offset] = mstr[i]; // copy into mtmss
-            //  ESP_LOGI(SOCKET_TAG, "mtmss %i : %i ", i, mtmss[i]);
-            } 
-
-            // ESP_LOGI(SOCKET_TAG, "note %i : ", note);
           
-        } // end of if changedMstr == true */
-
-
-            // Error occurred during receiving
+            // Error occurred during receiving ?
             if (len < 0) {
                 ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
                 break;
@@ -904,7 +730,7 @@ extern "C" {
                     inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
               }
                 
-           //  ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
+           ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
                 
             //inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
                 
@@ -960,14 +786,14 @@ extern "C" {
             
             } 
 
-            //int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
-            //ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
+            int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+            ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
 
             if (err < 0) {
               ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
               break;
               }       
-        }
+        } // End of while
 
         if (sock != -1) {
             ESP_LOGI(SOCKET_TAG, "Shutting down socket and restarting...");
@@ -1057,7 +883,7 @@ extern "C" {
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP && goSMART == false) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         
-        ESP_LOGI(WIFI_TAG, "Got IP: %d.%d.%d.%d", IP2STR(&event->ip_info.ip));
+        // ESP_LOGI(WIFI_TAG, "Got IP: %d.%d.%d.%d", IP2STR(&event->ip_info.ip));
 	      esp_ip4addr_ntoa(&event->ip_info.ip, str_ip, IP4ADDR_STRLEN_MAX);
 	      ESP_LOGI(WIFI_TAG, "I have a connection and my IP is %s!", str_ip);  
       
@@ -1241,7 +1067,7 @@ extern "C" { void wifi_init_sta(void)
      * happened. */
     if (bits & WIFI_CONNECTED_BIT) {
 
-        ESP_LOGI(WIFI_TAG, "Connected to WiFI");
+        // ESP_LOGI(WIFI_TAG, "Connected to WiFI");
         
         #if defined USE_I2C_DISPLAY   
           SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );

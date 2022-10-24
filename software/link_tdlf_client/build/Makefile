@@ -1580,6 +1580,19 @@ __idf_ESP32APA102Driver/fast:
 .PHONY : __idf_ESP32APA102Driver/fast
 
 #=============================================================================
+# Target rules for targets named __idf_tinyosc
+
+# Build rule for target.
+__idf_tinyosc: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 __idf_tinyosc
+.PHONY : __idf_tinyosc
+
+# fast build rule for target.
+__idf_tinyosc/fast:
+	$(MAKE) $(MAKESILENT) -f esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/build.make esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/build
+.PHONY : __idf_tinyosc/fast
+
+#=============================================================================
 # Target rules for targets named __idf_main
 
 # Build rule for target.
@@ -1729,6 +1742,7 @@ help:
 	@echo "... __idf_spiffs"
 	@echo "... __idf_tcp_transport"
 	@echo "... __idf_tcpip_adapter"
+	@echo "... __idf_tinyosc"
 	@echo "... __idf_ulp"
 	@echo "... __idf_unity"
 	@echo "... __idf_vfs"

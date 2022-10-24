@@ -640,6 +640,13 @@
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/ESP32APA102Driver/CMakeFiles/install.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/ESP32APA102Driver/CMakeFiles/list_install_components.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/tinyosc/CMakeFiles/install/local.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/tinyosc/CMakeFiles/install/strip.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/tinyosc/CMakeFiles/install.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/tinyosc/CMakeFiles/list_install_components.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/tinyosc/CMakeFiles/rebuild_cache.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/tinyosc/CMakeFiles/edit_cache.dir
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/main/CMakeFiles/install/local.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/main/CMakeFiles/__idf_main.dir
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/esp-idf/main/CMakeFiles/rebuild_cache.dir

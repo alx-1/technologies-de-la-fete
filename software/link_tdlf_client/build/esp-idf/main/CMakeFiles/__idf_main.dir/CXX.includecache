@@ -34,6 +34,12 @@ driver/spi_master.h
 
 ../components/ESP32APA102Driver/colourObject.h
 
+../components/tinyosc/tinyosc.h
+stdbool.h
+-
+stdint.h
+-
+
 /Users/alx/Documents/GitHub/link/include/ableton/Link.hpp
 ableton/platforms/Config.hpp
 -
@@ -701,8 +707,12 @@ lwip/sys.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/lwip/sys.h
 lwip/netdb.h
 -
+netdb.h
+/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/netdb.h
 ESP32APA102Driver.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/ESP32APA102Driver.h
+tinyosc.h
+-
 string.h
 -
 freertos/FreeRTOS.h

@@ -4,6 +4,7 @@
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/ESP32APA102Driver/ESP32APA102Driver.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/ESP32APA102Driver/apa102LEDStrip.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/ESP32APA102Driver/colourObject.h
+esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: ../components/tinyosc/tinyosc.h
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/Documents/GitHub/link/include/ableton/Link.hpp
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/Documents/GitHub/link/include/ableton/Link.ipp
 esp-idf/main/CMakeFiles/__idf_main.dir/main.cpp.obj: /Users/alx/Documents/GitHub/link/include/ableton/discovery/InterfaceScanner.hpp
