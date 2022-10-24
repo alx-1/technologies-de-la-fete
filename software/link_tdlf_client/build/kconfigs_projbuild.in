@@ -1,0 +1,6 @@
+source "/Users/alx/esp/esp-idf/components/app_update/Kconfig.projbuild"
+source "/Users/alx/esp/esp-idf/components/bootloader/Kconfig.projbuild"
+source "/Users/alx/esp/esp-idf/components/esptool_py/Kconfig.projbuild"
+source "/Users/alx/esp/esp-idf/components/partition_table/Kconfig.projbuild"
+source "/Users/alx/esp/esp-idf/examples/common_components/protocol_examples_common/Kconfig.projbuild"
+source "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/Kconfig.projbuild"
