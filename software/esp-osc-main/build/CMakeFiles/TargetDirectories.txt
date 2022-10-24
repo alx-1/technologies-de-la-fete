@@ -1,2 +1,0 @@
-/Users/alx/Documents/GitHub/technologies-de-la-fete/software/esp-osc-main/build/CMakeFiles/rebuild_cache.dir
-/Users/alx/Documents/GitHub/technologies-de-la-fete/software/esp-osc-main/build/CMakeFiles/edit_cache.dir
