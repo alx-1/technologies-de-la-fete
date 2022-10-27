@@ -199,7 +199,6 @@ double prev_beat_time;
 
 /////// TIMER + button state//////
 
-//static void oneshot_timer_callback(void* arg);
 // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_timer.html?highlight=hardware%20timer High Resoultion Timer API
 
 esp_timer_handle_t oneshot_timer;
@@ -219,7 +218,7 @@ static void oneshot_timer_callback(void* arg)
         midi[0] = midiChannel;
         midi[1] = noteSelektor;
         midi[2] = steps[selektor+16*barSelektor].on;
-        midi[3] = selektor+16*barSelektor; // step info // we need to send the barSelektor another way
+        midi[3] = selektor+16*barSelektor; // which step is the note info on ?
         sendData = true;
         press = 0; // reset press
 
@@ -1055,6 +1054,7 @@ static void tp_example_read_task(void *pvParameter)
 
                 esp_timer_stop(oneshot_timer); // stop it if we are here 
                 esp_timer_start_once(oneshot_timer, 40000); // if this triggers, we confirmed we had a short press
+                
                 // sendData is determined if we have a new note in 'oneshot_timer_callback'
 
                 if ( interval > 350 ) {
@@ -1177,7 +1177,7 @@ static void tp_example_read_task(void *pvParameter)
                         else if(modSelektor>=8 && modSelektor<12){ // change le bar (1-16)(17-32)etc.
                            
                             // Need to know only once how many bars we have in the sequence
-                            // Disabling the bar selektor :/ Too confusing for the space
+                            // *** Disabling the bar selektor :/ Too confusing for the space ***
                             // barSelektor = modSelektor-8;
                             barSelektor = 0;
                             // steps[0].bar = barSelektor;
@@ -1195,7 +1195,7 @@ static void tp_example_read_task(void *pvParameter)
                             if (midiChannel == 7){ // le max
                                 midiChannel = -1; // loop it
                                 }
-                            // Disabling midi channel for Banshees, too confusing, notes are sufficient for the solenoids.
+                            // *** Disabling midi channel for Banshees, too confusing, notes are sufficient for the solenoids.
                             // midiChannel = midiChannel+1 ; // à considérer un 'enter' pour rendre les modifs actives à ce moment uniquement
                             // Need to set the midi channel only once for the sequence
                             //steps[0].chan = midiChannel; // Write the channel number 

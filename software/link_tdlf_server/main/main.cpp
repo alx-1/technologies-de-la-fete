@@ -7,16 +7,12 @@
 #include <driver/gpio.h>
 #include <driver/timer.h>
 #include <esp_event.h>
-//#include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
-// #include <freertos/task.h>
 #include <nvs_flash.h>
 #include <protocol_examples_common.h>
 #include "driver/uart.h"
-//#include <stdio.h>
 #include "esp_timer.h" // for tap tempo
 #include "esp_sleep.h"
-
 #include <chrono> // for setTempo()
 
 extern "C" {
@@ -47,7 +43,7 @@ extern "C" {
 #include "netdb.h" //
 
 ///// OSC ///////
-#include <tinyosc.h> // testing for speed !?
+#include <tinyosc.h> // still to test for speed !!
 
 }
 
@@ -82,12 +78,9 @@ extern "C" {
   int ip_protocol;
   int sock_WT32;
   struct sockaddr_in dest_addr_WT32;
-  #define HOST_IP_ADDR_WT32 "192.168.50.240" // trying to broadcast first //
+  #define HOST_IP_ADDR_WT32 "192.168.50.240" // Hard-coded to send data to MaxD //
   #define PORT_WT32 3333
-}
-  
-  // From the client example
- 
+  }
   
   #define PORT 3333
 
@@ -128,6 +121,7 @@ char MIDI_NOTE_ON_CH[] = {0x90,0x91,0x92,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99
 
 //////// CC messages config //////////
 // Load MIDI CC config from NVS if it exists and turn this off is a cfg exists //
+// We might not need to do much config of CC messages as the sensor sends it's own Channel and CC values
 bool need2configCC = true; // Keep an eye out for sensor messages, if so, start the config of midi CC messages
 bool configCC = false; // maybe only one of these two is needed !
 bool configCCChannel = false;
@@ -206,8 +200,6 @@ int previousSensorValue = 0;
 int test = 777;
 bool changeBPM;
 bool changedMstr = false;
-
-
 
 // Attempt at storing a sequence as an array of struct //
 // Need to find out how to make it possible to store two notes on the same step. For example, there might be a 'Bass drum' and a High hat' on the same step.
@@ -507,20 +499,7 @@ static void tp_example_read_task(void *pvParameter) {
               selectedSeq = nmbrSeq-1; // loop it
             }
           }
-          else if ( configCC == true && configCCChannel == true ){ // config midi CC channel
-            CCChannel--;
-            if(CCChannel < 1){
-              CCChannel = 16; 
-            }
-            ESP_LOGI(TOUCH_TAG, "CC Channel : %d", CCChannel);
-          }
-          else if (configCC == true && configCCChannel == false && configCCmessage == true){ // config midi CC message
-            CCmessage--;
-            if(CCmessage < 0){
-              CCmessage = 127; 
-              ESP_LOGI(TOUCH_TAG, "CC Message : %d", CCmessage);
-            }
-          }
+          
           else{
             tempoDEC = true; 
           }
@@ -541,20 +520,7 @@ static void tp_example_read_task(void *pvParameter) {
             selectedSeq = 0; // loop it
             }
           }
-          else if ( configCC == true && configCCChannel == true ){ // config midi CC channel
-            CCChannel++;
-            if(CCChannel > 16){
-              CCChannel = 1; 
-            }
-            ESP_LOGI(TOUCH_TAG, "CC Channel : %d", CCChannel);
-          }
-          else if (configCC == true && configCCChannel == false && configCCmessage == true){ // config midi CC message
-            CCmessage++;
-            if(CCmessage > 127){
-              CCmessage = 0; 
-            }
-            ESP_LOGI(TOUCH_TAG, "CC Message : %d", CCmessage);
-          }
+          
           else{
             tempoINC= true;  // pour que le audio loop le prenne en compte
           }     
@@ -769,9 +735,15 @@ extern "C" {
                     unsigned char *m = tosc_getNextMidi(&osc);
                     printf(" 0x%02X%02X%02X%02X", m[0], m[1], m[2], m[3]);
                     printf("\n");
-                    CCChannel = m[0];
-                    sensorValue = m[1];
-                    CCmessage = m[2];
+                    //CCChannel = m[0];
+                    //sensorValue = m[1];
+                    //CCmessage = m[2];
+                    steps[m[3]].on = m[2]; // m[2] is on/off info and m[3] is the step number
+
+                    // If the sequencer is going to only be 16 steps...we might not need all these 64...
+                    /* for (int i = 0 ; i < 64 ; i++ ){
+                      ESP_LOGI(SEQ_TAG, "step : %i, note value :%i", i, steps[i].on); 
+                    } */
 
                     //printf("%02X",m[0]);
                     //printf("\n");
@@ -788,7 +760,7 @@ extern "C" {
             /////////////////// END TINYOSC ///////////////////////
 
             ///// midi channel ///// 1-16 midi channels
-            ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
+            // ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
   
             ///// note /////
             ESP_LOGI(SOCKET_TAG, "note : %i", note); 
@@ -797,6 +769,7 @@ extern "C" {
             // ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
 
             ///// Step ///// 0-63 steps
+            //ESP_LOGI(SOCKET_TAG, "note : %i", note); // Change this
             // Where is the note going in the sequence
           
             // read in the bit value for mute and store 
@@ -1270,8 +1243,8 @@ void tempoChanged(double tempo) {
 
     //ici!
     
-    arr_steps[0].on = true; // error: 'arr_steps' does not name a type 
-    ESP_LOGI(SEQ_TAG, "First step : %i", arr_steps[0].on);                                   
+    steps[0].on = true; // Test writing to the array of structs
+    ESP_LOGI(SEQ_TAG, "First step : %i", steps[0].on);                                   
 
     int maLen = tosc_writeMessage(
         monBuffer, sizeof(monBuffer),
@@ -1657,7 +1630,6 @@ void tickTask(void* userParam)
       switch (halo_welt)
       {
         case 0:
-
         strcpy(phases, "X000");
         break;
         case 1:
@@ -1673,43 +1645,17 @@ void tickTask(void* userParam)
         ESP_LOGI(LINK_TAG, "phases not assigned correctly"); 
       }
 
-        if ( configCC == true ){
 
-          snprintf(top, 20, "Midi CC Config");
-          if (configCCChannel == true && configCCmessage == true) {
-            snprintf(tmpOHbuf, 20 , "> Channel %i ?", CCChannel ); 
-            snprintf(current_phase_step, 20, "Message %i", CCmessage );
-          }
-          else if (configCCChannel == false && configCCmessage == true) {
-            snprintf(tmpOHbuf, 20 , "Channel %i", CCChannel ); 
-            snprintf(current_phase_step, 20, "> Message %i ?", CCmessage );
-          }
+        snprintf(top, 20, "clients:%i  %s", nmbrClients, phases);
+        SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
 
-          SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
+        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, top, SSD_COLOR_WHITE ); 
 
-          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
-
-          SSD1306_FontDrawString( &I2CDisplay, 10, 1, top, SSD_COLOR_WHITE );
-          SSD1306_FontDrawString (&I2CDisplay, 10, 16, tmpOHbuf, SSD_COLOR_WHITE );
-          SSD1306_FontDrawString (&I2CDisplay, 10, 31, current_phase_step, SSD_COLOR_WHITE );
-          SSD1306_FontDrawString (&I2CDisplay, 10, 46, "Save to tape", SSD_COLOR_WHITE );
-          
-          SSD1306_Update( &I2CDisplay );  
-
-        } else {
-
-          snprintf(top, 20, "clients:%i  %s", nmbrClients, phases);
-          SSD1306_Clear( &I2CDisplay, SSD_COLOR_BLACK );
-
-          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_7x13);
-          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_North, top, SSD_COLOR_WHITE ); 
-
-          SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24); // &Font_droid_sans_mono_13x24 // &Font_droid_sans_fallback_15x17
-          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, tmpOHbuf, SSD_COLOR_WHITE );
-          SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_South, current_phase_step, SSD_COLOR_WHITE );
-          SSD1306_Update( &I2CDisplay );  
-
-        }
+        SSD1306_SetFont( &I2CDisplay, &Font_droid_sans_mono_13x24); // &Font_droid_sans_mono_13x24 // &Font_droid_sans_fallback_15x17
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_Center, tmpOHbuf, SSD_COLOR_WHITE );
+        SSD1306_FontDrawAnchoredString( &I2CDisplay, TextAnchor_South, current_phase_step, SSD_COLOR_WHITE );
+        SSD1306_Update( &I2CDisplay );  
       
 
         if (startStopCB){ // isPlaying and did we send that note out? 
@@ -1767,7 +1713,7 @@ void tickTask(void* userParam)
               // ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
               // ESP_LOGI(LINK_TAG, "Note on, %i", i);
 
-                if (channel == 10){ // are we playing drumz ?
+                if (channel == 10){ // are we playing drumz // solenoids ?
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
                   uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
                   char zedata2[] = {zeDrums[i]};      // arriver de 0-8
