@@ -221,13 +221,7 @@ typedef struct {
     bool mute;
 } steps_t;
 
-steps_t arr_steps[64]; // Declare an array of type struct steps
-
-// arr_steps[0].on = true; // error: 'arr_steps' does not name a type 
-
-//ESP_LOGI(SEQ_TAG, "First step : %i", arr_steps[0].on);  
-
-
+steps_t steps[64]; // Declare an array of type struct steps
 
 bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
 bool oldmstr[79] = {1}; 
@@ -240,7 +234,7 @@ float noteDuration;
 int myNoteDuration;
 int bar[8] = {1,1,1,1,1,1,1,1}; // 2 bits, up to 4 bars?
 int myBar = 0; 
-bool muteRecords[8] = {0,0,0,0,0,0,0,0}; // mute info per
+bool muteRecords[8] = {0,0,0,0,0,0,0,0}; // mute info per note
 int stepsLength[4] = {16,32,48,64}; // varies per note 16-64
 
 int beat = 0; 

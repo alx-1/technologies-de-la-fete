@@ -593,6 +593,26 @@
 			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
 		},
 		{
+			"backtrace" : 3,
+			"id" : "__idf_wifi_provisioning::@9d7e7ffe1b15746c1098"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "__idf_protocol_examples_common::@f775e6a13b1007a4569f"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "__idf_ESP32APA102Driver::@80b735b6d412393bb739"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "__idf_tinyosc::@4a980d34a6b61901c9a3"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "__idf_main::@7368607ed66887415643"
+		},
+		{
 			"backtrace" : 11,
 			"id" : "__ldgen_output_esp32.project.ld::@c361781f7cb51efad0ea"
 		},
@@ -687,26 +707,6 @@
 		{
 			"backtrace" : 3,
 			"id" : "__idf_spiffs::@df881b71474064c86689"
-		},
-		{
-			"backtrace" : 3,
-			"id" : "__idf_wifi_provisioning::@9d7e7ffe1b15746c1098"
-		},
-		{
-			"backtrace" : 3,
-			"id" : "__idf_protocol_examples_common::@f775e6a13b1007a4569f"
-		},
-		{
-			"backtrace" : 3,
-			"id" : "__idf_ESP32APA102Driver::@80b735b6d412393bb739"
-		},
-		{
-			"backtrace" : 3,
-			"id" : "__idf_tinyosc::@4a980d34a6b61901c9a3"
-		},
-		{
-			"backtrace" : 3,
-			"id" : "__idf_main::@7368607ed66887415643"
 		}
 	],
 	"id" : "link_tdlf_client.elf::@6890427a1f51a3e7e1df",

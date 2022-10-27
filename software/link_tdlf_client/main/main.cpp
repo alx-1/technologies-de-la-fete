@@ -1,4 +1,4 @@
-//// 24/10/2022
+//// 26/10/2022
 //// tdlf client // 16 touch pads // 16 leds // envoi des données de un array au client
 
 // LEDS driver from https://github.com/limitz/esp-apa102
@@ -64,6 +64,10 @@ int noteSelektor = 0; // note à stocker dans les bits 4-7 de bd[]
 int noteDuration = 0; // length of note stored in bits 8-11 of bd[] 
 int barSelektor = 0; // à stocker
 int currentBar = 0; // pour l'affichage
+
+/// OSC ///
+
+uint8_t midi[4]; // This will hold the data to be sent over
 
 ///// MDNS ////// <-- sad attempt at mdns client
 /* #include "mdns.h"//
@@ -165,11 +169,6 @@ unsigned char selektorColour[10][3] = {{6,6,6},{7,7,7},{8,8,8},{9,9,9},{10,10,10
 
 /////// SEQ ///////
 
-bool bd[79] = {}; // bd[0-3] (channel) // bd[4-7] (note) // bd[8-11] (note duration) // bd[12-13] (bar) // bd[14] (mute) // bd[15-79](steps) 
-// This needs to change as we're now storing midi information // A bidimensional array bool(?) array of 64 step values and channel + note + note duration + CC is prolly the way to go.
-bool cbd[79] = {1}; // to determine if we have a changed bd
-
-// New struct replaces the old [bd] array.
 // Need to find out how to make it possible to store two notes on the same step. For example, there might be a 'Bass drum' and a High hat' on the same step.
 
 typedef struct {
@@ -189,7 +188,6 @@ float oldstep;
 //static void periodic_timer_callback(void* arg);
 //esp_timer_handle_t periodic_timer;
 
-// 
 bool startStopCB = false; // l'état du callback 
 bool startStopState = false; // l'état local
 
@@ -217,11 +215,21 @@ static void oneshot_timer_callback(void* arg)
     
     if ( press < 20) { // we had a short touch after all
         steps[selektor+16*barSelektor].on = !steps[selektor+16*barSelektor].on; // essaie d'écrire...espero
+        
+        midi[0] = midiChannel;
+        midi[1] = noteSelektor;
+        midi[2] = steps[selektor+16*barSelektor].on;
+        midi[3] = selektor+16*barSelektor; // step info // we need to send the barSelektor another way
+        sendData = true;
         press = 0; // reset press
+
+        /* for ( int i = 0 ; i < 64 ; i++ ) {
+            ESP_LOGI(TAG, "step %i, value : %i", i, steps[i].on);
+        } */
     }
 
     if ( continuousPress == true ){
-        ESP_LOGI(TAG, "> 200 ms Time to register the continous press and move on");
+        // ESP_LOGI(TAG, "> 200 ms Time to register the continous press and move on");
         continuousPress = false;
         press = 0;
     }
@@ -577,13 +585,13 @@ static void udp_client_task(void *pvParameters)
             
             ESP_LOGI(SOCKET_TAG, "not mstrpckIP");
          
-            // Testing sending OSC messages on start, we don't have the server IP yet
+            // Sending a bogus OSC message on start, we don't have the server IP yet
             char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
-            uint8_t midi[4];
-            midi[0] = 3;   // midi channel // 90 + midi channel (note on)
-            midi[1] = 42;   // midi note // BD // SN // LT // HT // CH // HH // CLAP // AG //
-            midi[2] = 23;   // Control Change message (11 is expression) // Pitch (note value)
-            midi[3] = 0;    // Extra                                         
+            //uint8_t midi[4];
+            midi[0] = 42;  // midi channel // 90 + midi channel (note on)
+            midi[1] = 66;  // midi note // BD // SN // LT // HT // CH // HH // CLAP // AG //
+            midi[2] = 66;  // Step number? // Control Change message (11 is expression) // Pitch (note value)
+            midi[3] = 66;  // Extra                                         
 
             int maLen = tosc_writeMessage(
                 monBuffer, sizeof(monBuffer),
@@ -656,15 +664,15 @@ static void udp_client_task(void *pvParameters)
 
             // ESP_LOGI(SOCKET_TAG, "we have a new socket and the IP of the server to send to");
 
-            if ( sendData ) { // This results from a new button press on the sequencer
+            if ( sendData ) { // This results from a new note being entered from the sequencer //
 
                 // Testing sending OSC messages at the start
                 char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
-                uint8_t midi[4];
-                midi[0] = 4;   // midi channel // 90 + midi channel (note on)
-                midi[1] = 0;   // midi note // BD // SN // LT // HT // CH // HH // CLAP // AG //
-                midi[2] = 0;   // Control Change message (11 is expression) // Pitch (note value)
-                midi[3] = 0;    // Extra                                         
+                //uint8_t midi[4];
+                //midi[0] = 4;   // midi channel // 90 + midi channel (note on)
+                //midi[1] = 0;   // midi note // BD // SN // LT // HT // CH // HH // CLAP // AG //
+                //midi[2] = 0;   // Control Change message (11 is expression) // Pitch (note value)
+                //midi[3] = 0;    // Extra                                         
 
                 int maLen = tosc_writeMessage(
                     monBuffer, sizeof(monBuffer),
@@ -1047,6 +1055,7 @@ static void tp_example_read_task(void *pvParameter)
 
                 esp_timer_stop(oneshot_timer); // stop it if we are here 
                 esp_timer_start_once(oneshot_timer, 40000); // if this triggers, we confirmed we had a short press
+                // sendData is determined if we have a new note in 'oneshot_timer_callback'
 
                 if ( interval > 350 ) {
                     press = 0;
@@ -1166,9 +1175,19 @@ static void tp_example_read_task(void *pvParameter)
                         }
 
                         else if(modSelektor>=8 && modSelektor<12){ // change le bar (1-16)(17-32)etc.
-                            barSelektor = modSelektor-8;
+                           
                             // Need to know only once how many bars we have in the sequence
-                            steps[0].bar = barSelektor;
+                            // Disabling the bar selektor :/ Too confusing for the space
+                            // barSelektor = modSelektor-8;
+                            barSelektor = 0;
+                            // steps[0].bar = barSelektor;
+                            steps[0].bar = 0;
+                            //sendData = true;
+                            //midi[0] = 17; // Code for a change in the bar number...changing the number of steps in the sequence (1-16)(17-32) // Implementing a smaller number of steps would be fun!
+                            //midi[1] = 66;
+                            //midi[2] = 66;
+                            //midi[3] = 66;
+
                             ESP_LOGI(TAG, "Bar : %d", barSelektor);
                         }
 
@@ -1176,25 +1195,31 @@ static void tp_example_read_task(void *pvParameter)
                             if (midiChannel == 7){ // le max
                                 midiChannel = -1; // loop it
                                 }
-                            midiChannel = midiChannel+1 ; // à considérer un 'enter' pour rendre les modifs actives à ce moment uniquement
+                            // Disabling midi channel for Banshees, too confusing, notes are sufficient for the solenoids.
+                            // midiChannel = midiChannel+1 ; // à considérer un 'enter' pour rendre les modifs actives à ce moment uniquement
                             // Need to set the midi channel only once for the sequence
-                            steps[0].chan = midiChannel; // Write the channel number 
+                            //steps[0].chan = midiChannel; // Write the channel number 
                             ESP_LOGI(TAG, "Midi channel %i", midiChannel);
                         }
                         
-                        else if( modSelektor == 13){
+                        else if( modSelektor == 13 ){ // Won't change note duration for Banshees
                             if (noteDuration == 7) {
                                 noteDuration = -1;
                             }
                             noteDuration = noteDuration + 1;
                             // Need to set the note length only once for the sequence
                             steps[0].length = noteDuration;
-                            ESP_LOGI(TAG, "mute : %i", steps[0].length); 
+                            ESP_LOGI(TAG, "noteDuration : %i", steps[0].length); 
                         }
 
                         else if( modSelektor == 14 ) {
                             // Need to set the mute info only once for the sequence // Are we playing or not?
                             steps[0].mute = !steps[0].mute;
+                            midi[0] = 18; // Channel (up to 16) so 18 is code for muting that track
+                            midi[1] = 66;
+                            midi[2] = 66;
+                            midi[3] = 66;
+                            sendData = true;
                             ESP_LOGI(TAG, "mute : %i", steps[0].mute); 
                         }
                         
@@ -1207,7 +1232,12 @@ static void tp_example_read_task(void *pvParameter)
                                 steps[i].length = 0;
                                 steps[i].mute = 0;
                             }
-                            // TODO : Ajouter l'envoi d'un message de reset du côté de tdlf // We need to send a reset message to the server
+
+                            midi[0] = 19; // Code for reset on the server
+                            midi[1] = 66; // no such note
+                            midi[2] = 66; // no such bar
+                            midi[3] = 66; 
+                            sendData = true; // TODO : Ajouter l'envoi d'un message de reset du côté de tdlf // We need to send a reset message to the server
                             modSelektor = 42; // ok on arrête d'effacer...
                             ESP_LOGI(TAG, "RESET");
                         }

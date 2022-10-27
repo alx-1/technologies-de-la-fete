@@ -1648,7 +1648,7 @@
 				{
 					"directoryIndex" : 9,
 					"id" : "__idf_app_update::@cc3b426666063acc9674",
-					"jsonFile" : "target-__idf_app_update-0e01b19bdcd1f899ffa0.json",
+					"jsonFile" : "target-__idf_app_update-ac2c89c0daf3bf727487.json",
 					"name" : "__idf_app_update",
 					"projectIndex" : 1
 				},
@@ -1963,7 +1963,7 @@
 				{
 					"directoryIndex" : 90,
 					"id" : "__idf_main::@7368607ed66887415643",
-					"jsonFile" : "target-__idf_main-b56fce220a8d8bc5fdd4.json",
+					"jsonFile" : "target-__idf_main-bff9682e642ff459d7fd.json",
 					"name" : "__idf_main",
 					"projectIndex" : 1
 				},
@@ -2152,7 +2152,7 @@
 				{
 					"directoryIndex" : 40,
 					"id" : "__ldgen_output_esp32.project.ld::@c361781f7cb51efad0ea",
-					"jsonFile" : "target-__ldgen_output_esp32.project.ld-7ee0a8b94ea8ec8cb889.json",
+					"jsonFile" : "target-__ldgen_output_esp32.project.ld-1cce9c4127efe0894e9f.json",
 					"name" : "__ldgen_output_esp32.project.ld",
 					"projectIndex" : 1
 				},
@@ -2299,7 +2299,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "link_tdlf_client.elf::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-link_tdlf_client.elf-f18e8f0d6c831d5af61d.json",
+					"jsonFile" : "target-link_tdlf_client.elf-4eea2e331463f65d274d.json",
 					"name" : "link_tdlf_client.elf",
 					"projectIndex" : 0
 				},
