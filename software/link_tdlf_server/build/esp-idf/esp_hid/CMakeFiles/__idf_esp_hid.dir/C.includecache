@@ -210,6 +210,18 @@ esp_event.h
 sys/queue.h
 /Users/alx/esp/esp-idf/components/esp_hid/private/sys/queue.h
 
+/Users/alx/esp/esp-idf/components/esp_hid/src/esp_hid_common.c
+string.h
+-
+esp_log.h
+/Users/alx/esp/esp-idf/components/esp_hid/src/esp_log.h
+esp_err.h
+/Users/alx/esp/esp-idf/components/esp_hid/src/esp_err.h
+esp_hid_common.h
+/Users/alx/esp/esp-idf/components/esp_hid/src/esp_hid_common.h
+esp_gatt_defs.h
+/Users/alx/esp/esp-idf/components/esp_hid/src/esp_gatt_defs.h
+
 /Users/alx/esp/esp-idf/components/esp_hid/src/esp_hidd.c
 esp_hidd.h
 /Users/alx/esp/esp-idf/components/esp_hid/src/esp_hidd.h

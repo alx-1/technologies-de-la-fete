@@ -486,6 +486,26 @@ esp_log_internal.h
 
 /Users/alx/esp/esp-idf/components/log/include/esp_log_internal.h
 
+/Users/alx/esp/esp-idf/components/log/log.c
+stdbool.h
+-
+stdarg.h
+-
+string.h
+-
+stdlib.h
+-
+stdio.h
+-
+assert.h
+-
+esp_log.h
+/Users/alx/esp/esp-idf/components/log/esp_log.h
+esp_log_private.h
+/Users/alx/esp/esp-idf/components/log/esp_log_private.h
+sys/queue.h
+/Users/alx/esp/esp-idf/components/log/sys/queue.h
+
 /Users/alx/esp/esp-idf/components/log/log_buffers.c
 stdio.h
 -

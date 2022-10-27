@@ -490,6 +490,18 @@ multi_heap_platform.h
 sys/queue.h
 /Users/alx/esp/esp-idf/components/heap/sys/queue.h
 
+/Users/alx/esp/esp-idf/components/heap/heap_tlsf.c
+multi_heap_config.h
+/Users/alx/esp/esp-idf/components/heap/multi_heap_config.h
+multi_heap.h
+/Users/alx/esp/esp-idf/components/heap/multi_heap.h
+multi_heap_internal.h
+/Users/alx/esp/esp-idf/components/heap/multi_heap_internal.h
+heap_tlsf_config.h
+/Users/alx/esp/esp-idf/components/heap/heap_tlsf_config.h
+heap_tlsf.h
+/Users/alx/esp/esp-idf/components/heap/heap_tlsf.h
+
 /Users/alx/esp/esp-idf/components/heap/heap_tlsf.h
 assert.h
 -

@@ -568,6 +568,12 @@ esp_phy_init.h
 sdkconfig.h
 /Users/alx/esp/esp-idf/components/esp_wifi/esp32/include/sdkconfig.h
 
+/Users/alx/esp/esp-idf/components/esp_wifi/include/esp_coexist.h
+stdbool.h
+-
+esp_err.h
+/Users/alx/esp/esp-idf/components/esp_wifi/include/esp_err.h
+
 /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_coexist_adapter.h
 stdarg.h
 -
@@ -685,6 +691,12 @@ esp_phy_init.h
 /Users/alx/esp/esp-idf/components/esp_wifi/include/esp_phy_init.h
 
 /Users/alx/esp/esp-idf/components/esp_wifi/include/smartconfig_ack.h
+
+/Users/alx/esp/esp-idf/components/esp_wifi/src/coexist.c
+esp_coexist.h
+/Users/alx/esp/esp-idf/components/esp_wifi/src/esp_coexist.h
+esp_coexist_internal.h
+/Users/alx/esp/esp-idf/components/esp_wifi/src/esp_coexist_internal.h
 
 /Users/alx/esp/esp-idf/components/esp_wifi/src/lib_printf.c
 stdio.h

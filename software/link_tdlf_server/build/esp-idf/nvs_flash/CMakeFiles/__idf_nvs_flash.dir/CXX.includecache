@@ -756,6 +756,12 @@ partition.hpp
 intrusive_list.h
 /Users/alx/esp/esp-idf/components/nvs_flash/src/intrusive_list.h
 
+/Users/alx/esp/esp-idf/components/nvs_flash/src/nvs_partition.cpp
+cstdlib
+-
+nvs_partition.hpp
+/Users/alx/esp/esp-idf/components/nvs_flash/src/nvs_partition.hpp
+
 /Users/alx/esp/esp-idf/components/nvs_flash/src/nvs_partition.hpp
 esp_partition.h
 /Users/alx/esp/esp-idf/components/nvs_flash/src/esp_partition.h

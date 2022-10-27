@@ -992,6 +992,16 @@ driver/sdmmc_host.h
 sdmmc_private.h
 /Users/alx/esp/esp-idf/components/driver/sdmmc_private.h
 
+/Users/alx/esp/esp-idf/components/driver/sdspi_crc.c
+stdint.h
+-
+sdspi_crc.h
+/Users/alx/esp/esp-idf/components/driver/sdspi_crc.h
+sdkconfig.h
+/Users/alx/esp/esp-idf/components/driver/sdkconfig.h
+esp_rom_crc.h
+/Users/alx/esp/esp-idf/components/driver/esp_rom_crc.h
+
 /Users/alx/esp/esp-idf/components/driver/sdspi_crc.h
 stdint.h
 -
@@ -1651,6 +1661,10 @@ stdint.h
 -
 sys/queue.h
 /Users/alx/esp/esp-idf/components/esp_rom/include/esp32s3/rom/sys/queue.h
+
+/Users/alx/esp/esp-idf/components/esp_rom/include/esp_rom_crc.h
+stdint.h
+-
 
 /Users/alx/esp/esp-idf/components/esp_rom/include/esp_rom_gpio.h
 stdint.h

@@ -230,6 +230,10 @@ soc/rtc_cntl_reg.h
 stdint.h
 -
 
+/Users/alx/esp/esp-idf/components/esp_rom/include/esp_rom_uart.h
+stdint.h
+-
+
 /Users/alx/esp/esp-idf/components/esp_system/include/esp_system.h
 stdint.h
 -
@@ -624,6 +628,18 @@ esp_spi_flash.h
 soc/soc_memory_layout.h
 /Users/alx/esp/esp-idf/components/newlib/soc/soc_memory_layout.h
 
+/Users/alx/esp/esp-idf/components/newlib/heap.c
+string.h
+-
+stdlib.h
+-
+sys/reent.h
+-
+malloc.h
+-
+esp_heap_caps.h
+/Users/alx/esp/esp-idf/components/newlib/esp_heap_caps.h
+
 /Users/alx/esp/esp-idf/components/newlib/locks.c
 sys/lock.h
 -
@@ -700,6 +716,14 @@ stdint.h
 sys/reent.h
 -
 
+/Users/alx/esp/esp-idf/components/newlib/platform_include/pthread.h
+sys/types.h
+-
+sys/time.h
+-
+sys/features.h
+-
+
 /Users/alx/esp/esp-idf/components/newlib/platform_include/sys/lock.h
 
 /Users/alx/esp/esp-idf/components/newlib/platform_include/sys/random.h
@@ -707,6 +731,14 @@ sys/types.h
 -
 
 /Users/alx/esp/esp-idf/components/newlib/platform_include/sys/reent.h
+
+/Users/alx/esp/esp-idf/components/newlib/platform_include/sys/termios.h
+stdint.h
+-
+sys/types.h
+-
+sdkconfig.h
+/Users/alx/esp/esp-idf/components/newlib/platform_include/sys/sdkconfig.h
 
 /Users/alx/esp/esp-idf/components/newlib/platform_include/sys/time.h
 _ansi.h
@@ -768,6 +800,12 @@ esp32c3/rtc.h
 
 /Users/alx/esp/esp-idf/components/newlib/priv_include/esp_time_impl.h
 
+/Users/alx/esp/esp-idf/components/newlib/pthread.c
+pthread.h
+-
+esp_log.h
+/Users/alx/esp/esp-idf/components/newlib/esp_log.h
+
 /Users/alx/esp/esp-idf/components/newlib/random.c
 sys/random.h
 -
@@ -797,6 +835,36 @@ sys/reent.h
 -
 esp_attr.h
 /Users/alx/esp/esp-idf/components/newlib/esp_attr.h
+
+/Users/alx/esp/esp-idf/components/newlib/syscalls.c
+stdbool.h
+-
+stdlib.h
+-
+stdarg.h
+-
+sys/types.h
+-
+unistd.h
+-
+errno.h
+-
+reent.h
+-
+sys/fcntl.h
+-
+sdkconfig.h
+/Users/alx/esp/esp-idf/components/newlib/sdkconfig.h
+esp_rom_uart.h
+/Users/alx/esp/esp-idf/components/newlib/esp_rom_uart.h
+
+/Users/alx/esp/esp-idf/components/newlib/termios.c
+sdkconfig.h
+/Users/alx/esp/esp-idf/components/newlib/sdkconfig.h
+sys/termios.h
+-
+sys/errno.h
+-
 
 /Users/alx/esp/esp-idf/components/newlib/time.c
 errno.h

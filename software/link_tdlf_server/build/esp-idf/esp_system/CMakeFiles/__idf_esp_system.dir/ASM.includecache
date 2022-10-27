@@ -58,6 +58,16 @@ soc/soc.h
 stdint.h
 -
 
+/Users/alx/esp/esp-idf/components/esp_system/port/arch/xtensa/panic_handler_asm.S
+freertos/xtensa_rtos.h
+/Users/alx/esp/esp-idf/components/esp_system/port/arch/xtensa/freertos/xtensa_rtos.h
+esp_private/panic_reason.h
+/Users/alx/esp/esp-idf/components/esp_system/port/arch/xtensa/esp_private/panic_reason.h
+soc/soc.h
+/Users/alx/esp/esp-idf/components/esp_system/port/arch/xtensa/soc/soc.h
+sdkconfig.h
+/Users/alx/esp/esp-idf/components/esp_system/port/arch/xtensa/sdkconfig.h
+
 /Users/alx/esp/esp-idf/components/esp_system/port/soc/esp32/dport_panic_highint_hdl.S
 xtensa/coreasm.h
 -

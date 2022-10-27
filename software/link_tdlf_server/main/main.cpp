@@ -66,6 +66,7 @@ extern "C" {
   static const char *MIDI_TAG = "Midi";
   static const char *CV_TAG = "CV";
   static const char *MDNS_TAG = "mDNS";
+  static const char *SEQ_TAG = "Sequence";
 }
 
 /////// sockette server ///////
@@ -75,7 +76,19 @@ extern "C" {
   #include "lwip/sockets.h"
   #include "lwip/sys.h"
   #include <lwip/netdb.h>
+
+  char addr_str[128]; // Copié depuis le client
+  int addr_family;    
+  int ip_protocol;
+  int sock_WT32;
+  struct sockaddr_in dest_addr_WT32;
+  #define HOST_IP_ADDR_WT32 "192.168.50.240" // trying to broadcast first //
+  #define PORT_WT32 3333
 }
+  
+  // From the client example
+ 
+  
   #define PORT 3333
 
   char clientIPAddresses[8][21]; // 8 potential clients, IPv6 format + 1 for string termination by strncat
@@ -193,6 +206,29 @@ int previousSensorValue = 0;
 int test = 777;
 bool changeBPM;
 bool changedMstr = false;
+
+
+
+// Attempt at storing a sequence as an array of struct //
+// Need to find out how to make it possible to store two notes on the same step. For example, there might be a 'Bass drum' and a High hat' on the same step.
+
+typedef struct {
+    bool on;          
+    uint8_t chan;
+    uint8_t bar;
+    uint8_t note;
+    uint8_t length;
+    bool mute;
+} steps_t;
+
+steps_t arr_steps[64]; // Declare an array of type struct steps
+
+// arr_steps[0].on = true; // error: 'arr_steps' does not name a type 
+
+//ESP_LOGI(SEQ_TAG, "First step : %i", arr_steps[0].on);  
+
+
+
 bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
 bool oldmstr[79] = {1}; 
 bool mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
@@ -609,11 +645,64 @@ int sock;
 extern "C" {
   static void udp_server_task(void *pvParameters)
   {
+
+    // Du client Sockette _task
+    // Trying to send and OSC message over UDP from the server...
+    /* 
+    dest_addr.sin_addr.s_addr = inet_addr(HOST_IP_ADDR_WT32); 
+    dest_addr_WT32.sin_family = AF_INET;
+	  dest_addr_WT32.sin_port = htons(PORT); // "3334"	
+	  addr_family = AF_INET;
+	  ip_protocol = IPPROTO_IP;
+  	inet_ntoa_r(dest_addr_WT32.sin_addr, addr_str, sizeof(addr_str) - 1); // Dunno about the addr_str
+       
+    // Trying to send a broadcast message :/
+    int enabled = 1;
+
+    setsockopt(sock_WT32, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled));
+
+ 	  sock_WT32 = socket(addr_family, SOCK_DGRAM, ip_protocol);
+
+  	if (sock_WT32 < 0) {
+    	ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
+  		}
+
+  	ESP_LOGI(SOCKET_TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR_WT32, PORT_WT32);
+    ESP_LOGE(SOCKET_TAG, "sock vaut : %i", sock_WT32);
+
+    char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
+    uint8_t stepper = 42;                                     
+
+    int maLen = tosc_writeMessage(
+        monBuffer, sizeof(monBuffer),
+        "/tdlf", // the address
+        "i",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+        stepper);
+
+        int err2 = sendto(sock_WT32, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
+   
+        if (err2 < 0) {
+          ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+            //break;
+          } 
+    
+          ESP_LOGI(SOCKET_TAG, "Message sent WT_32");
+
+            
+
+            if (err < 0) {
+              ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+              break;
+              }  
+
+    // Fin client sockette task 
+    */
+
     char mstr[16]; // char mstr[64]
     char addr_str[128];
     int addr_family = AF_INET6;
     int ip_protocol = IPPROTO_IPV6;
-    struct sockaddr_in6 dest_addr; // IPV6*/
+    struct sockaddr_in6 dest_addr; // IPV6
 
     while (1) { 
 
@@ -634,9 +723,9 @@ extern "C" {
 
         ESP_LOGI(SOCKET_TAG, "Socket created");
 
-        int err = bind(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+        int err1 = bind(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
 
-        if (err < 0) {
+        if (err1 < 0) {
             ESP_LOGE(SOCKET_TAG, "Socket unable to bind: errno %d", errno);
             ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
             break;
@@ -788,11 +877,9 @@ extern "C" {
 
             int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
             ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
-
-            if (err < 0) {
-              ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-              break;
-              }       
+            
+            
+     
         } // End of while
 
         if (sock != -1) {
@@ -1149,6 +1236,73 @@ void timerGroup0Init(int timerPeriodUS, void* userParam)
 // callbacks
 void tempoChanged(double tempo) {
     ESP_LOGI(LINK_TAG, "tempochanged");
+
+// Du client Sockette _task
+    dest_addr_WT32.sin_addr.s_addr = inet_addr(HOST_IP_ADDR_WT32); //  "192.168.50.240"
+    dest_addr_WT32.sin_family = AF_INET;
+	  dest_addr_WT32.sin_port = htons(PORT_WT32); // "3334"	
+	  addr_family = AF_INET;
+	  ip_protocol = IPPROTO_IP;
+  	inet_ntoa_r(dest_addr_WT32.sin_addr, addr_str, sizeof(addr_str) - 1); // Dunno about the addr_str
+
+    // Trying to send a broadcast message :/ 1 yes 0 no....
+    //int enabled = 0;
+    //setsockopt(sock_WT32, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled));
+    int flag = 1;
+    setsockopt(sock_WT32, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+
+ 	  sock_WT32 = socket(addr_family, SOCK_DGRAM, ip_protocol);
+
+  	if (sock_WT32 < 0) {
+    	ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
+  		}
+
+  	ESP_LOGI(SOCKET_TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR_WT32, PORT_WT32);
+    ESP_LOGE(SOCKET_TAG, "sock vaut : %i", sock_WT32);
+
+        int err3 = bind(sock_WT32, (struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
+
+        if (err3 < 0) {
+            ESP_LOGE(SOCKET_TAG, "Socket unable to bind: errno %d", errno);
+            ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+            //break;
+        }
+
+        ESP_LOGI(SOCKET_TAG, "Socket bound, port %d", PORT_WT32);
+
+
+    char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
+    uint8_t stepper = 43; 
+
+    //ici!
+    
+    arr_steps[0].on = true; // error: 'arr_steps' does not name a type 
+    ESP_LOGI(SEQ_TAG, "First step : %i", arr_steps[0].on);                                   
+
+    int maLen = tosc_writeMessage(
+        monBuffer, sizeof(monBuffer),
+        "/tdlf", // the address // /a second level like /tdlf/step returns an error '122'
+        "i",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+        stepper);
+
+        int err2 = sendto(sock_WT32, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
+   
+        if (err2 < 0) {
+          ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+            //break;
+          } 
+    
+          ESP_LOGI(SOCKET_TAG, "Message sent WT_32");
+
+if (sock_WT32 != -1) {
+        ESP_LOGE(SOCKET_TAG, "Shutting down socket and restarting...");
+        shutdown(sock_WT32, 0);
+        close(sock_WT32);
+    }
+
+    // Fin client sockette task
+
+
     double midiClockMicroSecond = ((60000 / tempo) / 24) * 1000;
 
     esp_timer_handle_t periodic_timer_handle = (esp_timer_handle_t) periodic_timer;

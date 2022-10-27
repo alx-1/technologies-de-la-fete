@@ -1336,6 +1336,20 @@ esp_transport.h
 esp_transport_internal.h
 /Users/alx/esp/esp-idf/components/tcp_transport/esp_transport_internal.h
 
+/Users/alx/esp/esp-idf/components/tcp_transport/transport_utils.c
+string.h
+-
+ctype.h
+-
+stdlib.h
+-
+stdio.h
+-
+assert.h
+-
+esp_transport_utils.h
+/Users/alx/esp/esp-idf/components/tcp_transport/esp_transport_utils.h
+
 /Users/alx/esp/esp-idf/components/tcp_transport/transport_ws.c
 stdlib.h
 -

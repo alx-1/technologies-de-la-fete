@@ -138,6 +138,16 @@ xtensa/config/specreg.h
 hal/cpu_hal.h
 /Users/alx/esp/esp-idf/components/esp_hw_support/include/soc/hal/cpu_hal.h
 
+/Users/alx/esp/esp-idf/components/esp_hw_support/include/soc/rtc_wdt.h
+stdint.h
+-
+stdbool.h
+-
+soc/rtc_periph.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/include/soc/soc/rtc_periph.h
+esp_err.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/include/soc/esp_err.h
+
 /Users/alx/esp/esp-idf/components/esp_hw_support/include/soc/spinlock.h
 stdint.h
 -
@@ -284,6 +294,14 @@ soc/efuse_periph.h
 soc/gpio_periph.h
 /Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/soc/gpio_periph.h
 
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/rtc_pm.c
+stdint.h
+-
+assert.h
+-
+soc/rtc.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/soc/rtc.h
+
 /Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/rtc_sleep.c
 stdint.h
 -
@@ -315,6 +333,24 @@ hal/rtc_cntl_ll.h
 /Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/hal/rtc_cntl_ll.h
 esp_rom_sys.h
 /Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/esp_rom_sys.h
+
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/rtc_time.c
+stdint.h
+-
+esp_rom_sys.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/esp_rom_sys.h
+soc/rtc.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/soc/rtc.h
+soc/timer_periph.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/soc/timer_periph.h
+soc_log.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/soc_log.h
+
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/rtc_wdt.c
+soc/rtc_wdt.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/soc/rtc_wdt.h
+soc/rtc.h
+/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/soc/rtc.h
 
 /Users/alx/esp/esp-idf/components/esp_hw_support/regi2c_ctrl.c
 regi2c_ctrl.h

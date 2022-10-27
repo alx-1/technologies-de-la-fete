@@ -288,6 +288,18 @@ esp_attr.h
 esp_log.h
 /Users/alx/esp/esp-idf/components/esp_common/src/esp_log.h
 
+/Users/alx/esp/esp-idf/components/esp_common/src/esp_err.c
+stdbool.h
+-
+string.h
+-
+esp_err.h
+/Users/alx/esp/esp-idf/components/esp_common/src/esp_err.h
+esp_spi_flash.h
+/Users/alx/esp/esp-idf/components/esp_common/src/esp_spi_flash.h
+esp_rom_sys.h
+/Users/alx/esp/esp-idf/components/esp_common/src/esp_rom_sys.h
+
 /Users/alx/esp/esp-idf/components/esp_common/src/esp_err_to_name.c
 string.h
 -

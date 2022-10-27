@@ -2027,6 +2027,7 @@ CMakeFiles/size-components.dir/clean:
 # Target rules for target CMakeFiles/link_tdlf_server.elf.dir
 
 # All Build rule for target.
+CMakeFiles/link_tdlf_server.elf.dir/all: CMakeFiles/_project_elf_src.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
@@ -2057,7 +2058,6 @@ CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/protocol_examples_common/CMakeF
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/tarablessd1306/CMakeFiles/__idf_tarablessd1306.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
 CMakeFiles/link_tdlf_server.elf.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
-CMakeFiles/link_tdlf_server.elf.dir/all: CMakeFiles/_project_elf_src.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/link_tdlf_server.elf.dir/build.make CMakeFiles/link_tdlf_server.elf.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/link_tdlf_server.elf.dir/build.make CMakeFiles/link_tdlf_server.elf.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num=90 "Built target link_tdlf_server.elf"
@@ -2219,9 +2219,9 @@ CMakeFiles/uf2-app.dir/clean:
 # Target rules for target CMakeFiles/flash.dir
 
 # All Build rule for target.
-CMakeFiles/flash.dir/all: esp-idf/partition_table/CMakeFiles/partition_table_bin.dir/all
 CMakeFiles/flash.dir/all: CMakeFiles/app.dir/all
 CMakeFiles/flash.dir/all: CMakeFiles/bootloader.dir/all
+CMakeFiles/flash.dir/all: esp-idf/partition_table/CMakeFiles/partition_table_bin.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash.dir/build.make CMakeFiles/flash.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/flash.dir/build.make CMakeFiles/flash.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_server/build/CMakeFiles --progress-num= "Built target flash"

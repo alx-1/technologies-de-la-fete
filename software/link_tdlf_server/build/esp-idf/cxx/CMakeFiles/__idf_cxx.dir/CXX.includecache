@@ -6,6 +6,18 @@
 
 #IncludeRegexTransform: 
 
+/Users/alx/esp/esp-idf/components/cxx/cxx_exception_stubs.cpp
+cstdlib
+-
+cstdio
+-
+exception
+-
+bits/functexcept.h
+-
+sdkconfig.h
+-
+
 /Users/alx/esp/esp-idf/components/cxx/cxx_guards.cpp
 stdlib.h
 -

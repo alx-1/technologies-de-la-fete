@@ -36,6 +36,14 @@ stdlib.h
 string.h
 -
 
+/Users/alx/esp/esp-idf/components/cbor/tinycbor/src/cborencoder_close_container_checked.c
+cbor.h
+/Users/alx/esp/esp-idf/components/cbor/tinycbor/src/cbor.h
+
+/Users/alx/esp/esp-idf/components/cbor/tinycbor/src/cborerrorstrings.c
+cbor.h
+/Users/alx/esp/esp-idf/components/cbor/tinycbor/src/cbor.h
+
 /Users/alx/esp/esp-idf/components/cbor/tinycbor/src/cborinternal_p.h
 compilersupport_p.h
 /Users/alx/esp/esp-idf/components/cbor/tinycbor/src/compilersupport_p.h
@@ -80,6 +88,14 @@ utf8_p.h
 inttypes.h
 -
 string.h
+-
+
+/Users/alx/esp/esp-idf/components/cbor/tinycbor/src/cborpretty_stdio.c
+cbor.h
+/Users/alx/esp/esp-idf/components/cbor/tinycbor/src/cbor.h
+stdarg.h
+-
+stdio.h
 -
 
 /Users/alx/esp/esp-idf/components/cbor/tinycbor/src/cbortojson.c

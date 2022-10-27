@@ -72,6 +72,36 @@ driver/uart.h
 linenoise/linenoise.h
 /Users/alx/esp/esp-idf/components/console/linenoise/linenoise.h
 
+/Users/alx/esp/esp-idf/components/console/linenoise/linenoise.c
+unistd.h
+-
+stdlib.h
+-
+stdio.h
+-
+stdio_ext.h
+-
+errno.h
+-
+string.h
+-
+stdlib.h
+-
+ctype.h
+-
+sys/stat.h
+-
+sys/types.h
+-
+sys/fcntl.h
+-
+unistd.h
+-
+assert.h
+-
+linenoise.h
+/Users/alx/esp/esp-idf/components/console/linenoise/linenoise.h
+
 /Users/alx/esp/esp-idf/components/console/linenoise/linenoise.h
 stdbool.h
 -
@@ -599,6 +629,8 @@ stdlib.h
 -
 stdint.h
 -
+
+/Users/alx/esp/esp-idf/components/newlib/platform_include/errno.h
 
 /Users/alx/esp/esp-idf/components/newlib/platform_include/esp_newlib.h
 sys/reent.h

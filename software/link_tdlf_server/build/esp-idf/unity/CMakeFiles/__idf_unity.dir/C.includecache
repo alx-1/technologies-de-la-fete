@@ -130,6 +130,12 @@ stdbool.h
 sdkconfig.h
 /Users/alx/esp/esp-idf/components/unity/include/sdkconfig.h
 
+/Users/alx/esp/esp-idf/components/unity/unity/src/unity.c
+unity.h
+/Users/alx/esp/esp-idf/components/unity/unity/src/unity.h
+stddef.h
+-
+
 /Users/alx/esp/esp-idf/components/unity/unity/src/unity.h
 unity_internals.h
 /Users/alx/esp/esp-idf/components/unity/unity/src/unity_internals.h

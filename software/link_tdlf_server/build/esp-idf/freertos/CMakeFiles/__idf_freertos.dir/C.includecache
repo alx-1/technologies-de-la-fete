@@ -20,6 +20,10 @@ freertos/FreeRTOS.h
 esp_err.h
 /Users/alx/esp/esp-idf/components/app_trace/include/esp_err.h
 
+/Users/alx/esp/esp-idf/components/esp32/include/esp32/clk.h
+stdint.h
+-
+
 /Users/alx/esp/esp-idf/components/esp32/include/esp32/dport_access.h
 stdint.h
 -
@@ -653,6 +657,20 @@ esp_private/startup_internal.h
 /Users/alx/esp/esp-idf/components/freertos/port/xtensa/esp_private/startup_internal.h
 esp_app_trace.h
 /Users/alx/esp/esp-idf/components/freertos/port/xtensa/esp_app_trace.h
+
+/Users/alx/esp/esp-idf/components/freertos/port/xtensa/xtensa_init.c
+xtensa/xtbsp.h
+/Users/alx/esp/esp-idf/components/freertos/port/xtensa/xtensa/xtbsp.h
+xtensa_rtos.h
+/Users/alx/esp/esp-idf/components/freertos/port/xtensa/xtensa_rtos.h
+sdkconfig.h
+/Users/alx/esp/esp-idf/components/freertos/port/xtensa/sdkconfig.h
+esp32/clk.h
+/Users/alx/esp/esp-idf/components/freertos/port/xtensa/esp32/clk.h
+esp32s2/clk.h
+/Users/alx/esp/esp-idf/components/freertos/port/xtensa/esp32s2/clk.h
+esp32s3/clk.h
+/Users/alx/esp/esp-idf/components/freertos/port/xtensa/esp32s3/clk.h
 
 /Users/alx/esp/esp-idf/components/freertos/port/xtensa/xtensa_overlay_os_hook.c
 FreeRTOS.h

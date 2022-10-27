@@ -264,6 +264,18 @@ esp_event.h
 esp_log.h
 /Users/alx/esp/esp-idf/components/esp_eth/src/esp_log.h
 
+/Users/alx/esp/esp-idf/components/esp_eth/src/esp_eth_phy.c
+string.h
+-
+stdlib.h
+-
+esp_log.h
+/Users/alx/esp/esp-idf/components/esp_eth/src/esp_log.h
+esp_eth.h
+/Users/alx/esp/esp-idf/components/esp_eth/src/esp_eth.h
+eth_phy_regs_struct.h
+/Users/alx/esp/esp-idf/components/esp_eth/src/eth_phy_regs_struct.h
+
 /Users/alx/esp/esp-idf/components/esp_eth/src/esp_eth_phy_dm9051.c
 string.h
 -

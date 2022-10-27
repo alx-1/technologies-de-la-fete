@@ -784,6 +784,22 @@ xtensa/config/specreg.h
 xtensa/xtruntime-core-state.h
 -
 
+/Users/alx/esp/esp-idf/components/xtensa/trax.c
+stdio.h
+-
+esp_log.h
+/Users/alx/esp/esp-idf/components/xtensa/esp_log.h
+esp_err.h
+/Users/alx/esp/esp-idf/components/xtensa/esp_err.h
+xtensa-debug-module.h
+/Users/alx/esp/esp-idf/components/xtensa/xtensa-debug-module.h
+eri.h
+/Users/alx/esp/esp-idf/components/xtensa/eri.h
+trax.h
+/Users/alx/esp/esp-idf/components/xtensa/trax.h
+sdkconfig.h
+/Users/alx/esp/esp-idf/components/xtensa/sdkconfig.h
+
 /Users/alx/esp/esp-idf/components/xtensa/xtensa_intr.c
 stdlib.h
 -

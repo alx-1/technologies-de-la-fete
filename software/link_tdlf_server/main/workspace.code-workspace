@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../../Downloads/MicroOsc/src"
+		},
+		{
+			"path": "../../../../esp-osc/test_receive"
+		},
+		{
+			"path": "../../../../../../esp/esp-idf/examples/protocols/sockets/udp_server"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../../../../../esp/esp-idf/examples/protocols/mdns"
+		},
+		{
+			"path": "../../link_tdlf_client"
+		},
+		{
+			"path": "../../esp-osc-main"
+		}
+	],
+	"settings": {
+		"makefile.extensionOutputFolder": "./.vscode"
+	}
+}

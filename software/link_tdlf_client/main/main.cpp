@@ -1,4 +1,4 @@
-//// 08/16/2021
+//// 24/10/2022
 //// tdlf client // 16 touch pads // 16 leds // envoi des données de un array au client
 
 // LEDS driver from https://github.com/limitz/esp-apa102
@@ -32,9 +32,8 @@
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
 
-#define HOST_IP_ADDR "255.255.255.255" // trying to broadcast first // //#define HOST_IP_ADDR "192.168.0.101"
+#define HOST_IP_ADDR "255.255.255.255" // trying to broadcast first //
 #define PORT 3333
-// #define PORT_SRV 3334 // essai réception
 
 extern "C" {
 static const char *SOCKET_TAG = "Socket";
@@ -42,7 +41,6 @@ static const char *SMART_TAG = "Smart config";
 static const char *NVS_TAG = "NVS";
 static const char *WIFI_TAG = "Wifi";
 static const char *TAG = "tdlf";
-static const char *SPACE_TAG = "";
 }
 
 ////// sockette /////
@@ -54,14 +52,14 @@ struct sockaddr_in dest_addr;
 int sock;
 bool mstrpckIP = false;
 bool nouvSockette = false;
-bool bdChanged = false;
-bool sendData = false;
 
+bool bdChanged = false; // Was the sequence changed? Replace this with : 
+bool sendData = false;  // Was the sequence changed? If so send the data over to the server
 
 int press;
 int selektor; // couleur rose par défaut
 int modSelektor = 0;
-int fourChan = 0; // channel à stocker ds les premiers 0-3 bits de bd[]
+int midiChannel = 0; // channel à stocker ds les premiers 0-3 bits de bd[]
 int noteSelektor = 0; // note à stocker dans les bits 4-7 de bd[]
 int noteDuration = 0; // length of note stored in bits 8-11 of bd[] 
 int barSelektor = 0; // à stocker
@@ -76,13 +74,9 @@ static void  query_mdns_host_with_gethostbyname(char *host);
 static void  query_mdns_host_with_getaddrinfo(char *host);
 
 //if(!oscServerFound) {
-      
-      //browseService("touchoscbridge", "udp");
-      //browseServicew("osc", "udp"); // _osc._udp
-     
-      //query_mdns_service("_osc", "_udp");
-      // browseService("http", "udp"); // for another ESP32 running mDNS_Web_Server (udp)
-      // browseService("http", "tcp"); // for another ESP32 running mDNS_Web_Server (tcp)
+    
+      //query_mdns_service("_osc", "_udp"); // mdns is implemented on the server, opens up osc over udp
+
 //    }
 
 static void mdns_print_results(mdns_result_t *results)
@@ -172,7 +166,23 @@ unsigned char selektorColour[10][3] = {{6,6,6},{7,7,7},{8,8,8},{9,9,9},{10,10,10
 /////// SEQ ///////
 
 bool bd[79] = {}; // bd[0-3] (channel) // bd[4-7] (note) // bd[8-11] (note duration) // bd[12-13] (bar) // bd[14] (mute) // bd[15-79](steps) 
+// This needs to change as we're now storing midi information // A bidimensional array bool(?) array of 64 step values and channel + note + note duration + CC is prolly the way to go.
 bool cbd[79] = {1}; // to determine if we have a changed bd
+
+// New struct replaces the old [bd] array.
+// Need to find out how to make it possible to store two notes on the same step. For example, there might be a 'Bass drum' and a High hat' on the same step.
+
+typedef struct {
+    bool on;          
+    uint8_t chan;
+    uint8_t bar;
+    uint8_t note;
+    uint8_t length;
+    bool mute;
+} steps_t;
+
+steps_t steps[64]; // Declare an array of type struct steps
+
 int step = 0;
 float oldstep;
 
@@ -203,10 +213,10 @@ bool continuousPress = false;
 static void oneshot_timer_callback(void* arg)
 {
     //int64_t time_since_boot = esp_timer_get_time();
-    ESP_LOGI(TAG, "Short press, there has been no touch event for over 40 ms");
+    //ESP_LOGI(TAG, "Short press, there has been no touch event for over 40 ms");
     
     if ( press < 20) { // we had a short touch after all
-        bd[15+selektor+16*barSelektor] = !bd[15+selektor+16*barSelektor]; // essaie d'écrire...espero
+        steps[selektor+16*barSelektor].on = !steps[selektor+16*barSelektor].on; // essaie d'écrire...espero
         press = 0; // reset press
     }
 
@@ -315,12 +325,12 @@ void TurnLedOn(int step){  //ESP32APA102Driver
     	for (int i = 0; i < 16; i++){ 
 			setPixel(&leds, i, offColour); // turn LED off
             if(i == step && currentBar == barSelektor){ // sélecteur d'affichage de bar
-                if (bd[i+15+16*barSelektor]){
+                if (steps[i+16*barSelektor].on){
                     setPixel(&leds, i, beatStepColour);    
                     }else{
                     setPixel(&leds, i, stepColour); 
                     }
-                } else if (bd[i+15+16*barSelektor]){
+                } else if (steps[i+16*barSelektor].on){
                 setPixel(&leds, i, Colour[noteSelektor]);           
                 }
 		}
@@ -447,42 +457,6 @@ void tickTask(void* userParam)
 
 } // fin de tickTask
 
-extern "C" {
-
-void convertInt2Bits(int monInt, int monOffset){
-    // monInt à convertir, monOffset pour l'écrire au bon endroit
-
-    for(int i=0;i<4;i++){ // reset avant de ré-écrire les valeurs
-        bd[i+4*monOffset] = false;
-    }
-    
-    if(monInt == 0){
-        // do nothing
-        }
-        else if( monInt == 1 ){ bd[3+4*monOffset] = true; }
-        else if( monInt == 2 ){ bd[2+4*monOffset] = true; }
-        else if( monInt == 3 ){ bd[3+4*monOffset] = true; bd[2+4*monOffset] = true; }
-        else if( monInt == 4 ){ bd[1+4*monOffset] = true; }
-        else if( monInt == 5 ){ bd[3+4*monOffset] = true; bd[1+4*monOffset] = true; }
-        else if( monInt == 6 ){ bd[2+4*monOffset] = true; bd[1+4*monOffset] = true; }
-        else if( monInt == 7 ){ bd[3+4*monOffset] = true; bd[2+4*monOffset] = true; bd[1+4*monOffset] = true; } 
-        else{
-        ESP_LOGI(TAG, "monInt out of range");
-        }
-        ESP_LOGI(TAG, "noteSelektor %i", monInt);
-    } // fin converter
-
-    void bits2noteSelektor(bool bit1, bool bit2, bool bit3) { // bits bd[5],bd[6],bd[7]
-        noteSelektor = ((bit3*1)+(bit2*2)+(bit1*4));
-        ESP_LOGI(TAG, "noteSelektor %i", noteSelektor);
-    }
-
-    void bits2barSelektor(bool bit12, bool bit13) { // bits bd[12], bd[13]
-        barSelektor = (bit12*1)+(bit13*2);
-        ESP_LOGI(TAG, "barSelektor %i", barSelektor);
-    }
-
-}
 
 ////////// UDP SOCKETTE ////////
 // extern "C" {
@@ -586,9 +560,8 @@ static void udp_client_task(void *pvParameters)
   	ESP_LOGI(SOCKET_TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR, PORT);
     ESP_LOGE(SOCKET_TAG, "sock vaut : %i", sock);
 
-    
-	
     ///// FIN SOCKETTE /////
+
    
     while (1) { // sendData // bdChanged est un flag si bd[] a changé
 
@@ -708,6 +681,7 @@ static void udp_client_task(void *pvParameters)
     
                 ESP_LOGI(SOCKET_TAG, "Message sent");
 
+                // This is for the future : loading sequences from the server onto the clients
                 /* struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
                 socklen_t socklen = sizeof(source_addr);
                 //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
@@ -730,9 +704,6 @@ static void udp_client_task(void *pvParameters)
                             cbd[i] = rx_buffer[i]; // copy into cbd[] so the comparison is not false
                             ESP_LOGI(SOCKET_TAG, "rx_buffer -> bd[%i] = %i ", i, bd[i]);    
                         }
-
-                        bits2noteSelektor(bd[5],bd[6],bd[7]);
-                        bits2barSelektor(bd[12],bd[13]);
                         for ( int i = 0 ; i < 16 ; i++ ) {  // Add a visual of the new sequence!! Outside of the start/stop sequence
                             TurnLedOn(i);
                         }
@@ -744,11 +715,11 @@ static void udp_client_task(void *pvParameters)
                     }  */
 
 
-                vTaskDelay(10 / portTICK_PERIOD_MS); // 500
+                // vTaskDelay(10 / portTICK_PERIOD_MS); // 500
                 
                 sendData = false; // The latest change was sent
 
-                } // Fin de if bd changed
+                } // Fin de 'did we have to sendData'?
 
                 vTaskDelay(10 / portTICK_PERIOD_MS); // 500
 
@@ -1070,8 +1041,8 @@ static void tp_example_read_task(void *pvParameter)
             if (s_pad_activated[i] == true) {
 
                 interval = (esp_timer_get_time() - oldTime)/1000;  // measure time between button events
-                ESP_LOGI(SPACE_TAG, " ");
-                ESP_LOGI(TAG, "Interval, %i ms", interval);
+                // ESP_LOGI(SPACE_TAG, " ");
+                // ESP_LOGI(TAG, "Interval, %i ms", interval);
                 oldTime = esp_timer_get_time();
 
                 esp_timer_stop(oneshot_timer); // stop it if we are here 
@@ -1081,103 +1052,101 @@ static void tp_example_read_task(void *pvParameter)
                     press = 0;
                 }
                 press++; 
-                ESP_LOGI(TAG, "press : %d",press);
+                // ESP_LOGI(TAG, "press : %d",press);
                 
                 currTouch = true; // For LED indication
 
                 if(s_pad_activated[2] && s_pad_activated[4]){
                     // ESP_LOGI(TAG, "piton 1");
                     selektor = 0;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value // capture piton state and return to original state if it was a long press
+                    //origButtonState = bd[15+selektor+16*barSelektor]; // store value // capture piton state and return to original state if it was a long press
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[0] && s_pad_activated[4]){
                     // ESP_LOGI(TAG, "piton 2");
                     selektor = 1;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[3] && s_pad_activated[4]){
                     // ESP_LOGI(TAG, "piton 3");
                     selektor = 2;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 if(s_pad_activated[9] && s_pad_activated[4]){
                     // ESP_LOGI(TAG, "piton 4");
                     selektor = 3;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 /////// 5-8
                 if(s_pad_activated[2] && s_pad_activated[5]){
                     // ESP_LOGI(TAG, "piton 5");
                     selektor = 4;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[0] && s_pad_activated[5]){
                     // ESP_LOGI(TAG, "piton 6");
                     selektor = 5;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 if(s_pad_activated[3] && s_pad_activated[5]){
                     // ESP_LOGI(TAG, "piton 7");
                     selektor = 6;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 if(s_pad_activated[9] && s_pad_activated[5]){
                     // ESP_LOGI(TAG, "piton 8");
                     selektor = 7;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 /////// 9-12
                 if(s_pad_activated[2] && s_pad_activated[6]){
                     // ESP_LOGI(TAG, "piton 9");
                     selektor = 8;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[0] && s_pad_activated[6]){
                     // ESP_LOGI(TAG, "piton 10");
                     selektor = 9;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[3] && s_pad_activated[6]){
                     // ESP_LOGI(TAG, "piton 11");
                     selektor = 10;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[9] && s_pad_activated[6]){
                     // ESP_LOGI(TAG, "piton 12");
                     selektor = 11;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 /////// 13-16
                 if(s_pad_activated[2] && s_pad_activated[7]){
                     // ESP_LOGI(TAG, "piton 13");
                     selektor = 12;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[0] && s_pad_activated[7]){
                     // ESP_LOGI(TAG, "piton 14");
                     selektor = 13;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[3] && s_pad_activated[7]){
                     // ESP_LOGI(TAG, "piton 15");
                     selektor = 14;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[9] && s_pad_activated[7]){
                     ESP_LOGI(TAG, "piton 16");
                     selektor = 15;
-                    origButtonState = bd[15+selektor+16*barSelektor]; // store value
+                    origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
 
                 if(press == 20){ // number of consecutive 'presses' required for a long continuous press
                         
                         // okay we did it, feedback to the user and start a counter to prevent touches registering
-
                         // some bool to turn the led blue
                         
-
                         esp_timer_stop(oneshot_timer); // stop it if we are here 
-
                         continuousPress = true;
                         esp_timer_start_once(oneshot_timer, 200000); // delay after which we can reset continuous press
                         
@@ -1187,42 +1156,30 @@ static void tp_example_read_task(void *pvParameter)
 
                         modSelektor = selektor;
                         ESP_LOGI(TAG, "modSelektor %d",modSelektor);
-                        
                         ESP_LOGI(TAG, " ");
 
                         if(modSelektor<8){ // change la valeur de note représentée par sa couleur
                           noteSelektor = modSelektor;  
                           ESP_LOGI(TAG, "noteSelektor %d", noteSelektor);
-                          convertInt2Bits(noteSelektor, 1); // écrit les valeurs de note en bits ds bd[]
+                          steps[0].note = noteSelektor; // Write the note value to the steps[] // Will need to write it in the substructure for up to 8 notes at the same time.
+                          ESP_LOGI(TAG, "noteSelektor %i", steps[0].note);
                         }
 
                         else if(modSelektor>=8 && modSelektor<12){ // change le bar (1-16)(17-32)etc.
-                            barSelektor= modSelektor-8;
-
-                            if(barSelektor == 0){
-                                bd[12] = false;
-                                bd[13] = false;
-                            } else if (barSelektor == 1){
-                                bd[12] = true;
-                                bd[13] = false;
-                            } else if (barSelektor == 2){
-                                bd[12] = false;
-                                bd[13] = true;
-                            } else { 
-                                bd[12] = true;
-                                bd[13] = true;
-                            }
+                            barSelektor = modSelektor-8;
+                            // Need to know only once how many bars we have in the sequence
+                            steps[0].bar = barSelektor;
                             ESP_LOGI(TAG, "Bar : %d", barSelektor);
-
                         }
 
                         else if( modSelektor == 12){ 
-                            if (fourChan == 7){ // le max
-                                fourChan = -1; // loop it
-                            }
-                            fourChan = fourChan+1 ; // à considérer un 'enter' pour rendre les modifs actives à ce moment uniquement
-                            convertInt2Bits(fourChan, 0); // écrit les valeurs de channel en bits ds bd[]
-                            ESP_LOGI(TAG, "Midi channel %i", fourChan);
+                            if (midiChannel == 7){ // le max
+                                midiChannel = -1; // loop it
+                                }
+                            midiChannel = midiChannel+1 ; // à considérer un 'enter' pour rendre les modifs actives à ce moment uniquement
+                            // Need to set the midi channel only once for the sequence
+                            steps[0].chan = midiChannel; // Write the channel number 
+                            ESP_LOGI(TAG, "Midi channel %i", midiChannel);
                         }
                         
                         else if( modSelektor == 13){
@@ -1230,19 +1187,27 @@ static void tp_example_read_task(void *pvParameter)
                                 noteDuration = -1;
                             }
                             noteDuration = noteDuration + 1;
-                            convertInt2Bits(noteDuration, 2);
+                            // Need to set the note length only once for the sequence
+                            steps[0].length = noteDuration;
+                            ESP_LOGI(TAG, "mute : %i", steps[0].length); 
                         }
 
-                        else if( modSelektor == 14){
-                            bd[14] = !bd[14];  // toggle mute
-                            ESP_LOGI(TAG, "mute : %i", bd[10]);  
+                        else if( modSelektor == 14 ) {
+                            // Need to set the mute info only once for the sequence // Are we playing or not?
+                            steps[0].mute = !steps[0].mute;
+                            ESP_LOGI(TAG, "mute : %i", steps[0].mute); 
                         }
                         
-                        else if(modSelektor == 15){ // reset values
-                            for( i = 0 ; i < sizeof(bd) ; i++ ){ // reset tout
-                                bd[i]=0;  
+                        else if( modSelektor == 15 ) { // reset values
+                            // Erase all values from the sequencer
+                            for (i = 0 ; i < 64 ; i++) {
+                                steps[i].on = 0;
+                                steps[i].chan = 0;
+                                // steps[i].note = 0;
+                                steps[i].length = 0;
+                                steps[i].mute = 0;
                             }
-                            // ajouter un reset du côté de tdlf
+                            // TODO : Ajouter l'envoi d'un message de reset du côté de tdlf // We need to send a reset message to the server
                             modSelektor = 42; // ok on arrête d'effacer...
                             ESP_LOGI(TAG, "RESET");
                         }

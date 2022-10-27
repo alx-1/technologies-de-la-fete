@@ -1,0 +1,1566 @@
+{
+	"archive" : {},
+	"artifacts" : 
+	[
+		{
+			"path" : "esp-idf/esp_system/libesp_system.a"
+		}
+	],
+	"backtrace" : 2,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"idf_component_register",
+			"add_compile_options",
+			"set_property",
+			"__component_set_dependencies",
+			"__component_set_all_dependencies",
+			"include_directories",
+			"target_include_directories",
+			"__component_add_include_dirs",
+			"add_c_compile_options",
+			"add_subdirectory"
+		],
+		"files" : 
+		[
+			"/Users/alx/esp/esp-idf/tools/cmake/component.cmake",
+			"/Users/alx/esp/esp-idf/components/esp_system/CMakeLists.txt",
+			"/Users/alx/esp/esp-idf/components/esp_system/port/CMakeLists.txt",
+			"/Users/alx/esp/esp-idf/tools/cmake/utilities.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 7,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 475,
+				"parent" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 454,
+				"parent" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 464,
+				"parent" : 1
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 509,
+				"parent" : 1
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 349,
+				"parent" : 5
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 328,
+				"parent" : 6
+			},
+			{
+				"command" : 6,
+				"file" : 0,
+				"line" : 453,
+				"parent" : 1
+			},
+			{
+				"command" : 8,
+				"file" : 0,
+				"line" : 477,
+				"parent" : 1
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 307,
+				"parent" : 9
+			},
+			{
+				"file" : 2
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 1,
+				"parent" : 11
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 328,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 328,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 328,
+				"parent" : 6
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 328,
+				"parent" : 6
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 455,
+				"parent" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 3,
+				"line" : 282,
+				"parent" : 17
+			},
+			{
+				"command" : 10,
+				"file" : 1,
+				"line" : 22,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-mlongcalls -Wno-frame-address"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-ffunction-sections"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fdata-sections"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=all"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-function"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-variable"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=deprecated-declarations"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-unused-parameter"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-ggdb"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Og"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fstrict-volatile-bitfields"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-but-set-variable"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-std=gnu99"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-old-style-declaration"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-D_GNU_SOURCE"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-DIDF_VER=\\\"v4.3.2-dirty\\\""
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-DESP_PLATFORM"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 7,
+					"define" : "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\""
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 8,
+					"path" : "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/config"
+				},
+				{
+					"backtrace" : 10,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_system/include"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/newlib/platform_include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/freertos/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/freertos/port/xtensa/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_hw_support/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/."
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/heap/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/log/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/include/apps"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/include/apps/sntp"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/lwip/src/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/port/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/port/esp32/include/arch"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/esp32/."
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/hal/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/hal/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/esp32"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/include/esp32"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_common/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/driver/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/driver/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_ringbuf/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/efuse/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/efuse/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/xtensa/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/xtensa/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/espcoredump/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_timer/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_ipc/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_pm/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/vfs/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_wifi/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_wifi/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_event/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_netif/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_eth/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/tcpip_adapter/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/app_trace/include"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/Users/alx/esp/esp-idf/components/spi_flash/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/app_update/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/bootloader_support/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/nvs_flash/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/port/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/mbedtls/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/esp_crt_bundle/include"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/Users/alx/esp/esp-idf/components/pthread/include"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/include"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/xtensa"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/esp32"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				5,
+				7,
+				8,
+				10,
+				11,
+				12
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-mlongcalls -Wno-frame-address"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-ffunction-sections"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fdata-sections"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=all"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-function"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-variable"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=deprecated-declarations"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-unused-parameter"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-ggdb"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Og"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fstrict-volatile-bitfields"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-but-set-variable"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-std=gnu99"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-old-style-declaration"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-D_GNU_SOURCE"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-DIDF_VER=\\\"v4.3.2-dirty\\\""
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-DESP_PLATFORM"
+				},
+				{
+					"fragment" : "-fno-stack-protector"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 7,
+					"define" : "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\""
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 8,
+					"path" : "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/config"
+				},
+				{
+					"backtrace" : 10,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_system/include"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/newlib/platform_include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/freertos/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/freertos/port/xtensa/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_hw_support/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/."
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/heap/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/log/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/include/apps"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/include/apps/sntp"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/lwip/src/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/port/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/port/esp32/include/arch"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/esp32/."
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/hal/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/hal/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/esp32"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/include/esp32"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_common/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/driver/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/driver/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_ringbuf/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/efuse/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/efuse/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/xtensa/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/xtensa/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/espcoredump/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_timer/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_ipc/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_pm/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/vfs/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_wifi/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_wifi/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_event/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_netif/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_eth/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/tcpip_adapter/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/app_trace/include"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/Users/alx/esp/esp-idf/components/spi_flash/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/app_update/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/bootloader_support/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/nvs_flash/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/port/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/mbedtls/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/esp_crt_bundle/include"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/Users/alx/esp/esp-idf/components/pthread/include"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/include"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/xtensa"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/esp32"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				4
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-mlongcalls -Wno-frame-address"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-ffunction-sections"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fdata-sections"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=all"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-function"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-variable"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=deprecated-declarations"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-unused-parameter"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-ggdb"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Og"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fstrict-volatile-bitfields"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-but-set-variable"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-std=gnu99"
+				},
+				{
+					"backtrace" : 18,
+					"fragment" : "-Wno-old-style-declaration"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-D_GNU_SOURCE"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-DIDF_VER=\\\"v4.3.2-dirty\\\""
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-DESP_PLATFORM"
+				},
+				{
+					"fragment" : "-fno-jump-tables -fno-tree-switch-conversion"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 7,
+					"define" : "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\""
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 8,
+					"path" : "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/config"
+				},
+				{
+					"backtrace" : 10,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_system/include"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/newlib/platform_include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/freertos/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/freertos/port/xtensa/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_hw_support/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/."
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/heap/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/log/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/include/apps"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/include/apps/sntp"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/lwip/src/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/port/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/port/esp32/include/arch"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/esp32/."
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/hal/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/hal/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/esp32"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/include/esp32"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_common/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/driver/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/driver/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_ringbuf/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/efuse/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/efuse/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/xtensa/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/xtensa/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/espcoredump/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_timer/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_ipc/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_pm/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/vfs/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_wifi/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_wifi/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_event/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_netif/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_eth/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/tcpip_adapter/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/app_trace/include"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/Users/alx/esp/esp-idf/components/spi_flash/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/app_update/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/bootloader_support/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/nvs_flash/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/port/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/mbedtls/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/esp_crt_bundle/include"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/Users/alx/esp/esp-idf/components/pthread/include"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/include"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/xtensa"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/esp32"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				6
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"backtrace" : 3,
+					"fragment" : "-ffunction-sections"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fdata-sections"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Werror=all"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-function"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-variable"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=deprecated-declarations"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wextra"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-unused-parameter"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-sign-compare"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-ggdb"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Og"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fstrict-volatile-bitfields"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-Wno-error=unused-but-set-variable"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-D_GNU_SOURCE"
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-DIDF_VER=\\\"v4.3.2-dirty\\\""
+				},
+				{
+					"backtrace" : 4,
+					"fragment" : "-DESP_PLATFORM"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 7,
+					"define" : "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\""
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 8,
+					"path" : "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/config"
+				},
+				{
+					"backtrace" : 10,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_system/include"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/newlib/platform_include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/freertos/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/freertos/port/xtensa/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_hw_support/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_hw_support/port/esp32/."
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/heap/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/log/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/include/apps"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/include/apps/sntp"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/lwip/src/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/port/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/lwip/port/esp32/include/arch"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/esp32/."
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/soc/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/hal/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/hal/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/esp32"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_rom/include/esp32"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_common/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/driver/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/driver/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_ringbuf/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/efuse/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/efuse/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/xtensa/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/xtensa/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/espcoredump/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_timer/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_ipc/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_pm/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/vfs/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_wifi/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_wifi/esp32/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_event/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_netif/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_eth/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/tcpip_adapter/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/Users/alx/esp/esp-idf/components/app_trace/include"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/Users/alx/esp/esp-idf/components/spi_flash/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/app_update/include"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/bootloader_support/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/nvs_flash/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/port/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/mbedtls/include"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/esp_crt_bundle/include"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/Users/alx/esp/esp-idf/components/pthread/include"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/include"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/xtensa"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/Users/alx/esp/esp-idf/components/esp_gdbstub/esp32"
+				}
+			],
+			"language" : "ASM",
+			"sourceIndexes" : 
+			[
+				9,
+				13
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"id" : "__idf_esp_rom::@c269e361cd87ad81e927"
+		}
+	],
+	"id" : "__idf_esp_system::@874df54e61e20112dfd4",
+	"name" : "__idf_esp_system",
+	"nameOnDisk" : "libesp_system.a",
+	"paths" : 
+	{
+		"build" : "esp-idf/esp_system",
+		"source" : "/Users/alx/esp/esp-idf/components/esp_system"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				10,
+				11,
+				12
+			]
+		},
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				9,
+				13
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/intr_alloc.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/esp_async_memcpy.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/panic.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/system_api.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 1,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/startup.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/system_time.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 2,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/sleep_modes.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 19,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/cpu_start.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 19,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/panic_handler.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 19,
+			"compileGroupIndex" : 3,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/soc/esp32/dport_panic_highint_hdl.S",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 19,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/soc/esp32/clk.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 19,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/soc/esp32/reset_reason.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 19,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/arch/xtensa/panic_arch.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 19,
+			"compileGroupIndex" : 3,
+			"path" : "/Users/alx/esp/esp-idf/components/esp_system/port/arch/xtensa/panic_handler_asm.S",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "STATIC_LIBRARY"
+}

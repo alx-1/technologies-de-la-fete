@@ -758,6 +758,36 @@ esp_log.h
 spiffs_config.h
 /Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_config.h
 
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_cache.c
+spiffs.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs.h
+spiffs_nucleus.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_nucleus.h
+
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_check.c
+spiffs.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs.h
+spiffs_nucleus.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_nucleus.h
+
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_gc.c
+spiffs.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs.h
+spiffs_nucleus.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_nucleus.h
+
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_hydrogen.c
+spiffs.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs.h
+spiffs_nucleus.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_nucleus.h
+
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_nucleus.c
+spiffs.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs.h
+spiffs_nucleus.h
+/Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_nucleus.h
+
 /Users/alx/esp/esp-idf/components/spiffs/spiffs/src/spiffs_nucleus.h
 
 /Users/alx/esp/esp-idf/components/spiffs/spiffs_api.c
