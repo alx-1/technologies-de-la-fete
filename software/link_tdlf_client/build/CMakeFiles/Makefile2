@@ -4878,8 +4878,8 @@ esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/clean:
 # Target rules for target esp-idf/ulp/CMakeFiles/__idf_ulp.dir
 
 # All Build rule for target.
-esp-idf/ulp/CMakeFiles/__idf_ulp.dir/all: esp-idf/mbedtls/CMakeFiles/custom_bundle.dir/all
 esp-idf/ulp/CMakeFiles/__idf_ulp.dir/all: esp-idf/esp32/CMakeFiles/esp32_linker_script.dir/all
+esp-idf/ulp/CMakeFiles/__idf_ulp.dir/all: esp-idf/mbedtls/CMakeFiles/custom_bundle.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/ulp/CMakeFiles/__idf_ulp.dir/build.make esp-idf/ulp/CMakeFiles/__idf_ulp.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/ulp/CMakeFiles/__idf_ulp.dir/build.make esp-idf/ulp/CMakeFiles/__idf_ulp.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/CMakeFiles --progress-num= "Built target __idf_ulp"

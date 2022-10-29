@@ -76,7 +76,7 @@ extern "C" {
   char addr_str[128]; // Copié depuis le client
   int addr_family;    
   int ip_protocol;
-  int sock_WT32;
+  int sock_WT32 = 0;
   struct sockaddr_in dest_addr_WT32;
   #define HOST_IP_ADDR_WT32 "192.168.50.205" // Hard-coded to send data to MaxD //
   #define PORT_WT32 3333
@@ -1237,6 +1237,7 @@ void delayer(int del) {
 
 }
 
+// ableton task
 void tickTask(void* userParam)
 {
   // connect link
@@ -1598,71 +1599,73 @@ void tickTask(void* userParam)
       
 
         if (startStopCB){ // isPlaying and did we send that note out? 
+            if(sock_WT32 == 0){
+                // Du client Sockette _task
+                dest_addr_WT32.sin_addr.s_addr = inet_addr(HOST_IP_ADDR_WT32); //  "192.168.50.240"
+                dest_addr_WT32.sin_family = AF_INET;
+                dest_addr_WT32.sin_port = htons(PORT_WT32); // 3333	
+                addr_family = AF_INET;
+                ip_protocol = IPPROTO_IP;
+                inet_ntoa_r(dest_addr_WT32.sin_addr, addr_str, sizeof(addr_str) - 1); // Dunno about the addr_str
 
-          ESP_LOGI(LINK_TAG, "step : %i", step);
-          
-          //// Send step via OSC here ////
+                // Trying to send a broadcast message :/ 1 yes 0 no....
+                //int enabled = 0;
+                //setsockopt(sock_WT32, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled));
+                int flag = 1;
+                setsockopt(sock_WT32, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+                sock_WT32 = socket(addr_family, SOCK_DGRAM, ip_protocol);
 
-          // Du client Sockette _task
-          dest_addr_WT32.sin_addr.s_addr = inet_addr(HOST_IP_ADDR_WT32); //  "192.168.50.240"
-          dest_addr_WT32.sin_family = AF_INET;
-	        dest_addr_WT32.sin_port = htons(PORT_WT32); // 3333	
-	        addr_family = AF_INET;
-	        ip_protocol = IPPROTO_IP;
-  	      inet_ntoa_r(dest_addr_WT32.sin_addr, addr_str, sizeof(addr_str) - 1); // Dunno about the addr_str
+                if (sock_WT32 < 0) {
+                    ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
+                }
 
-          // Trying to send a broadcast message :/ 1 yes 0 no....
-          //int enabled = 0;
-          //setsockopt(sock_WT32, SOL_SOCKET, SO_BROADCAST, &enabled, sizeof(enabled));
-          int flag = 1;
-          setsockopt(sock_WT32, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
+                ESP_LOGI(SOCKET_TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR_WT32, PORT_WT32);
+                // ESP_LOGE(SOCKET_TAG, "sock vaut : %i", sock_WT32);
 
- 	        sock_WT32 = socket(addr_family, SOCK_DGRAM, ip_protocol);
+                int err3 = bind(sock_WT32, (struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
 
-  	      if (sock_WT32 < 0) {
-    	      ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
-  		    }
+                if (err3 < 0) {
+                // ESP_LOGE(SOCKET_TAG, "Socket unable to bind: errno %d", errno);
+                ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                //break;
+                }
 
-  	      ESP_LOGI(SOCKET_TAG, "Socket created, sending to %s:%d", HOST_IP_ADDR_WT32, PORT_WT32);
-          // ESP_LOGE(SOCKET_TAG, "sock vaut : %i", sock_WT32);
-
-          int err3 = bind(sock_WT32, (struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
-
-            if (err3 < 0) {
-              // ESP_LOGE(SOCKET_TAG, "Socket unable to bind: errno %d", errno);
-              ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-              //break;
+                ESP_LOGI(SOCKET_TAG, "Socket bound, port %d", PORT_WT32);
             }
+            else {
+                // there should be a check that the socket is healthy before continuing here
 
-          ESP_LOGI(SOCKET_TAG, "Socket bound, port %d", PORT_WT32);
+                //// Send step via OSC here ////
+                char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
+                uint8_t stepper = step; // The step value to send tp the OSC client 
+                ESP_LOGI(LINK_TAG, "step : %i", step);
 
+                steps[0].on = true; // Test writing to the array of structs
+                //ESP_LOGI(SEQ_TAG, "First step : %i", steps[0].on);                                   
 
-          char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
-          uint8_t stepper = step; // The step value to send tp the OSC client 
+                int maLen = tosc_writeMessage(
+                    monBuffer, 
+                    sizeof(monBuffer),
+                    "/step", // the address // /a second level like /tdlf/step returns an error '122'
+                    "i",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+                    stepper
+                );
 
-          steps[0].on = true; // Test writing to the array of structs
-          ESP_LOGI(SEQ_TAG, "First step : %i", steps[0].on);                                   
+                int err2 = sendto(sock_WT32, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
 
-          int maLen = tosc_writeMessage(
-            monBuffer, sizeof(monBuffer),
-            "/step", // the address // /a second level like /tdlf/step returns an error '122'
-            "i",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
-            stepper);
+                if (err2 < 0) {
+                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                    //break;
+                } 
 
-          int err2 = sendto(sock_WT32, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
-   
-          if (err2 < 0) {
-            ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-            //break;
-            } 
-    
-          ESP_LOGI(SOCKET_TAG, "Message sent WT_32");
+                ESP_LOGI(SOCKET_TAG, "Message sent WT_32");
 
-          if (sock_WT32 != -1) {
-            ESP_LOGE(SOCKET_TAG, "Shutting down socket and restarting...");
-            shutdown(sock_WT32, 0);
-            close(sock_WT32);
-          }   
+                // if (sock_WT32 != -1) {
+                //     ESP_LOGE(SOCKET_TAG, "Shutting down socket and restarting...");
+                //     shutdown(sock_WT32, 0);
+                //     close(sock_WT32);
+                // }   
+            }
 
           // Fin client sockette task
 
@@ -1718,7 +1721,7 @@ void tickTask(void* userParam)
                     ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
                }  */ 
 
-              if (mtmss[currStep] == 1){ // send midi note out // mute to be implemented // && !muteRecords[i]){ 
+              if (mtmss[currStep] == 1){ // send [midi] note out // mute to be implemented // && !muteRecords[i]){ 
               // ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
               // ESP_LOGI(LINK_TAG, "Note on, %i", i);
 
