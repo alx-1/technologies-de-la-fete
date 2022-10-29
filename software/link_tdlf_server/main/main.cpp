@@ -215,6 +215,9 @@ typedef struct {
 
 steps_t steps[64]; // Declare an array of type struct steps
 
+uint16_t seq[4][128] = {0}; // array of channel x note where each element represents the sequence in bits
+bool seq_changed[4][128] = {0}; // array of channel x note where each element represents a flag indicating if the sequence has been updated
+
 bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
 bool oldmstr[79] = {1}; 
 bool mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
@@ -706,7 +709,7 @@ extern "C" {
           for(int i = 0; i<sizeof(mstr); i++){
             test = mstr[i];
             ESP_LOGE(SOCKET_TAG, "data %i", test); 
-          }  
+          }
 
           /////////////////// FROM TINYOSC ///////////////////////
           //tosc_printOscBuffer(rx_buffer, len);
@@ -789,10 +792,25 @@ extern "C" {
            ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
                 
             //inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
-                
+            int checkIPExist = clientIPCheck(addr_str); // Does it exist in the array?
+            uint8_t chan = checkIPExist; // hacky way to get "channel"
+            uint8_t note = mstr[13];
+            bool on = mstr[14];
+            uint8_t step = mstr[15] % 16; // there are 64 steps but sequencer only goes to 16. just loop them for now
+            uint16_t step_mask = 1 << step;
+
+            seq_changed[chan][note] = true;
+            if (on) {
+              seq[chan][note] |= step_mask;
+            } else{
+              seq[chan][note] &= ~step_mask;
+            }
+            // printf("setting chan %d note %d step %d to %d. %02X", chan, note, step, on, seq[chan][note]);
+
+
             if ( startStopState == false ) { // only check for clients if we are in stopped mode, it hangs the playback otherwise...
               
-              int checkIPExist = clientIPCheck(addr_str); // Does it exist in the array?
+              // int checkIPExist = clientIPCheck(addr_str); // Does it exist in the array?
 
              // ESP_LOGI(SOCKET_TAG, "result of clientIPCheck : %i", checkIPExist);
 
