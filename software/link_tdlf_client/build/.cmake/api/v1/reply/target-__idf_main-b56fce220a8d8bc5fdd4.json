@@ -673,22 +673,6 @@
 		},
 		{
 			"backtrace" : 0,
-			"id" : "__idf_wifi_provisioning::@9d7e7ffe1b15746c1098"
-		},
-		{
-			"backtrace" : 0,
-			"id" : "__idf_protocol_examples_common::@f775e6a13b1007a4569f"
-		},
-		{
-			"backtrace" : 0,
-			"id" : "__idf_ESP32APA102Driver::@80b735b6d412393bb739"
-		},
-		{
-			"backtrace" : 0,
-			"id" : "__idf_tinyosc::@4a980d34a6b61901c9a3"
-		},
-		{
-			"backtrace" : 0,
 			"id" : "__idf_asio::@db1a8833e22596808d70"
 		},
 		{
@@ -778,6 +762,22 @@
 		{
 			"backtrace" : 0,
 			"id" : "__idf_spiffs::@df881b71474064c86689"
+		},
+		{
+			"backtrace" : 0,
+			"id" : "__idf_wifi_provisioning::@9d7e7ffe1b15746c1098"
+		},
+		{
+			"backtrace" : 0,
+			"id" : "__idf_protocol_examples_common::@f775e6a13b1007a4569f"
+		},
+		{
+			"backtrace" : 0,
+			"id" : "__idf_ESP32APA102Driver::@80b735b6d412393bb739"
+		},
+		{
+			"backtrace" : 0,
+			"id" : "__idf_tinyosc::@4a980d34a6b61901c9a3"
 		}
 	],
 	"id" : "__idf_main::@7368607ed66887415643",
