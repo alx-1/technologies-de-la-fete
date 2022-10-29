@@ -2164,11 +2164,6 @@ CMakeFiles/bootloader.dir/clean:
 # All Build rule for target.
 CMakeFiles/link_tdlf_client.elf.dir/all: CMakeFiles/_project_elf_src.dir/all
 CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
-CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
-CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
-CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/all
-CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
-CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
 CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all
 CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
 CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/cbor/CMakeFiles/__idf_cbor.dir/all
@@ -2193,6 +2188,11 @@ CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/libsodium/CMakeFiles/__idf_libs
 CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/all
 CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/openssl/CMakeFiles/__idf_openssl.dir/all
 CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all
+CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
+CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
+CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/all
+CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
+CMakeFiles/link_tdlf_client.elf.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/link_tdlf_client.elf.dir/build.make CMakeFiles/link_tdlf_client.elf.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/link_tdlf_client.elf.dir/build.make CMakeFiles/link_tdlf_client.elf.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/CMakeFiles --progress-num=90 "Built target link_tdlf_client.elf"
@@ -3654,11 +3654,6 @@ esp-idf/perfmon/CMakeFiles/__idf_perfmon.dir/clean:
 
 # All Build rule for target.
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
-esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
-esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
-esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/all
-esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
-esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/cbor/CMakeFiles/__idf_cbor.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/unity/CMakeFiles/__idf_unity.dir/all
@@ -3682,6 +3677,11 @@ esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/libsod
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/openssl/CMakeFiles/__idf_openssl.dir/all
 esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/all
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
+esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/all: esp-idf/main/CMakeFiles/__idf_main.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/build.make esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/build.make esp-idf/esp32/CMakeFiles/__ldgen_output_esp32.project.ld.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/CMakeFiles --progress-num= "Built target __ldgen_output_esp32.project.ld"
@@ -4878,8 +4878,8 @@ esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/clean:
 # Target rules for target esp-idf/ulp/CMakeFiles/__idf_ulp.dir
 
 # All Build rule for target.
-esp-idf/ulp/CMakeFiles/__idf_ulp.dir/all: esp-idf/mbedtls/CMakeFiles/custom_bundle.dir/all
 esp-idf/ulp/CMakeFiles/__idf_ulp.dir/all: esp-idf/esp32/CMakeFiles/esp32_linker_script.dir/all
+esp-idf/ulp/CMakeFiles/__idf_ulp.dir/all: esp-idf/mbedtls/CMakeFiles/custom_bundle.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/ulp/CMakeFiles/__idf_ulp.dir/build.make esp-idf/ulp/CMakeFiles/__idf_ulp.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/ulp/CMakeFiles/__idf_ulp.dir/build.make esp-idf/ulp/CMakeFiles/__idf_ulp.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/CMakeFiles --progress-num= "Built target __idf_ulp"
@@ -5020,10 +5020,6 @@ esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/clean:
 
 # All Build rule for target.
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/esp_pm/CMakeFiles/__idf_esp_pm.dir/all
-esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
-esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
-esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/all
-esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/asio/CMakeFiles/__idf_asio.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/cbor/CMakeFiles/__idf_cbor.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/unity/CMakeFiles/__idf_unity.dir/all
@@ -5047,6 +5043,10 @@ esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/libsodium/CMakeFiles/__idf_l
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/mqtt/CMakeFiles/__idf_mqtt.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/openssl/CMakeFiles/__idf_openssl.dir/all
 esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/spiffs/CMakeFiles/__idf_spiffs.dir/all
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/wifi_provisioning/CMakeFiles/__idf_wifi_provisioning.dir/all
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/protocol_examples_common/CMakeFiles/__idf_protocol_examples_common.dir/all
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/ESP32APA102Driver/CMakeFiles/__idf_ESP32APA102Driver.dir/all
+esp-idf/main/CMakeFiles/__idf_main.dir/all: esp-idf/tinyosc/CMakeFiles/__idf_tinyosc.dir/all
 	$(MAKE) $(MAKESILENT) -f esp-idf/main/CMakeFiles/__idf_main.dir/build.make esp-idf/main/CMakeFiles/__idf_main.dir/depend
 	$(MAKE) $(MAKESILENT) -f esp-idf/main/CMakeFiles/__idf_main.dir/build.make esp-idf/main/CMakeFiles/__idf_main.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/CMakeFiles --progress-num= "Built target __idf_main"
