@@ -215,8 +215,10 @@ typedef struct {
 
 steps_t steps[64]; // Declare an array of type struct steps
 
-uint16_t seq[4][128] = {0}; // array of channel x note where each element represents the sequence in bits
-bool seq_changed[4][128] = {0}; // array of channel x note where each element represents a flag indicating if the sequence has been updated
+#define N_CHANS 4
+#define N_NOTES_PER_CHAN 128
+uint16_t seq[N_CHANS][N_NOTES_PER_CHAN] = {0}; // array of channel x note where each element represents the sequence in bits
+bool seq_changed[N_CHANS][N_NOTES_PER_CHAN] = {0}; // array of channel x note where each element represents a flag indicating if the sequence has been updated
 
 bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
 bool oldmstr[79] = {1}; 
@@ -654,10 +656,10 @@ extern "C" {
           //mstr should be 79 values long;
           int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-          for(int i = 0; i<sizeof(mstr); i++){
-            test = mstr[i];
-            ESP_LOGE(SOCKET_TAG, "data %i", test); 
-          }
+          // for(int i = 0; i<sizeof(mstr); i++){
+          //   test = mstr[i];
+          //   ESP_LOGE(SOCKET_TAG, "data %i", test);
+          // }
 
           /////////////////// FROM TINYOSC ///////////////////////
           //tosc_printOscBuffer(rx_buffer, len);
@@ -1654,13 +1656,14 @@ void tickTask(void* userParam)
                 // there should be a check that the socket is healthy before continuing here
 
                 //// Send step via OSC here ////
-                char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
+                char monBuffer[32]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
                 uint8_t stepper = step; // The step value to send tp the OSC client 
                 ESP_LOGI(LINK_TAG, "step : %i", step);
 
                 steps[0].on = true; // Test writing to the array of structs
                 //ESP_LOGI(SEQ_TAG, "First step : %i", steps[0].on);                                   
 
+                memset(monBuffer, 0, sizeof(monBuffer));
                 int maLen = tosc_writeMessage(
                     monBuffer, 
                     sizeof(monBuffer),
@@ -1672,7 +1675,7 @@ void tickTask(void* userParam)
                 int err2 = sendto(sock_WT32, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
 
                 if (err2 < 0) {
-                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", err2);
                     //break;
                 } 
 
@@ -1682,7 +1685,42 @@ void tickTask(void* userParam)
                 //     ESP_LOGE(SOCKET_TAG, "Shutting down socket and restarting...");
                 //     shutdown(sock_WT32, 0);
                 //     close(sock_WT32);
-                // }   
+                // }
+                char char_seq[4];
+
+                for (uint8_t chan = 0; chan < N_CHANS; chan++) {
+                  for (uint8_t note = 0; note < N_NOTES_PER_CHAN; note++) {
+                    // if (seq_changed[note]) {
+                      if (chan == 0 && note == 0)  {
+                        memset(monBuffer, 0, sizeof(monBuffer));
+                        memset(char_seq, 0, sizeof(char_seq));
+
+                        char_seq[0] = note + 1;
+                        char_seq[1] = seq[chan][note];
+                        char_seq[2] = seq[chan][note] >> 8;
+
+                        // uint32_t seq_to_send = 0x55555501;
+                        int seq_message_len = tosc_writeMessage(
+                            monBuffer,
+                            sizeof(monBuffer),
+                            "/sequence", // the address // /a second level like /tdlf/step returns an error '122'
+                            "s",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+                            char_seq
+                        );
+                        // ESP_LOGI(SOCKET_TAG, "chan %d note %d is %d", chan, note, seq[chan][note]);
+                        // for (int i = 0; i < sizeof(monBuffer); i++) {
+                        //   ESP_LOGI(SOCKET_TAG, "sending %d", monBuffer[i]);
+                        // }
+
+                        int err3 = sendto(sock_WT32, monBuffer, seq_message_len, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
+                        if (err3 < 0) {
+                            ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", err3);
+                        }
+
+                        seq_changed[chan][note] = false;
+                    }
+                  }
+                }
             }
 
           // Fin client sockette task
