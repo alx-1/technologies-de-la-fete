@@ -10,7 +10,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/Users/alx/Documents/GitHub/link/AbletonLinkConfig.cmake"
   "/Users/alx/Documents/GitHub/link/cmake_include/AsioStandaloneConfig.cmake"
   "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/HEAD"
-  "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/refs/heads/master"
+  "/Users/alx/Documents/GitHub/technologies-de-la-fete/.git/refs/heads/ben/banshee_hack"
   "../CMakeLists.txt"
   "CMakeFiles/3.18.4/CMakeASMCompiler.cmake"
   "CMakeFiles/3.18.4/CMakeCCompiler.cmake"
