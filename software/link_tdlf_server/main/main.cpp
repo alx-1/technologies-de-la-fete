@@ -761,11 +761,24 @@ extern "C" {
               seq_changed[chan][note] = true;
               if (on) {
                 seq[chan][note] |= step_mask;
-                } else{
+              } else{
                 seq[chan][note] &= ~step_mask;
+              }
+
+              char seq_string[17] = {0};
+              for (int pos = 0; pos < 16; pos++) {
+                if (seq[chan][note] & (1 << pos)) {
+                  seq_string[pos] = 'X';
+                } else {
+                  seq_string[pos] = 'O';
                 }
+              }
               // Otherwise we had : I (9244) Sequence: setting chan 42 note 66 step 2 to 1. 04
-              ESP_LOGI(SEQ_TAG, "setting chan %d note %d step %d to %d. %02X", chan, note, step, on, seq[chan][note]);
+              if (on) {
+                ESP_LOGI(SEQ_TAG, "chan %d note %d on: %s", chan, note, seq_string);
+              } else {
+                ESP_LOGI(SEQ_TAG, "chan %d note %d off: %s", chan, note, seq_string);
+              }
             }
 
             if ( startStopState == false ) { // only check for clients if we are in stopped mode, it hangs the playback otherwise
