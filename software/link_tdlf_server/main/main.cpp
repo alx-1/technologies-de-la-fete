@@ -86,7 +86,8 @@ extern "C" {
   
   #define PORT 3333
 
-  char clientIPAddresses[8][22]; // 8 potential clients, IPv6 format + 1 for string termination by strncat // somehow the space need increased by '1'...perhaps the previous access point attributed values below '100' for the last value
+  #define N_CLIENTS 4
+  char clientIPAddresses[N_CLIENTS][22]; // 8 potential clients, IPv6 format + 1 for string termination by strncat // somehow the space need increased by '1'...perhaps the previous access point attributed values below '100' for the last value
   //char clientIPAddresses[8][21]; // 8 potential clients, IPv6 format + 1 for string termination by strncat
   
   int clientIPCheck ( char myArray[] ) { // ESP_LOGI(SOCKET_TAG, "This is myArray : %s", myArray);
@@ -117,6 +118,7 @@ int CV_TIMING_CLOCK = 0;
 #define BUF_SIZE (1024)
 #define MIDI_TIMING_CLOCK 0xF8
 #define MIDI_NOTE_OFF 0x80 // 10000000 // 128
+#define MIDI_NOTE_ON 0x90
 #define MIDI_START 0xFA // 11111010 // 250
 #define MIDI_STOP 0xFC // 11111100 // 252
 
@@ -218,12 +220,11 @@ typedef struct {
 
 steps_t steps[64]; // Declare an array of type struct steps
 
-#define N_CHANS 4
-#define N_NOTES_PER_CHAN 128
-uint16_t seq[N_CHANS][N_NOTES_PER_CHAN] = {0}; // array of channel x note where each element represents the sequence in bits
+#define N_NOTES_PER_CLIENT 128
+uint16_t seq[N_CLIENTS][N_NOTES_PER_CLIENT] = {0}; // array of channel x note where each element represents the sequence in bits
 // uint16_t steppr = 0; // To iterate through the value from seqw[N_CHANS][N_NOTES_PER_CHAN]
 
-bool seq_changed[N_CHANS][N_NOTES_PER_CHAN] = {0}; // array of channel x note where each element represents a flag indicating if the sequence has been updated
+bool seq_changed[N_CLIENTS][N_NOTES_PER_CLIENT] = {0}; // array of channel x note where each element represents a flag indicating if the sequence has been updated
 
 bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
 bool oldmstr[79] = {1}; 
@@ -756,7 +757,7 @@ extern "C" {
             uint8_t step = mstr[15] % 16; // there are 64 steps but sequencer only goes to 16. just loop them for now
             uint16_t step_mask = 1 << step;
 
-            if ( chan != 42 ){ // First time an IP registers we don't want any values in seq[chan][note]
+            if ( note != 66 ){ // First time an IP registers we don't want any values in seq[chan][note]
               seq_changed[chan][note] = true;
               if (on) {
                 seq[chan][note] |= step_mask;
@@ -1614,23 +1615,23 @@ void tickTask(void* userParam)
                 // steps[0].on = true; // Test writing to the array of structs
                 //ESP_LOGI(SEQ_TAG, "First step : %i", steps[0].on);                                   
 
-                memset(monBuffer, 0, sizeof(monBuffer));
-                int maLen = tosc_writeMessage(
-                    monBuffer, 
-                    sizeof(monBuffer),
-                    "/step", // the address // /a second level like /tdlf/step returns an error '122'
-                    "i",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
-                    stepper
-                );
+                // memset(monBuffer, 0, sizeof(monBuffer));
+                // int maLen = tosc_writeMessage(
+                //     monBuffer, 
+                //     sizeof(monBuffer),
+                //     "/step", // the address // /a second level like /tdlf/step returns an error '122'
+                //     "i",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+                //     stepper
+                // );
 
-                int err2 = sendto(sock_WT32, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
+                // int err2 = sendto(sock_WT32, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
 
-                if (err2 < 0) {
-                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", err2);
-                    //break;
-                } 
+                // if (err2 < 0) {
+                //     ESP_LOGE(SOCKET_TAG, "Error occurred during sending: err2 %d", err2);
+                //     //break;
+                // } 
 
-                ESP_LOGI(SOCKET_TAG, "Message sent WT_32");
+                // ESP_LOGI(SOCKET_TAG, "Message sent WT_32");
 
                 // if (sock_WT32 != -1) {
                 //     ESP_LOGE(SOCKET_TAG, "Shutting down socket and restarting...");
@@ -1639,26 +1640,26 @@ void tickTask(void* userParam)
                 // }
                 char char_seq[4];
 
-                for (uint8_t chan = 0; chan < N_CHANS; chan++) {
-                  for (uint8_t note = 0; note < N_NOTES_PER_CHAN; note++) {
+                for (uint8_t chan = 0; chan < N_CLIENTS; chan++) {
+                  for (uint8_t note = 0; note < N_NOTES_PER_CLIENT; note++) {
                     // if (seq_changed[note]) {
                       if (chan == 0 && note == 0)  {
-                        memset(monBuffer, 0, sizeof(monBuffer));
-                        memset(char_seq, 0, sizeof(char_seq));
+                        // memset(monBuffer, 0, sizeof(monBuffer));
+                        // memset(char_seq, 0, sizeof(char_seq));
 
-                        char_seq[0] = note + 1;
-                        char_seq[1] = seq[chan][note];
-                        char_seq[2] = seq[chan][note] >> 8;
+                        // char_seq[0] = note + 1;
+                        // char_seq[1] = seq[chan][note];
+                        // char_seq[2] = seq[chan][note] >> 8;
 
                         // uint32_t seq_to_send = 0x55555501;
-                        int seq_message_len = tosc_writeMessage(
-                            monBuffer,
-                            sizeof(monBuffer),
-                            "/sequence", // the address // /a second level like /tdlf/step returns an error '122'
-                            "s",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
-                            char_seq
-                        );
-                        ESP_LOGI(SOCKET_TAG, "chan %d note %d is %d", chan, note, seq[chan][note]); // seq[chan][note] is encoded as decimal representing binary hits '0,0,63' = 1111110000000000
+                        // int seq_message_len = tosc_writeMessage(
+                        //     monBuffer,
+                        //     sizeof(monBuffer),
+                        //     "/sequence", // the address // /a second level like /tdlf/step returns an error '122'
+                        //     "s",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+                        //     char_seq
+                        // );
+                        // ESP_LOGI(SOCKET_TAG, "chan %d note %d is %d", chan, note, seq[chan][note]); // seq[chan][note] is encoded as decimal representing binary hits '0,0,63' = 1111110000000000
                         
                         /* for(int x=0; x<4; x++)
                           {
@@ -1672,12 +1673,12 @@ void tickTask(void* userParam)
                           ESP_LOGI(SOCKET_TAG, "sending %d", monBuffer[i]);
                           } */
 
-                        int err3 = sendto(sock_WT32, monBuffer, seq_message_len, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
-                        if (err3 < 0) {
-                            ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", err3);
-                        }
+                        // int err3 = sendto(sock_WT32, monBuffer, seq_message_len, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
+                        // if (err3 < 0) {
+                        //     ESP_LOGE(SOCKET_TAG, "Error occurred during sending: err3 %d", err3);
+                        // }
 
-                        seq_changed[chan][note] = false;
+                        // seq_changed[chan][note] = false;
                     }
                   }
                 }
@@ -1709,13 +1710,13 @@ void tickTask(void* userParam)
           //char zedata0[] = {MIDI_NOTE_OFF};
           //uart_write_bytes(UART_NUM_1,zedata0,1); // note off before anything
           
-        char zedata1[] = { MIDI_NOTE_ON_CH[1] }; // défini comme midi channel 1 (testing)
-        uart_write_bytes(UART_NUM_1, zedata1, 1); //uart_write_bytes(UART_NUM_1, "0x90", 1); // note on channel 0
-        char zedata2[] = {MIDI_NOTES[0]}; // tableau de valeurs de notes hexadécimales 
-        //char zedata2[] = {MIDI_NOTES[i]}; // tableau de valeurs de notes hexadécimales 
-        uart_write_bytes(UART_NUM_1, zedata2, 1); 
-        char zedata3[] = {MIDI_NOTE_VEL_OFF};
-        uart_write_bytes(UART_NUM_1,zedata3, 1); // velocité à 0
+        // char zedata1[] = { MIDI_NOTE_ON_CH[1] }; // défini comme midi channel 1 (testing)
+        // uart_write_bytes(UART_NUM_1, zedata1, 1); //uart_write_bytes(UART_NUM_1, "0x90", 1); // note on channel 0
+        // char zedata2[] = {MIDI_NOTES[0]}; // tableau de valeurs de notes hexadécimales 
+        // //char zedata2[] = {MIDI_NOTES[i]}; // tableau de valeurs de notes hexadécimales 
+        // uart_write_bytes(UART_NUM_1, zedata2, 1); 
+        // char zedata3[] = {MIDI_NOTE_VEL_OFF};
+        // uart_write_bytes(UART_NUM_1,zedata3, 1); // velocité à 0
         }
     //} // end midi note off
 
@@ -1724,10 +1725,6 @@ void tickTask(void* userParam)
           //for(int i = 0; i<8;i++){ // 8 x 79 = 632 faut faire ça pour chaque valeur de note
            
               myBar = 0; // We're working on 16 steps so myBar is always '0'
-              // myBar =  mtmss[i*79+12] + (mtmss[i*79+13])*2; // 0, 1, 2, 3 bars // how many bars for this note?
-              
-              //ESP_LOGI(LINK_TAG, "myBar : %i", myBar);
-              //ESP_LOGI(LINK_TAG, "stepsLength[myBar] : %i", stepsLength[myBar]);
               dubStep = step%stepsLength[myBar]; // modulo 16 // 32 // 48 // 64
               
               //ESP_LOGI(LINK_TAG, "nouveau 'dub'Step : %i", dubStep);
@@ -1751,15 +1748,30 @@ void tickTask(void* userParam)
               // ESP_LOGI(LINK_TAG, "Step : , %i", step);
 
               channel = 10;  // Outputting drums for Banshee
-
+              char midi_msg[3];
+              for (int client = 0; client < N_CLIENTS; client++) {
+                for (int note = 0; note < N_NOTES_PER_CLIENT; note++) {
+                  if (seq[client][note] & (1 << dubStep)) { // note is on
+                    // ESP_LOGI(SOCKET_TAG, "client %d note %d is on at step %d", client, note, step);
+                    midi_msg[0] = MIDI_NOTE_ON & channel;
+                    midi_msg[1] = zeDrums[note + 1];
+                    midi_msg[2] = MIDI_NOTE_VEL;
+                    // uart_write_bytes(UART_NUM_1, midi_msg, sizeof(midi_msg));
+                    uart_write_bytes_with_break(UART_NUM_1, midi_msg, sizeof(midi_msg), 128);
+                    ESP_LOGI(MIDI_TAG, "Sending midi: %d %d %d", midi_msg[0], midi_msg[1], midi_msg[2]);
+                  }
+                }
+              }
                 if (channel == 10){ // are we playing drumz // solenoids ?
-                  char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
-                  uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
+                  char zedata1[] = {MIDI_NOTE_ON_CH[channel], zeDrums[0], MIDI_NOTE_VEL};
+                  // char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
+                  // uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
+                  uart_write_bytes_with_break(UART_NUM_1, zedata1, sizeof(zedata1), 128);
                   //char zedata2[] = {zeDrums[i]};      // arriver de 0-8
-                  char zedata2[] = {zeDrums[6]};      // Play a clap on every beat
-                  uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
-                  char zedata3[] = { MIDI_NOTE_VEL };
-                  uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
+                  // char zedata2[] = {zeDrums[0]};      // Play a clap on every beat
+                  // uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
+                  // char zedata3[] = { MIDI_NOTE_VEL };
+                  // uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
                   
                   gpio_set_level(CV_18,1); // DAC_D (CV_18) get that note out !    
                   CV_TRIGGER_OFF[0] = int((esp_timer_get_time()/1000)+(myNoteDuration/64)); // set trigger duration
@@ -1805,7 +1817,7 @@ void tickTask(void* userParam)
                 
                 //char zedata3[] = { MIDI_NOTE_VEL };
                 //uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
-                uart_write_bytes(UART_NUM_1, "0", 1); // ??
+                // uart_write_bytes(UART_NUM_1, "0", 1); // ??
 
               // } // This is the end of the original loop going through the 8 notes
                   
