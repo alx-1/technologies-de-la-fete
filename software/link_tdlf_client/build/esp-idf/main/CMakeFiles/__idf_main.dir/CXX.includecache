@@ -707,8 +707,6 @@ lwip/sys.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/lwip/sys.h
 lwip/netdb.h
 -
-netdb.h
-/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/netdb.h
 ESP32APA102Driver.h
 /Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/main/ESP32APA102Driver.h
 tinyosc.h

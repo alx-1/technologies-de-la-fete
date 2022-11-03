@@ -3,7 +3,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "esp-idf/protocomm/libprotocomm.a"
+			"path" : "esp-idf/wifi_provisioning/libwifi_provisioning.a"
 		}
 	],
 	"backtrace" : 2,
@@ -25,7 +25,7 @@
 		"files" : 
 		[
 			"/Users/alx/esp/esp-idf/tools/cmake/component.cmake",
-			"/Users/alx/esp/esp-idf/components/protocomm/CMakeLists.txt",
+			"/Users/alx/esp/esp-idf/components/wifi_provisioning/CMakeLists.txt",
 			"/Users/alx/esp/esp-idf/tools/cmake/utilities.cmake"
 		],
 		"nodes" : 
@@ -36,7 +36,7 @@
 			{
 				"command" : 1,
 				"file" : 1,
-				"line" : 30,
+				"line" : 18,
 				"parent" : 0
 			},
 			{
@@ -54,6 +54,18 @@
 			{
 				"command" : 3,
 				"file" : 0,
+				"line" : 346,
+				"parent" : 3
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 331,
+				"parent" : 4
+			},
+			{
+				"command" : 3,
+				"file" : 0,
 				"line" : 349,
 				"parent" : 3
 			},
@@ -61,13 +73,13 @@
 				"command" : 2,
 				"file" : 0,
 				"line" : 328,
-				"parent" : 4
+				"parent" : 6
 			},
 			{
 				"command" : 2,
 				"file" : 0,
 				"line" : 328,
-				"parent" : 4
+				"parent" : 6
 			},
 			{
 				"command" : 5,
@@ -85,31 +97,13 @@
 				"command" : 5,
 				"file" : 2,
 				"line" : 282,
-				"parent" : 8
+				"parent" : 10
 			},
 			{
 				"command" : 5,
 				"file" : 0,
 				"line" : 464,
 				"parent" : 1
-			},
-			{
-				"command" : 2,
-				"file" : 0,
-				"line" : 328,
-				"parent" : 4
-			},
-			{
-				"command" : 3,
-				"file" : 0,
-				"line" : 346,
-				"parent" : 3
-			},
-			{
-				"command" : 2,
-				"file" : 0,
-				"line" : 331,
-				"parent" : 12
 			},
 			{
 				"command" : 7,
@@ -127,19 +121,7 @@
 				"command" : 8,
 				"file" : 0,
 				"line" : 307,
-				"parent" : 15
-			},
-			{
-				"command" : 8,
-				"file" : 0,
-				"line" : 307,
-				"parent" : 15
-			},
-			{
-				"command" : 8,
-				"file" : 0,
-				"line" : 307,
-				"parent" : 15
+				"parent" : 14
 			},
 			{
 				"command" : 9,
@@ -151,13 +133,25 @@
 				"command" : 8,
 				"file" : 0,
 				"line" : 307,
-				"parent" : 19
+				"parent" : 16
 			},
 			{
 				"command" : 8,
 				"file" : 0,
 				"line" : 307,
-				"parent" : 19
+				"parent" : 16
+			},
+			{
+				"command" : 8,
+				"file" : 0,
+				"line" : 307,
+				"parent" : 16
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 328,
+				"parent" : 6
 			}
 		]
 	},
@@ -170,118 +164,110 @@
 					"fragment" : "-mlongcalls -Wno-frame-address"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-ffunction-sections"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-fdata-sections"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Wall"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Werror=all"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Wno-error=unused-function"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Wno-error=unused-variable"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Wno-error=deprecated-declarations"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Wextra"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Wno-unused-parameter"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Wno-sign-compare"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-ggdb"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Og"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-fstrict-volatile-bitfields"
 				},
 				{
-					"backtrace" : 7,
+					"backtrace" : 9,
 					"fragment" : "-Wno-error=unused-but-set-variable"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 11,
 					"fragment" : "-std=gnu99"
 				},
 				{
-					"backtrace" : 9,
+					"backtrace" : 11,
 					"fragment" : "-Wno-old-style-declaration"
 				},
 				{
-					"backtrace" : 10,
+					"backtrace" : 12,
 					"fragment" : "-D_GNU_SOURCE"
 				},
 				{
-					"backtrace" : 10,
+					"backtrace" : 12,
 					"fragment" : "-DIDF_VER=\\\"v4.3.2-dirty\\\""
 				},
 				{
-					"backtrace" : 10,
+					"backtrace" : 12,
 					"fragment" : "-DESP_PLATFORM"
 				}
 			],
 			"defines" : 
 			[
 				{
-					"backtrace" : 11,
-					"define" : "HAVE_CONFIG_H"
-				},
-				{
-					"backtrace" : 13,
+					"backtrace" : 5,
 					"define" : "MBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\""
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 14,
+					"backtrace" : 13,
 					"path" : "/Users/alx/Documents/GitHub/technologies-de-la-fete/software/link_tdlf_client/build/config"
 				},
 				{
-					"backtrace" : 16,
-					"path" : "/Users/alx/esp/esp-idf/components/protocomm/include/common"
+					"backtrace" : 15,
+					"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/include"
 				},
 				{
 					"backtrace" : 17,
-					"path" : "/Users/alx/esp/esp-idf/components/protocomm/include/security"
+					"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/src"
 				},
 				{
 					"backtrace" : 18,
-					"path" : "/Users/alx/esp/esp-idf/components/protocomm/include/transports"
+					"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/proto-c"
 				},
 				{
-					"backtrace" : 20,
+					"backtrace" : 19,
 					"path" : "/Users/alx/esp/esp-idf/components/protocomm/proto-c"
-				},
-				{
-					"backtrace" : 21,
-					"path" : "/Users/alx/esp/esp-idf/components/protocomm/src/common"
 				},
 				{
 					"backtrace" : 2,
@@ -452,44 +438,52 @@
 					"path" : "/Users/alx/esp/esp-idf/components/app_trace/include"
 				},
 				{
-					"backtrace" : 13,
-					"path" : "/Users/alx/esp/esp-idf/components/nvs_flash/include"
-				},
-				{
-					"backtrace" : 13,
-					"path" : "/Users/alx/esp/esp-idf/components/spi_flash/include"
-				},
-				{
-					"backtrace" : 13,
-					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/port/include"
-				},
-				{
-					"backtrace" : 13,
-					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/mbedtls/include"
-				},
-				{
-					"backtrace" : 13,
-					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/esp_crt_bundle/include"
-				},
-				{
-					"backtrace" : 6,
-					"path" : "/Users/alx/esp/esp-idf/components/protobuf-c/protobuf-c"
+					"backtrace" : 5,
+					"path" : "/Users/alx/esp/esp-idf/components/protocomm/include/common"
 				},
 				{
 					"backtrace" : 5,
+					"path" : "/Users/alx/esp/esp-idf/components/protocomm/include/security"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/Users/alx/esp/esp-idf/components/protocomm/include/transports"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/Users/alx/esp/esp-idf/components/nvs_flash/include"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/Users/alx/esp/esp-idf/components/spi_flash/include"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/port/include"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/mbedtls/include"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/Users/alx/esp/esp-idf/components/mbedtls/esp_crt_bundle/include"
+				},
+				{
+					"backtrace" : 20,
+					"path" : "/Users/alx/esp/esp-idf/components/protobuf-c/protobuf-c"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/Users/alx/esp/esp-idf/components/mdns/include"
+				},
+				{
+					"backtrace" : 7,
 					"path" : "/Users/alx/esp/esp-idf/components/console"
 				},
 				{
-					"backtrace" : 11,
-					"path" : "/Users/alx/esp/esp-idf/components/esp_http_server/include"
-				},
-				{
-					"backtrace" : 11,
-					"path" : "/Users/alx/esp/esp-idf/components/nghttp/port/include"
-				},
-				{
-					"backtrace" : 11,
-					"path" : "/Users/alx/esp/esp-idf/components/nghttp/nghttp2/lib/includes"
+					"backtrace" : 8,
+					"path" : "/Users/alx/esp/esp-idf/components/json/cJSON"
 				}
 			],
 			"language" : "C",
@@ -510,25 +504,37 @@
 	"dependencies" : 
 	[
 		{
+			"backtrace" : 2,
+			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
+		},
+		{
 			"backtrace" : 5,
 			"id" : "__idf_console::@4311ed8d271cc0ee1422"
 		},
 		{
-			"backtrace" : 6,
+			"backtrace" : 5,
 			"id" : "__idf_protobuf-c::@b14513c4bd859268ec22"
 		},
 		{
-			"backtrace" : 2,
-			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
+			"backtrace" : 5,
+			"id" : "__idf_protocomm::@d76d01c8dec06205e1fc"
+		},
+		{
+			"backtrace" : 7,
+			"id" : "__idf_mdns::@2f076c6da9dadb273cdc"
+		},
+		{
+			"backtrace" : 8,
+			"id" : "__idf_json::@c78a8bdc820334f01148"
 		}
 	],
-	"id" : "__idf_protocomm::@d76d01c8dec06205e1fc",
-	"name" : "__idf_protocomm",
-	"nameOnDisk" : "libprotocomm.a",
+	"id" : "__idf_wifi_provisioning::@9d7e7ffe1b15746c1098",
+	"name" : "__idf_wifi_provisioning",
+	"nameOnDisk" : "libwifi_provisioning.a",
 	"paths" : 
 	{
-		"build" : "esp-idf/protocomm",
-		"source" : "/Users/alx/esp/esp-idf/components/protocomm"
+		"build" : "esp-idf/wifi_provisioning",
+		"source" : "/Users/alx/esp/esp-idf/components/wifi_provisioning"
 	},
 	"sourceGroups" : 
 	[
@@ -553,55 +559,55 @@
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/src/common/protocomm.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/src/wifi_config.c",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/src/security/security0.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/src/wifi_scan.c",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/src/security/security1.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/src/manager.c",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/proto-c/constants.pb-c.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/src/handlers.c",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/proto-c/sec0.pb-c.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/src/scheme_softap.c",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/proto-c/sec1.pb-c.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/src/scheme_console.c",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/proto-c/session.pb-c.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/proto-c/wifi_config.pb-c.c",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/src/transports/protocomm_console.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/proto-c/wifi_scan.pb-c.c",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/protocomm/src/transports/protocomm_httpd.c",
+			"path" : "/Users/alx/esp/esp-idf/components/wifi_provisioning/proto-c/wifi_constants.pb-c.c",
 			"sourceGroupIndex" : 0
 		}
 	],

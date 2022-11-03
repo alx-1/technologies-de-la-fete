@@ -585,6 +585,18 @@
 	"dependencies" : 
 	[
 		{
+			"backtrace" : 7,
+			"id" : "_project_elf_src::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 3,
+			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
+		},
+		{
+			"backtrace" : 11,
+			"id" : "__ldgen_output_esp32.project.ld::@c361781f7cb51efad0ea"
+		},
+		{
 			"backtrace" : 3,
 			"id" : "__idf_asio::@db1a8833e22596808d70"
 		},
@@ -695,18 +707,6 @@
 		{
 			"backtrace" : 3,
 			"id" : "__idf_main::@7368607ed66887415643"
-		},
-		{
-			"backtrace" : 7,
-			"id" : "_project_elf_src::@6890427a1f51a3e7e1df"
-		},
-		{
-			"backtrace" : 3,
-			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
-		},
-		{
-			"backtrace" : 11,
-			"id" : "__ldgen_output_esp32.project.ld::@c361781f7cb51efad0ea"
 		}
 	],
 	"id" : "link_tdlf_client.elf::@6890427a1f51a3e7e1df",

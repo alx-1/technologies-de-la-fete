@@ -60,7 +60,17 @@ int press;
 int selektor; // couleur rose par défaut
 int modSelektor = 0;
 int midiChannel = 0; // channel à stocker ds les premiers 0-3 bits de bd[]
-int noteSelektor = 0; // note à stocker dans les bits 4-7 de bd[]
+
+// Starting note
+// int noteSelektor = 0; // note à stocker dans les bits 4-7 de bd[]
+int noteSelektor = 1; // note à stocker dans les bits 4-7 de bd[]
+// int noteSelektor = 2; // note à stocker dans les bits 4-7 de bd[]
+// int noteSelektor = 3; // note à stocker dans les bits 4-7 de bd[]
+// int noteSelektor = 4; // note à stocker dans les bits 4-7 de bd[]
+// int noteSelektor = 5; // note à stocker dans les bits 4-7 de bd[]
+// int noteSelektor = 6; // note à stocker dans les bits 4-7 de bd[]
+// int noteSelektor = 7; // note à stocker dans les bits 4-7 de bd[]
+
 int noteDuration = 0; // length of note stored in bits 8-11 of bd[] 
 int barSelektor = 0; // à stocker
 int currentBar = 0; // pour l'affichage
@@ -68,76 +78,6 @@ int currentBar = 0; // pour l'affichage
 /// OSC ///
 
 uint8_t midi[4]; // This will hold the data to be sent over
-
-///// MDNS ////// <-- sad attempt at mdns client
-/* #include "mdns.h"//
-#include "netdb.h" //
-
-extern "C"{
-static void  query_mdns_host_with_gethostbyname(char *host);
-static void  query_mdns_host_with_getaddrinfo(char *host);
-
-//if(!oscServerFound) {
-    
-      //query_mdns_service("_osc", "_udp"); // mdns is implemented on the server, opens up osc over udp
-
-//    }
-
-static void mdns_print_results(mdns_result_t *results)
-{
-    mdns_result_t *r = results;
-    mdns_ip_addr_t *a = NULL;
-    int i = 1, t;
-    while (r) {
-        printf("%d: Interface: %s, Type: %s, TTL: %u\n", i++, esp_netif_get_ifkey(r->esp_netif), ip_protocol_str[r->ip_protocol],
-               r->ttl);
-        if (r->instance_name) {
-            printf("  PTR : %s.%s.%s\n", r->instance_name, r->service_type, r->proto);
-        }
-        if (r->hostname) {
-            printf("  SRV : %s.local:%u\n", r->hostname, r->port);
-        }
-        if (r->txt_count) {
-            printf("  TXT : [%zu] ", r->txt_count);
-            for (t = 0; t < r->txt_count; t++) {
-                printf("%s=%s(%d); ", r->txt[t].key, r->txt[t].value ? r->txt[t].value : "NULL", r->txt_value_len[t]);
-            }
-            printf("\n");
-        }
-        a = r->addr;
-        while (a) {
-            if (a->addr.type == ESP_IPADDR_TYPE_V6) {
-                printf("  AAAA: " IPV6STR "\n", IPV62STR(a->addr.u_addr.ip6));
-            } else {
-                printf("  A   : " IPSTR "\n", IP2STR(&(a->addr.u_addr.ip4)));
-            }
-            a = a->next;
-        }
-        r = r->next;
-    }
-}
-
-static void query_mdns_service(const char *service_name, const char *proto)
-{
-    ESP_LOGI(TAG, "Query PTR: %s.%s.local", service_name, proto);
-
-    mdns_result_t *results = NULL;
-    esp_err_t err = mdns_query_ptr(service_name, proto, 3000, 20,  &results);
-    if (err) {
-        ESP_LOGE(TAG, "Query Failed: %s", esp_err_to_name(err));
-        return;
-    }
-    if (!results) {
-        ESP_LOGW(TAG, "No results found!");
-        return;
-    }
-
-    mdns_print_results(results);
-    //mdns_query_results_free(results);
-}
-
- query_mdns_service("_osc", "_udp"); // _osc._udp
-} // Fin Extern "C" */
 
 ///////// DELS // SPI CONFIG TTGO // VSPI // SPI3 // MOSI 23 // SCK 18
 extern "C"{
@@ -465,82 +405,6 @@ void tickTask(void* userParam)
 } // fin de tickTask
 
 
-////////// UDP SOCKETTE ////////
-// extern "C" {
-// essai réception de config au départ //
-/* static void udp_server_task(void *pvParameters)
-{
-    char rx_buffer_serv[128];
-    
-    char addr_str_serv[128];
-    int addr_family_serv = AF_INET6;
-    int ip_protocol_serv = IPPROTO_IPV6;
-    struct sockaddr_in6 dest_addr_serv; // IPV6
-
-while (1) {
-
-            ESP_LOGI(SOCKET_TAG, "AF_INET6");
-            bzero(&dest_addr_serv.sin6_addr.un, sizeof(dest_addr_serv.sin6_addr.un));
-            dest_addr_serv.sin6_family = AF_INET6;
-            dest_addr_serv.sin6_port = htons(PORT_SRV);
-            
-            inet6_ntoa_r(dest_addr_serv.sin6_addr, addr_str_serv, sizeof(addr_str_serv) - 1);
-            int sock_serv = socket(addr_family_serv, SOCK_DGRAM, ip_protocol_serv);
-            ESP_LOGI(SOCKET_TAG, "Socket created with id : %i", sock_serv);
-            
-            if (sock_serv < 0) {
-                ESP_LOGE(SOCKET_TAG, "Unable to create socket: errno %d", errno);
-                break;
-            }
-
-            int opt = 1;
-            setsockopt(sock_serv, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-            setsockopt(sock_serv, IPPROTO_IPV6, IPV6_V6ONLY, &opt, sizeof(opt));
-
-            int err_serv = bind(sock_serv, (struct sockaddr *)&dest_addr_serv, sizeof(dest_addr_serv));
-
-            if (err_serv < 0) {
-                ESP_LOGE(SOCKET_TAG, "Socket unable to bind: errno %d", errno);
-                ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
-                break;
-            }
-
-            ESP_LOGI(SOCKET_TAG, "Socket bound, port %d", PORT_SRV);
-
-
-        while (1) {
-            if(mstrpckIP && nouvSockette ){
-
-            ESP_LOGI(SOCKET_TAG, "Socketz waiting for data\n");
-
-            struct sockaddr_in6 source_addr_serv; // Large enough for both IPv4 or IPv6
-            socklen_t socklen_serv = sizeof(source_addr_serv);
-            
-            int len_serv = recvfrom(sock_serv, rx_buffer_serv, sizeof(rx_buffer_serv)-1, 0, (struct sockaddr *)&source_addr_serv, &socklen_serv);
-           
-            for (int i = 0; i < sizeof(rx_buffer_serv);i++){
-                ESP_LOGE(SOCKET_TAG, "rx_buffer_serv %i :%i", i, rx_buffer_serv[i]);
-            }
-            
-
-              // Error occurred during receiving
-            if (len_serv < 0) {
-                ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
-                break;
-              }
-
-             
-        }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
- 
-    } // fin du premier while
-    
-   } // fin du second while
-
-   vTaskDelete(NULL);
-
-} */
-
 static void udp_client_task(void *pvParameters)
 {
 
@@ -605,7 +469,7 @@ static void udp_client_task(void *pvParameters)
                 break;
             } 
     
-            ESP_LOGI(SOCKET_TAG, "Message sent");
+            ESP_LOGI(SOCKET_TAG, "Config message sent");
 
             struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
             socklen_t socklen = sizeof(source_addr);
@@ -687,40 +551,6 @@ static void udp_client_task(void *pvParameters)
                 } 
     
                 ESP_LOGI(SOCKET_TAG, "Message sent");
-
-                // This is for the future : loading sequences from the server onto the clients
-                /* struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
-                socklen_t socklen = sizeof(source_addr);
-                //int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer) - 1, 0, (struct sockaddr *)&source_addr, &socklen);
-                int len = recvfrom(sock, rx_buffer, sizeof(rx_buffer), 0, (struct sockaddr *)&source_addr, &socklen);
-
-                // Error occurred during receiving
-                if (len < 0) {
-                    ESP_LOGE(SOCKET_TAG, "recvfrom failed: errno %d", errno);
-                    break;
-                } else { // Data received
-                    rx_buffer[len] = 0; // Null-terminate whatever we received and treat like a string
-                
-                    ESP_LOGI(SOCKET_TAG, "Received mstr ? %d bytes from %s:", len, addr_str);
-                    
-                    if ( len > 20 ){  // So we're getting love and an array to load
-                            
-                        for ( int i = 0; i < sizeof(rx_buffer); i++ ) {
-                            // ESP_LOGI(SOCKET_TAG, "rx_buffer[%i] = %i ", i, rx_buffer[i]); 
-                            bd[i] = rx_buffer[i]; // copy into bd[]
-                            cbd[i] = rx_buffer[i]; // copy into cbd[] so the comparison is not false
-                            ESP_LOGI(SOCKET_TAG, "rx_buffer -> bd[%i] = %i ", i, bd[i]);    
-                        }
-                        for ( int i = 0 ; i < 16 ; i++ ) {  // Add a visual of the new sequence!! Outside of the start/stop sequence
-                            TurnLedOn(i);
-                        }
-
-                    }
-                    
-                    if(rx_buffer[0] == '1') { // looper number (exclusive so managed here)
-                        // ESP_LOGI(SOCKET_TAG, "succès UDP");
-                    }  */
-
 
                 // vTaskDelay(10 / portTICK_PERIOD_MS); // 500
                 
@@ -1048,99 +878,99 @@ static void tp_example_read_task(void *pvParameter)
             if (s_pad_activated[i] == true) {
 
                 interval = (esp_timer_get_time() - oldTime)/1000;  // measure time between button events
-                // ESP_LOGI(SPACE_TAG, " ");
-                // ESP_LOGI(TAG, "Interval, %i ms", interval);
+                ESP_LOGI(TAG, "Interval, %i ms", interval);
                 oldTime = esp_timer_get_time();
 
                 esp_timer_stop(oneshot_timer); // stop it if we are here 
                 esp_timer_start_once(oneshot_timer, 40000); // if this triggers, we confirmed we had a short press
                 
                 // sendData is determined if we have a new note in 'oneshot_timer_callback'
-
+                
                 if ( interval > 350 ) {
-                    press = 0;
+                   press = 0;
                 }
+                //press = 0;
                 press++; 
-                // ESP_LOGI(TAG, "press : %d",press);
+                ESP_LOGI(TAG, "press : %d",press);
                 
                 currTouch = true; // For LED indication
 
                 if(s_pad_activated[2] && s_pad_activated[4]){
-                    // ESP_LOGI(TAG, "piton 1");
+                    ESP_LOGI(TAG, "piton 1");
                     selektor = 0;
                     //origButtonState = bd[15+selektor+16*barSelektor]; // store value // capture piton state and return to original state if it was a long press
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[0] && s_pad_activated[4]){
-                    // ESP_LOGI(TAG, "piton 2");
+                    ESP_LOGI(TAG, "piton 2");
                     selektor = 1;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[3] && s_pad_activated[4]){
-                    // ESP_LOGI(TAG, "piton 3");
+                    ESP_LOGI(TAG, "piton 3");
                     selektor = 2;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 if(s_pad_activated[9] && s_pad_activated[4]){
-                    // ESP_LOGI(TAG, "piton 4");
+                    ESP_LOGI(TAG, "piton 4");
                     selektor = 3;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 /////// 5-8
                 if(s_pad_activated[2] && s_pad_activated[5]){
-                    // ESP_LOGI(TAG, "piton 5");
+                    ESP_LOGI(TAG, "piton 5");
                     selektor = 4;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[0] && s_pad_activated[5]){
-                    // ESP_LOGI(TAG, "piton 6");
+                    ESP_LOGI(TAG, "piton 6");
                     selektor = 5;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 if(s_pad_activated[3] && s_pad_activated[5]){
-                    // ESP_LOGI(TAG, "piton 7");
+                    ESP_LOGI(TAG, "piton 7");
                     selektor = 6;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 if(s_pad_activated[9] && s_pad_activated[5]){
-                    // ESP_LOGI(TAG, "piton 8");
+                    ESP_LOGI(TAG, "piton 8");
                     selektor = 7;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     } 
                 /////// 9-12
                 if(s_pad_activated[2] && s_pad_activated[6]){
-                    // ESP_LOGI(TAG, "piton 9");
+                    ESP_LOGI(TAG, "piton 9");
                     selektor = 8;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[0] && s_pad_activated[6]){
-                    // ESP_LOGI(TAG, "piton 10");
+                    ESP_LOGI(TAG, "piton 10");
                     selektor = 9;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[3] && s_pad_activated[6]){
-                    // ESP_LOGI(TAG, "piton 11");
+                    ESP_LOGI(TAG, "piton 11");
                     selektor = 10;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[9] && s_pad_activated[6]){
-                    // ESP_LOGI(TAG, "piton 12");
+                    ESP_LOGI(TAG, "piton 12");
                     selektor = 11;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 /////// 13-16
                 if(s_pad_activated[2] && s_pad_activated[7]){
-                    // ESP_LOGI(TAG, "piton 13");
+                    ESP_LOGI(TAG, "piton 13");
                     selektor = 12;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[0] && s_pad_activated[7]){
-                    // ESP_LOGI(TAG, "piton 14");
+                    ESP_LOGI(TAG, "piton 14");
                     selektor = 13;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
                 if(s_pad_activated[3] && s_pad_activated[7]){
-                    // ESP_LOGI(TAG, "piton 15");
+                    ESP_LOGI(TAG, "piton 15");
                     selektor = 14;
                     origButtonState = steps[selektor+16*barSelektor].on; // store value
                     }
@@ -1167,14 +997,14 @@ static void tp_example_read_task(void *pvParameter)
                         ESP_LOGI(TAG, "modSelektor %d",modSelektor);
                         ESP_LOGI(TAG, " ");
 
-                        if(modSelektor<8){ // change la valeur de note représentée par sa couleur
+                        /* if(modSelektor<8){ // change la valeur de note représentée par sa couleur
                           noteSelektor = modSelektor;  
                           ESP_LOGI(TAG, "noteSelektor %d", noteSelektor);
                           steps[0].note = noteSelektor; // Write the note value to the steps[] // Will need to write it in the substructure for up to 8 notes at the same time.
                           ESP_LOGI(TAG, "noteSelektor %i", steps[0].note);
                         }
-
-                        else if(modSelektor>=8 && modSelektor<12){ // change le bar (1-16)(17-32)etc.
+                        */
+                        /* else if(modSelektor>=8 && modSelektor<12){ // change le bar (1-16)(17-32)etc.
                            
                             // Need to know only once how many bars we have in the sequence
                             // *** Disabling the bar selektor :/ Too confusing for the space ***
@@ -1189,9 +1019,9 @@ static void tp_example_read_task(void *pvParameter)
                             //midi[3] = 66;
 
                             ESP_LOGI(TAG, "Bar : %d", barSelektor);
-                        }
+                        } */
 
-                        else if( modSelektor == 12){ 
+                        /* else if( modSelektor == 12){ 
                             if (midiChannel == 7){ // le max
                                 midiChannel = -1; // loop it
                                 }
@@ -1200,9 +1030,9 @@ static void tp_example_read_task(void *pvParameter)
                             // Need to set the midi channel only once for the sequence
                             //steps[0].chan = midiChannel; // Write the channel number 
                             ESP_LOGI(TAG, "Midi channel %i", midiChannel);
-                        }
+                        } */
                         
-                        else if( modSelektor == 13 ){ // Won't change note duration for Banshees
+                        /* else if( modSelektor == 13 ){ // Won't change note duration for Banshees
                             if (noteDuration == 7) {
                                 noteDuration = -1;
                             }
@@ -1211,19 +1041,19 @@ static void tp_example_read_task(void *pvParameter)
                             steps[0].length = noteDuration;
                             ESP_LOGI(TAG, "noteDuration : %i", steps[0].length); 
                         }
-
-                        else if( modSelektor == 14 ) {
+ */
+                        /* else if( modSelektor == 14 ) {
                             // Need to set the mute info only once for the sequence // Are we playing or not?
                             steps[0].mute = !steps[0].mute;
                             midi[0] = 18; // Channel (up to 16) so 18 is code for muting that track
                             midi[1] = 66;
                             midi[2] = 66;
                             midi[3] = 66;
-                            sendData = true;
+                            // sendData = true;
                             ESP_LOGI(TAG, "mute : %i", steps[0].mute); 
-                        }
+                        } */
                         
-                        else if( modSelektor == 15 ) { // reset values
+                        /* else if( modSelektor == 15 ) { // reset values
                             // Erase all values from the sequencer
                             for (i = 0 ; i < 64 ; i++) {
                                 steps[i].on = 0;
@@ -1240,7 +1070,7 @@ static void tp_example_read_task(void *pvParameter)
                             sendData = true; // TODO : Ajouter l'envoi d'un message de reset du côté de tdlf // We need to send a reset message to the server
                             modSelektor = 42; // ok on arrête d'effacer...
                             ESP_LOGI(TAG, "RESET");
-                        }
+                        } */
 
                     }
 
@@ -1398,7 +1228,7 @@ extern "C" void app_main()
 
     // timers ??
   
-    const esp_timer_create_args_t oneshot_timer_args = {
+        const esp_timer_create_args_t oneshot_timer_args = {
         .callback = &oneshot_timer_callback,
         // argument specified here will be passed to timer callback function 
        .arg = NULL,

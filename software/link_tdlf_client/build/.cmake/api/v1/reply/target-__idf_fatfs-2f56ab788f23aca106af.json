@@ -3,7 +3,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "esp-idf/cmock/libcmock.a"
+			"path" : "esp-idf/fatfs/libfatfs.a"
 		}
 	],
 	"backtrace" : 2,
@@ -25,7 +25,7 @@
 		"files" : 
 		[
 			"/Users/alx/esp/esp-idf/tools/cmake/component.cmake",
-			"/Users/alx/esp/esp-idf/components/cmock/CMakeLists.txt",
+			"/Users/alx/esp/esp-idf/components/fatfs/CMakeLists.txt",
 			"/Users/alx/esp/esp-idf/tools/cmake/utilities.cmake"
 		],
 		"nodes" : 
@@ -36,7 +36,7 @@
 			{
 				"command" : 1,
 				"file" : 1,
-				"line" : 3,
+				"line" : 12,
 				"parent" : 0
 			},
 			{
@@ -104,6 +104,24 @@
 				"file" : 0,
 				"line" : 307,
 				"parent" : 11
+			},
+			{
+				"command" : 8,
+				"file" : 0,
+				"line" : 307,
+				"parent" : 11
+			},
+			{
+				"command" : 8,
+				"file" : 0,
+				"line" : 307,
+				"parent" : 11
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 331,
+				"parent" : 4
 			}
 		]
 	},
@@ -192,13 +210,6 @@
 					"fragment" : "-DESP_PLATFORM"
 				}
 			],
-			"defines" : 
-			[
-				{
-					"backtrace" : 5,
-					"define" : "UNITY_INCLUDE_CONFIG_H"
-				}
-			],
 			"includes" : 
 			[
 				{
@@ -207,7 +218,15 @@
 				},
 				{
 					"backtrace" : 12,
-					"path" : "/Users/alx/esp/esp-idf/components/cmock/CMock/src"
+					"path" : "/Users/alx/esp/esp-idf/components/fatfs/diskio"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/Users/alx/esp/esp-idf/components/fatfs/vfs"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/Users/alx/esp/esp-idf/components/fatfs/src"
 				},
 				{
 					"backtrace" : 2,
@@ -379,38 +398,51 @@
 				},
 				{
 					"backtrace" : 5,
-					"path" : "/Users/alx/esp/esp-idf/components/unity/include"
+					"path" : "/Users/alx/esp/esp-idf/components/wear_levelling/include"
 				},
 				{
 					"backtrace" : 5,
-					"path" : "/Users/alx/esp/esp-idf/components/unity/unity/src"
+					"path" : "/Users/alx/esp/esp-idf/components/spi_flash/include"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/Users/alx/esp/esp-idf/components/sdmmc/include"
 				}
 			],
 			"language" : "C",
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9
 			]
 		}
 	],
 	"dependencies" : 
 	[
 		{
-			"backtrace" : 5,
-			"id" : "__idf_unity::@fec746937506b5690992"
-		},
-		{
 			"backtrace" : 2,
 			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
+		},
+		{
+			"backtrace" : 5,
+			"id" : "__idf_wear_levelling::@cb21b0d7c0815cff11c6"
 		}
 	],
-	"id" : "__idf_cmock::@38f9eb59693b7394f54c",
-	"name" : "__idf_cmock",
-	"nameOnDisk" : "libcmock.a",
+	"id" : "__idf_fatfs::@75ac1d9b25dacc8cc9e7",
+	"name" : "__idf_fatfs",
+	"nameOnDisk" : "libfatfs.a",
 	"paths" : 
 	{
-		"build" : "esp-idf/cmock",
-		"source" : "/Users/alx/esp/esp-idf/components/cmock"
+		"build" : "esp-idf/fatfs",
+		"source" : "/Users/alx/esp/esp-idf/components/fatfs"
 	},
 	"sourceGroups" : 
 	[
@@ -418,7 +450,16 @@
 			"name" : "Source Files",
 			"sourceIndexes" : 
 			[
-				0
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9
 			]
 		}
 	],
@@ -427,7 +468,61 @@
 		{
 			"backtrace" : 2,
 			"compileGroupIndex" : 0,
-			"path" : "/Users/alx/esp/esp-idf/components/cmock/CMock/src/cmock.c",
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/diskio/diskio.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/diskio/diskio_rawflash.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/diskio/diskio_sdmmc.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/diskio/diskio_wl.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/src/ff.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/port/freertos/ffsystem.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/src/ffunicode.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/vfs/vfs_fat.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/vfs/vfs_fat_sdmmc.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 2,
+			"compileGroupIndex" : 0,
+			"path" : "/Users/alx/esp/esp-idf/components/fatfs/vfs/vfs_fat_spiflash.c",
 			"sourceGroupIndex" : 0
 		}
 	],

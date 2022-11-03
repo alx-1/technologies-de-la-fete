@@ -42,6 +42,9 @@
 	"dependencies" : 
 	[
 		{
+			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
+		},
+		{
 			"id" : "__idf_asio::@db1a8833e22596808d70"
 		},
 		{
@@ -124,9 +127,6 @@
 		},
 		{
 			"id" : "__idf_main::@7368607ed66887415643"
-		},
-		{
-			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
 		}
 	],
 	"id" : "__ldgen_output_esp32.project.ld::@c361781f7cb51efad0ea",

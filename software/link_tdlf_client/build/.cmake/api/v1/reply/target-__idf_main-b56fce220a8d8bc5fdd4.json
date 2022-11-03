@@ -668,6 +668,10 @@
 	"dependencies" : 
 	[
 		{
+			"backtrace" : 2,
+			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
+		},
+		{
 			"backtrace" : 0,
 			"id" : "__idf_asio::@db1a8833e22596808d70"
 		},
@@ -774,10 +778,6 @@
 		{
 			"backtrace" : 0,
 			"id" : "__idf_tinyosc::@4a980d34a6b61901c9a3"
-		},
-		{
-			"backtrace" : 2,
-			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
 		}
 	],
 	"id" : "__idf_main::@7368607ed66887415643",

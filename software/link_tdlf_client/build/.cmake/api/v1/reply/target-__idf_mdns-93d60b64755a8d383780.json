@@ -403,12 +403,12 @@
 	"dependencies" : 
 	[
 		{
-			"backtrace" : 5,
-			"id" : "__idf_console::@4311ed8d271cc0ee1422"
-		},
-		{
 			"backtrace" : 2,
 			"id" : "__idf_esp_pm::@c93acdd4f72df5fa58db"
+		},
+		{
+			"backtrace" : 5,
+			"id" : "__idf_console::@4311ed8d271cc0ee1422"
 		}
 	],
 	"id" : "__idf_mdns::@2f076c6da9dadb273cdc",

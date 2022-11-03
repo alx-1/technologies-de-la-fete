@@ -1584,7 +1584,7 @@ void tickTask(void* userParam)
       
 
         if (startStopCB){ // isPlaying and did we send that note out? 
-            if(sock_WT32 == 0){
+            /* if(sock_WT32 == 0){
                 // Du client Sockette _task
                 dest_addr_WT32.sin_addr.s_addr = inet_addr(HOST_IP_ADDR_WT32); //  "192.168.50.240"
                 dest_addr_WT32.sin_family = AF_INET;
@@ -1616,8 +1616,8 @@ void tickTask(void* userParam)
                 }
 
                 ESP_LOGI(SOCKET_TAG, "Socket bound, port %d", PORT_WT32);
-            }
-            else {
+            } */
+            /* else {
                 // there should be a check that the socket is healthy before continuing here
 
                 //// Send step via OSC here ////
@@ -1673,29 +1673,18 @@ void tickTask(void* userParam)
                         //     char_seq
                         // );
                         // ESP_LOGI(SOCKET_TAG, "chan %d note %d is %d", chan, note, seq[chan][note]); // seq[chan][note] is encoded as decimal representing binary hits '0,0,63' = 1111110000000000
-                        
-                        /* for(int x=0; x<4; x++)
-                          {
-                          for(int y=0; y<16; y++) // y can go to 128...
-                            {
-                              ESP_LOGI(SEQ_TAG,"Trying to iterate %i, %i, %d", x,y,seq[x][y]); // Super slow but we see it is encoded in decimal at position 
-                            }
-                          } */
-
-                        /* for (int i = 0; i < sizeof(monBuffer); i++) {
-                          ESP_LOGI(SOCKET_TAG, "sending %d", monBuffer[i]);
-                          } */
-
+                      
                         // int err3 = sendto(sock_WT32, monBuffer, seq_message_len, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
                         // if (err3 < 0) {
                         //     ESP_LOGE(SOCKET_TAG, "Error occurred during sending: err3 %d", err3);
                         // }
 
                         // seq_changed[chan][note] = false;
-                    }
+                     }
                   }
                 }
-            }
+            } 
+            */
 
           // Fin client sockette task
 
@@ -1760,26 +1749,42 @@ void tickTask(void* userParam)
               // ESP_LOGI(LINK_TAG, "Note on, %i", i);
               // ESP_LOGI(LINK_TAG, "Step : , %i", step);
 
+              // stops sending at 130 / 590 / 64 / 180 / 154 / 75 secs
               channel = 10;  // Outputting drums for Banshee
               char midi_msg[3];
               for (int client = 0; client < N_CLIENTS; client++) {
                 for (int note = 0; note < N_NOTES_PER_CLIENT; note++) {
                   if (seq[client][note] & (1 << dubStep)) { // note is on
                     // ESP_LOGI(SOCKET_TAG, "client %d note %d is on at step %d", client, note, step);
+                    
+                    char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; 
+                    uart_write_bytes(UART_NUM_1, zedata1, 1); 
+
+                    char zedata2[] = {zeDrums[note]};      
+                    uart_write_bytes(UART_NUM_1, zedata2, 1); 
+
+                    char zedata3[] = { MIDI_NOTE_VEL };
+                    uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
+
+                  /*
                     midi_msg[0] = MIDI_NOTE_ON & channel;
                     midi_msg[1] = zeDrums[note + 1];
                     midi_msg[2] = MIDI_NOTE_VEL;
                     // uart_write_bytes(UART_NUM_1, midi_msg, sizeof(midi_msg));
                     uart_write_bytes_with_break(UART_NUM_1, midi_msg, sizeof(midi_msg), 128);
-                    ESP_LOGI(MIDI_TAG, "Sending midi: %d %d %d", midi_msg[0], midi_msg[1], midi_msg[2]);
+                  */
+                    //ESP_LOGI(MIDI_TAG, "Sending midi: %d %d %d", zedata1[], zedata2[], zedata3[]);
+                    //ESP_LOGI(MIDI_TAG, "Sending midi: %d %d %d", midi_msg[0], midi_msg[1], midi_msg[2]);
+
                   }
                 }
               }
-                if (channel == 10){ // are we playing drumz // solenoids ?
-                  char zedata1[] = {MIDI_NOTE_ON_CH[channel], zeDrums[0], MIDI_NOTE_VEL};
+              /*  if (channel == 10){ // are we playing drumz // solenoids ?
+                  char zedata1[] = {MIDI_NOTE_ON_CH[channel], zeDrums[0], MIDI_NOTE_VEL}; // Send a test bass drum
                   // char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer
                   // uart_write_bytes(UART_NUM_1, zedata1, 1); // this function will return after copying all the data to tx ring buffer, UART ISR will then move data from the ring buffer to TX FIFO gradually.
-                  uart_write_bytes_with_break(UART_NUM_1, zedata1, sizeof(zedata1), 128);
+                  uart_write_bytes_with_break(UART_NUM_1, zedata1, sizeof(zedata1), 128); // Testing bass drum
+                  ESP_LOGI(MIDI_TAG, "Sending post midi"); // Testing
                   //char zedata2[] = {zeDrums[i]};      // arriver de 0-8
                   // char zedata2[] = {zeDrums[0]};      // Play a clap on every beat
                   // uart_write_bytes(UART_NUM_1, zedata2, 1); // tableau de valeurs de notes hexadécimales 
@@ -1827,7 +1832,7 @@ void tickTask(void* userParam)
                     ESP_LOGI(MIDI_TAG, "Midi channel other than 0 or 1"); // new line
                     // ajouter d'autres gammes (scales)
                     } 
-                
+        */        
                 //char zedata3[] = { MIDI_NOTE_VEL };
                 //uart_write_bytes(UART_NUM_1, zedata3, 1); // vélocité
                 // uart_write_bytes(UART_NUM_1, "0", 1); // ??
