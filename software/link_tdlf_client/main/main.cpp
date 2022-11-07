@@ -62,18 +62,20 @@ int modSelektor = 0;
 int midiChannel = 0; // channel à stocker ds les premiers 0-3 bits de bd[]
 
 // Starting note
-// int noteSelektor = 0; // note à stocker dans les bits 4-7 de bd[]
-int noteSelektor = 1; // note à stocker dans les bits 4-7 de bd[]
-// int noteSelektor = 2; // note à stocker dans les bits 4-7 de bd[]
-// int noteSelektor = 3; // note à stocker dans les bits 4-7 de bd[]
-// int noteSelektor = 4; // note à stocker dans les bits 4-7 de bd[]
-// int noteSelektor = 5; // note à stocker dans les bits 4-7 de bd[]
-// int noteSelektor = 6; // note à stocker dans les bits 4-7 de bd[]
-// int noteSelektor = 7; // note à stocker dans les bits 4-7 de bd[]
+// int noteSelektor = 0; // note à stocker dans les bits 4-7 de bd[] // WHITE-ISH // Done! // 36
+// int noteSelektor = 1; // note à stocker dans les bits 4-7 de bd[] // RED // Done! // 38
+// int noteSelektor = 2; // note à stocker dans les bits 4-7 de bd[] // AMBER // Done! // 43
+// int noteSelektor = 3; // note à stocker dans les bits 4-7 de bd[] // YELLOW // Done! // 50
+// int noteSelektor = 4; // note à stocker dans les bits 4-7 de bd[] // GREEN // Done! // 42
+// int noteSelektor = 5; // note à stocker dans les bits 4-7 de bd[] // Done! // 46
+// int noteSelektor = 6; // note à stocker dans les bits 4-7 de bd[] // PURPLE // 39
+int noteSelektor = 7; // note à stocker dans les bits 4-7 de bd[] // LIGHT PURPLE // 75
 
 int noteDuration = 0; // length of note stored in bits 8-11 of bd[] 
 int barSelektor = 0; // à stocker
 int currentBar = 0; // pour l'affichage
+
+bool cleanSlate = true; // Need this to run once to erase the correpsonding sequence on the server.
 
 /// OSC ///
 
@@ -526,6 +528,35 @@ static void udp_client_task(void *pvParameters)
         else if ( mstrpckIP && nouvSockette ) {
 
             // ESP_LOGI(SOCKET_TAG, "we have a new socket and the IP of the server to send to");
+
+            // Do this once to erase the corresponding sequence on the server side upon reboot of the client.
+            // Caution, not tested, might overload things!!!
+            if ( cleanSlate ){
+                for ( int i = 0; i <=15;i++){
+                char monBuffer[16];
+                uint8_t midi[4];
+                midi[0] = midiChannel;   // midi channel // 90 + midi channel (note on)
+                midi[1] = noteSelektor;   // midi note // BD // SN // LT // HT // CH // HH // CLAP // AG //
+                midi[2] = 0;   // 
+                midi[3] = i;    // step
+                int maLen = tosc_writeMessage(
+                    monBuffer, sizeof(monBuffer),
+                    "/midi", // the address
+                    "m",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
+                    midi);
+
+                int err = sendto(sock, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr, sizeof(dest_addr));
+   
+                if (err < 0) {
+                    ESP_LOGE(SOCKET_TAG, "Error occurred during sending: errno %d", errno);
+                    break;
+                } 
+    
+                ESP_LOGI(SOCKET_TAG, "Message sent");
+                }
+
+                cleanSlate = false;
+            }
 
             if ( sendData ) { // This results from a new note being entered from the sequencer //
 
