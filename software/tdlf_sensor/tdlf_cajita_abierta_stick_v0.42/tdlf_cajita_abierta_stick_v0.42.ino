@@ -596,8 +596,8 @@ void setup() {
   adxl.setInterruptMapping( ADXL345_INT_INACTIVITY_BIT,   ADXL345_INT1_PIN );
  
   //register interrupt actions - 1 == on; 0 == off  
-  adxl.setInterrupt( ADXL345_INT_SINGLE_TAP_BIT, 0);
-  adxl.setInterrupt( ADXL345_INT_DOUBLE_TAP_BIT, 0);
+  adxl.setInterrupt( ADXL345_INT_SINGLE_TAP_BIT, 1);
+  adxl.setInterrupt( ADXL345_INT_DOUBLE_TAP_BIT, 1);
   adxl.setInterrupt( ADXL345_INT_FREE_FALL_BIT,  0);
   adxl.setInterrupt( ADXL345_INT_ACTIVITY_BIT,   0);
   adxl.setInterrupt( ADXL345_INT_INACTIVITY_BIT, 0);
@@ -2431,5 +2431,14 @@ void createWebServer()
       server.sendHeader("Access-Control-Allow-Origin", "*");
       server.send(statusCode, "application/json", content);
     });
+
+      byte source = adxl.getInterruptSource();
+  //Serial.println(source);
+ if (adxl.triggered(source, ADXL345_SINGLE_TAP)){
+  Serial.println("ha");
+ }
+ if (adxl.triggered(source, ADXL345_DOUBLE_TAP)){
+  Serial.println("hey");
+ }
   }
 }
