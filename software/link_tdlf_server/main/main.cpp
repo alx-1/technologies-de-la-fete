@@ -76,7 +76,8 @@ extern "C" {
   char addr_str[128]; // Copié depuis le client
   int addr_family;    
   int ip_protocol;
-  int sock_WT32 = 0;
+  //int sock_WT32 = 0;
+  int sock_WT32 = 666; // We basically don't want to send via websocket...
   struct sockaddr_in dest_addr_WT32;
   #define HOST_IP_ADDR_WT32 "192.168.50.205" // Hard-coded to send data to MaxD //
   #define PORT_WT32 3333
@@ -643,7 +644,7 @@ extern "C" {
 
         while (1) {
 
-          ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
+          // ESP_LOGI(SOCKET_TAG, "Waiting for data\n");
 
           struct sockaddr_in6 source_addr; // Large enough for both IPv4 or IPv6
           socklen_t socklen = sizeof(source_addr);
@@ -651,10 +652,10 @@ extern "C" {
           //mstr should be 79 values long;
           int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-          for(int i = 0; i<sizeof(mstr); i++){
+        /*   for(int i = 0; i<sizeof(mstr); i++){
             test = mstr[i];
             ESP_LOGE(SOCKET_TAG, "data %i", test); 
-          }  
+          }   */
 
           /////////////////// FROM TINYOSC ///////////////////////
           //tosc_printOscBuffer(rx_buffer, len);
@@ -681,11 +682,12 @@ extern "C" {
     
                 case 'm': {
                     unsigned char *m = tosc_getNextMidi(&osc);
-                    printf(" 0x%02X%02X%02X%02X", m[0], m[1], m[2], m[3]);
-                    printf("\n");
-                    //CCChannel = m[0];
-                    //sensorValue = m[1];
-                    //CCmessage = m[2];
+                    //printf(" 0x%02X%02X%02X%02X", m[0], m[1], m[2], m[3]);
+                    //printf("\n");
+                    // the follwing is for sending CC messages
+                    CCChannel = m[0];
+                    sensorValue = m[1];
+                    CCmessage = m[2];
                     steps[m[3]].on = m[2]; // m[2] is on/off info and m[3] is the step number
 
                     // If the sequencer is going to only be 16 steps...we might not need all these 64...
@@ -710,8 +712,8 @@ extern "C" {
             ///// midi channel ///// 1-16 midi channels
             // ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
   
-            ///// note /////
-            ESP_LOGI(SOCKET_TAG, "note : %i", note); 
+            ///// note ///// use this for solenoids!
+            // ESP_LOGI(SOCKET_TAG, "note : %i", note); 
 
             ///// noteDuration //////
             // ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
@@ -734,7 +736,7 @@ extern "C" {
                     inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
               }
                 
-           ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
+           // ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
                 
             //inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
                 
@@ -756,7 +758,7 @@ extern "C" {
 
               else { // IP already exists 
 
-                ESP_LOGI(SOCKET_TAG, "Address already exists : %s", addr_str);    // ip address already exists in the array so do nothing // at what position
+                // ESP_LOGI(SOCKET_TAG, "Address already exists : %s", addr_str);    // ip address already exists in the array so do nothing // at what position
                 
                 if ( seqToLoad ) { // 
 
@@ -790,8 +792,8 @@ extern "C" {
             
             } 
 
-            int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
-            ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
+            //int err = sendto(sock, str_ip, sizeof(str_ip), 0, (struct sockaddr *)&source_addr, sizeof(source_addr));
+            //ESP_LOGI(SOCKET_TAG, "Sent my IP %s", str_ip); 
             
             
      
@@ -1643,13 +1645,13 @@ void tickTask(void* userParam)
                 steps[0].on = true; // Test writing to the array of structs
                 //ESP_LOGI(SEQ_TAG, "First step : %i", steps[0].on);                                   
 
-                int maLen = tosc_writeMessage(
+           /*      int maLen = tosc_writeMessage(
                     monBuffer, 
                     sizeof(monBuffer),
                     "/step", // the address // /a second level like /tdlf/step returns an error '122'
                     "i",   // the format; 'f':32-bit float, 's':ascii string, 'i':32-bit integer
                     stepper
-                );
+                ); 
 
                 int err2 = sendto(sock_WT32, monBuffer, maLen, 0,(struct sockaddr *)&dest_addr_WT32, sizeof(dest_addr_WT32));
 
@@ -1658,7 +1660,7 @@ void tickTask(void* userParam)
                     //break;
                 } 
 
-                ESP_LOGI(SOCKET_TAG, "Message sent WT_32");
+                ESP_LOGI(SOCKET_TAG, "Message sent WT_32");*/
 
                 // if (sock_WT32 != -1) {
                 //     ESP_LOGE(SOCKET_TAG, "Shutting down socket and restarting...");
