@@ -15,6 +15,24 @@ Client = require('node-osc').Client;
 const client = new Client('192.168.0.128', 8000);
 
 let myIP = "42";
+let myUsers = [];
+let myUsersLength;
+let myUsersAndVotesLength;
+const myUsersAndVotes = {}; // socketid:vote // Keep id's and votes together
+let proposedBPM;
+let countDown;
+let counting = 16;
+//let newScale;
+let maGamme;
+let scales = [
+    ['G','k67','k69','k71','k72','k74','k76','k78','k79'],
+    ['Gm','k67','k69','k70','k72','k74','k75','k77','k79'],
+    ['G#','k68','k70','k72','k73','k75','k77','k79','k80'],
+    ['G#m','k68','k70','k71','k73','k75','k76','k78','k80']
+];
+
+
+//console.log("scales test : "+scales[1][0]);
 
 let CCDatas = new Array (3); // For midi CC
 
@@ -78,13 +96,26 @@ link.on('playState', (playState) => console.log("playState", playState));
             io.emit('beat', { beat, phase, bpm, playState }); // playState returns 'undefined' regardless
             console.log("beat? : "+beat);  
             lastBeat = beat;
+            if(countDown == true){
+                counting = counting-1;
+                console.log('counting = '+counting);
+                //io.broadcast.emit('counting',{counting});
+                io.emit('counting',{counting}); 
+    
+                if(counting <=0){
+                    countDown = false;
+                    counting = 16;
+                    link.setBpm(parseInt(proposedBPM));
+                    console.log('new bpm : '+link.bpm);
+                } 
+            }
             }
          //console.log(link.bpm);
-         numUsers = link.numPeers;
-         io.emit('numUsers',{ numUsers });
+         //numUsers = link.numPeers;
+         //io.emit('numUsers',{ numUsers });
          test = link.isPlayStateSync;
          io.emit('test',{test});
-         
+
          prev_beat_time = curr_beat_time;
     });
     
@@ -99,7 +130,29 @@ app.get('/', (req, res) => {
 
 
 io.on('connection', (socket) => {  // start listening from events from the socket upon connection
-    console.log('a user connected');
+    console.log("New user connected : "+socket.id);
+    myUsersAndVotes[socket.id] = 0; // Add the new socket.id as value to a user and initialize vote to '0'
+    //cconsole.log("Object.keys : "+Object.keys(myUsersAndVotes));
+    for (const key of Object.keys(myUsersAndVotes)) { 
+        console.log(key + " : "+myUsersAndVotes[key]);
+
+        };
+
+        myUsersAndVotesLength = Object.keys(myUsersAndVotes).length;
+        console.log('myUsersAndVotes length '+myUsersAndVotesLength);
+        io.emit('myUsers', { myUsersAndVotesLength });
+
+    socket.on('disconnect', function() { 
+        console.log(socket.id + ' disconnected');
+        delete myUsersAndVotes[socket.id];  //remove user from object
+        console.log('deleted '+socket.id+'from myUsersAndVotes');
+       
+        myUsersAndVotesLength = Object.keys(myUsersAndVotes).length;
+        console.log('myUsersAndVotes length '+myUsersAndVotesLength);
+        io.emit('myUsers', { myUsersAndVotesLength });
+        }
+    );
+    // We need to keep track of how many clients are connected and send them their own id
 
     socket.on('CCData', (data) => {
       
@@ -117,6 +170,61 @@ io.on('connection', (socket) => {  // start listening from events from the socke
 
         console.log("CCData envoyé : "+CCDatas);
 
+        });
+
+    socket.on('propose', (data) => {
+        console.log("data : "+data);
+        proposedBPM = data;
+        socket.broadcast.emit('proposedBPM',data);
+        socket.emit('proposedBPM',data); 
+        });
+
+    socket.on('voting', (data) => {
+        console.log("data vote : "+data);
+        console.log("socket.id :"+socket.id); 
+        myUsersAndVotes[socket.id] = data; // Register vote, add check on id if the user has voted already!
+        
+        // Add all the votes together and return the means 
+        let voteTotal = 0;
+        let voteResult;
+
+        for (const key of Object.keys(myUsersAndVotes)) { 
+            console.log(key + " : "+myUsersAndVotes[key]);
+            voteTotal = voteTotal + myUsersAndVotes[key];
+            };
+
+        console.log('voteTotal : '+voteTotal);
+
+        voteResult = voteTotal / myUsersAndVotesLength;
+
+        console.log('voteResult : '+voteResult);
+
+        if(voteResult >= 0.5){
+            console.log('we have a successful vote for the suggested BPM of : '+proposedBPM);
+            socket.broadcast.emit('changingBPM',proposedBPM); // Send out the new BPM
+            socket.emit('changingBPM',proposedBPM); // To the recent client as well...
+        }
+        countDown = true;  // if yes, change bpm (16 steps countdown)
+        });
+
+    socket.on('newScale', (data) => {
+            console.log("newScale data : "+data);
+            maGamme = data;
+
+            console.log("maVieilleGamme : "+maGamme);
+            for(i=0;i<scales.length;i++){
+                console.log("i : "+i);
+                if (scales[i][0] == "G#m"){
+                    maGamme = scales[0][0]; // "back to G"
+                    break;
+                }
+                else if (scales[i][0] == maGamme){
+                    maGamme = scales[i+1][0];
+                    break;
+                }   
+            }
+            socket.broadcast.emit('newScale',maGamme);
+            socket.emit('newScale',maGamme); 
         });
     
     socket.on('interface', (data) => {

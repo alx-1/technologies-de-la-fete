@@ -1,0 +1,16 @@
+Pins : 33,32,22,4,13,25,26,27,16,17,18,19,15,5,14
+
+Don't expose for the motor and sensor controllers as we use those for the lcd screen : 
+
+I2C : 21, 22
+
+don't use 0 or 2 (boot + button + led)
+
+touch pins : 4, 0, 2 15 , 13, 12, 14, 27, 32, 33
+
+Accelerometer : 
+
+Use :
+
+
+

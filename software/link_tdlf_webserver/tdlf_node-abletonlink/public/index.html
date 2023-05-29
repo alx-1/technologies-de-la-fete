@@ -24,13 +24,23 @@
         var socket = io();
         var myBeat = 42;
         var myBPM = 66.6;
+        let sessionID;
+        let input;
+        let proposeBPM = -1;
+        let proposedBPM = -1;
+        let buttonPropose;
+        let buttonYes;
+        let buttonNo; 
+        let showBPMValue = -1;
+        let counting = 16;
 
-        //var myPhase = 0;
+        let myPhase = 0;
         var numUsers = 0;
         let step = 0;
         let monStep = 0;
         let bar = 0;
         let myMidiIndex = 0; 
+        let maGamme = "G";
 
         let base = 32; // button x offset from edge
         let sx = base; // text x offset idem
@@ -42,6 +52,12 @@
         let hbutton = 30;
         let vbutton = 23;
         let bsize = 60;
+
+        let kXSize = 34;
+        let kYSize = 120;
+        let kXBSize = 28;
+        let kYBSize = 80;
+        let koff = 36;
         var myPlayState;
 
         let eric_X = 118+555;
@@ -70,9 +86,19 @@
         }
 
         let pitons = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"];
+        let touches = ["k60","k61","k62","k63","k64","k65","k66","k67","k68","k69","k70","k71","k72","k73","k74","k75","k76","k77","k78","k79","k80","k81","k82","k83"];
         let instr = ["   bd  ", " snare ", "low tom", " hi tom", " cl hat", " op hat", "  clap ", " claves"]
         let myInstr = 0;
         let midiChannel = 1;
+        let scales = [
+                ['G','k67','k69','k71','k72','k74','k76','k78','k79'],
+                ['Gm','k67','k69','k70','k72','k74','k75','k77','k79'],
+                ['G#','k68','k70','k72','k73','k75','k77','k79','k80'],
+                ['G#m','k68','k70','k71','k73','k75','k76','k78','k80']
+            ];
+        
+
+        //console.log("scales test : "+scales[1][0]);
 
         function touchMoved() { // prevent scrolling on mobile devices
             // do some stuff
@@ -101,6 +127,11 @@
             }
         } 
 
+        function myInputEvent() {
+            console.log('you are typing: ', this.value());
+            proposeBPM = this.value();
+        }
+
         function setup() {
             createCanvas(windowWidth,windowHeight);
             setMoveThreshold(0.1);
@@ -110,7 +141,26 @@
             gui = createGui();
             gui.loadStyle("Rose");
             gui.setStrokeWeight(4);
-            
+
+            input = createInput('');
+            input.position(100,330); // x, sy+12*off)
+            input.size(48);
+            input.input(myInputEvent);
+
+            buttonPropose = createButton('propose',180,326,80,25);
+            eval(buttonPropose).onRelease = proposing;
+
+            buttonYes = createButton('yes',220,356,40,25);
+            eval(buttonYes).onRelease = votingYes;
+
+            buttonNo = createButton('no',280,356,40,25);
+            eval(buttonNo).onRelease = votingNo;
+
+            buttonGamme = createButton(maGamme,sx+70,sy+2*off+10,50,25);
+            eval(buttonGamme).onRelease = myNewScale; 
+            //buttonGamme.onRelease = myNewScale(); 
+
+
             a = createButton("0",base+0*boff,trowy, bsize, bsize);
             b = createButton("1",base+1*boff,trowy, bsize, bsize);
             c = createButton("2",base+2*boff,trowy, bsize, bsize);
@@ -128,6 +178,60 @@
             n = createButton("13",base+5*boff,browy, bsize, bsize);
             o = createButton("14",base+6*boff,browy, bsize, bsize);
             p = createButton("15",base+7*boff,browy, bsize, bsize);
+
+            k60 = createButton("C",base+0*koff,trowy, kXSize, kYSize); // C // Do
+            k60.setStyle("fillBg", color("#DDDDDD")); k60.setStyle("rounding", 5);
+            k62 = createButton("D",base+1*koff,trowy, kXSize, kYSize); // D // Ré
+            k62.setStyle("fillBg", color("#DDDDDD")); k62.setStyle("rounding", 5);
+            k61 = createButton("C#",base+1*koff-18,trowy, kXBSize, kYBSize); // C# // Do dièse
+            k61.setStyle("fillBg", color("#333333")); k61.setStyle("rounding", 5);
+            k64 = createButton("E",base+2*koff,trowy, kXSize, kYSize); // E // Mi
+            k64.setStyle("fillBg", color("#DDDDDD")); k64.setStyle("rounding", 5);
+            k63 = createButton("D#",base+2*koff-14,trowy, kXBSize, kYBSize); // D# // Ré dièse
+            k63.setStyle("fillBg", color("#333333")); k63.setStyle("rounding", 5);
+            k65 = createButton("F",base+3*koff,trowy, kXSize, kYSize); // F // Fa
+            k65.setStyle("fillBg", color("#DDDDDD")); k65.setStyle("rounding", 5);
+            k67 = createButton("G",base+4*koff,trowy, kXSize, kYSize); // G // Sol
+            k67.setStyle("fillBg", color("#DDDDDD")); k67.setStyle("rounding", 5);
+            k66 = createButton("F#",base+3*koff+18,trowy, kXBSize, kYBSize); // F# // Fa dièse
+            k66.setStyle("fillBg", color("#333333")); k66.setStyle("rounding", 5);
+            k69 = createButton("A",base+5*koff,trowy, kXSize, kYSize); // A // La
+            k69.setStyle("fillBg", color("#DDDDDD")); k69.setStyle("rounding", 5);
+            k68 = createButton("G#",base+4*koff+18,trowy, kXBSize, kYBSize); // G# // Sol dièse
+            k68.setStyle("fillBg", color("#333333")); k68.setStyle("rounding", 5);
+            k71 = createButton("B",base+6*koff,trowy, kXSize, kYSize); // B // Si 
+            k71.setStyle("fillBg", color("#DDDDDD")); k71.setStyle("rounding", 5);
+            k70 = createButton("A#",base+5*koff+18,trowy, kXBSize, kYBSize); // A# // La dièse
+            k70.setStyle("fillBg", color("#333333")); k70.setStyle("rounding", 5);
+            k72 = createButton("C",base+7*koff,trowy, kXSize, kYSize); // C
+            k72.setStyle("fillBg", color("#DDDDDD")); k72.setStyle("rounding", 5);
+            k74 = createButton("D",base+8*koff,trowy, kXSize, kYSize); // D
+            k74.setStyle("fillBg", color("#DDDDDD")); k74.setStyle("rounding", 5);
+            k73 = createButton("C#",base+7*koff+18,trowy, kXBSize, kYBSize); // C#
+            k73.setStyle("fillBg", color("#333333")); k73.setStyle("rounding", 5);
+            k76 = createButton("E",base+9*koff,trowy, kXSize, kYSize); // E
+            k76.setStyle("fillBg", color("#DDDDDD")); k76.setStyle("rounding", 5);
+            k75 = createButton("D#",base+8*koff+18,trowy, kXBSize, kYBSize); // D#
+            k75.setStyle("fillBg", color("#333333")); k75.setStyle("rounding", 5);
+            k77 = createButton("F",base+10*koff,trowy, kXSize, kYSize); // F
+            k77.setStyle("fillBg", color("#DDDDDD")); k77.setStyle("rounding", 5);
+            k79 = createButton("G",base+11*koff,trowy, kXSize, kYSize); // G
+            k79.setStyle("fillBg", color("#DDDDDD")); k79.setStyle("rounding", 5);
+            k78 = createButton("F#",base+10*koff+18,trowy, kXBSize, kYBSize); // F#
+            k78.setStyle("fillBg", color("#333333")); k78.setStyle("rounding", 5);
+            k81 = createButton("A",base+12*koff,trowy, kXSize, kYSize); // A
+            k81.setStyle("fillBg", color("#DDDDDD")); k81.setStyle("rounding", 5);
+            k80 = createButton("G#",base+11*koff+18,trowy, kXBSize, kYBSize); // G#
+            k80.setStyle("fillBg", color("#333333")); k80.setStyle("rounding", 5);
+            k83 = createButton("B",base+13*koff,trowy, kXSize, kYSize); // B
+            k83.setStyle("fillBg", color("#DDDDDD")); k83.setStyle("rounding", 5);
+            k82 = createButton("A#",base+12*koff+18,trowy, kXBSize, kYBSize); // A#
+            k82.setStyle("fillBg", color("#333333")); k82.setStyle("rounding", 5);
+
+            //G Sol majeur "G","67","69","71","72","74","76","78","79"
+            //Gm Sol mineur "Gm","67","69","70","72","74","75","77","79"
+            // G# Sol# majeur "G#","68","70","72","73","75","77","79","80" 
+            // G#m Sol# mineur "G#m","68","70","71","73","75","76","78","80" 
 
             minus = createButton("-", sx+55, sy+2*off-16, hbutton, vbutton);
             plus = createButton("+", sx+150, sy+2*off-16, hbutton, vbutton);
@@ -161,6 +265,28 @@
             background(25);
             noLoop(); // don't update draw
         } // end of setup
+
+        function votingYes() {
+            console.log('votingYes');
+            socket.emit('voting', 1);
+        }
+
+        function votingNo() {
+            console.log('votingNo');
+            socket.emit('voting', -1);
+        }
+
+        function proposing() {
+            console.log("proposing : "+proposeBPM);
+            data =  { proposeBPM };
+            socket.emit('propose', proposeBPM);
+        }  
+
+       function myNewScale() {
+            console.log("maGamme : "+maGamme);
+            data = { maGamme };
+            socket.emit('newScale', maGamme)
+        }
 
         function nouvCol() {
             print(this.label + " is pressed.");
@@ -345,23 +471,28 @@
             socket.emit('interface', data);
         }
 
-        socket.on('numUsers', function(data) {
-            numUsers = data.numUsers;
+        socket.on('myUsers', function(data) {
+            console.log(data);
+            numUsers = data.myUsersAndVotesLength;
+            console.log("got this : "+data.myAndVotesUsers)
         });
-    
-        //socket.on('test', function(data) { // trying to get the playState
-        //myPlayState = data.test;
-        //console.log("test : "+myPlayState);
-        //});
-    
+
+        socket.on('changingBPM', function(data) {
+            console.log('changingBPM : '+data);
+            showBPMValue = data;
+        });
+
+        socket.on('newScale', function(data) {
+            console.log('newScale : '+data);
+            maGamme = data;
+            buttonGamme.label = maGamme;
+        });
+
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-           // console.log("mon step : "+data);
+            //console.log("mon step : "+data);
             step = data;
-            //console.log("step là : "+step);
-            // change border color fo the active button
-            
-
+        
           for(x = 0; x < 16 ; x++){
             
             if(mtmss[x+15+(myInstr*79)]==true){
@@ -370,10 +501,12 @@
 
             }
             else{
+            //pitons[x].setStyle("fillBg", color("#DD8806")); 
+            //pitons[x].setStyle("fillLabel", color("#DD8810"));
+
             eval(pitons[x]).setStyle("fillBg", color("#DD8806")); 
             eval(pitons[x]).setStyle("fillLabel", color("#DD8810"));
             }
-
         }
         
         //console.log("pitons[step] : "+pitons[step]);
@@ -385,6 +518,22 @@
         
         });
 
+        
+        socket.on('connect', function() {
+            sessionID = socket.id; //
+            console.log(sessionID);
+            });
+
+        socket.on('proposedBPM', function(data) {
+            console.log("proposedBPM : "+data);
+            proposedBPM = data;
+            });
+
+        socket.on('counting', function(data) {
+            console.log('counting : '+data.counting);
+            counting = data.counting;
+        });
+
         socket.on('beat', function(data) {
             //console.log("data : "+data);
             myBeat = data.beat;
@@ -392,8 +541,9 @@
             myBPM = data.bpm;
             //console.log("myBPM : "+myBPM);
             myBPM = myBPM.toFixed(2);
-            //myPhase = data.phase;
-            //myPhase = myPhase.toFixed(1);
+            myPhase = data.phase;
+            myPhase = myPhase.toFixed(1);
+            //console.log("phase : "+myPhase)
             
             redraw();
         });
@@ -441,16 +591,40 @@
 
                 rect(eric_X+555,eric_Y-10+5,4,24);
                 rect(eric_X-10+555,eric_Y+5,24,4);
-
-
-                
-               
-
             }
-          
+            if (counting > 0 && showBPMValue != myBPM && showBPMValue >= 0) {
+                //console.log('countdown');
+                textSize(128);
+                text(showBPMValue,570,160);
+                textSize(32);
+                fill('red');
+                rect(750+parseInt(counting)*-10,180,50,50,10);
+                fill("#DDBB44");
+                text(counting,760+parseInt(counting)*-10,220);
+                fill("#DDBB44");
+                textSize(18);
+            }
+            
             text('technologies de la fête', sx, sy+off);
             text('BPM :        '+myBPM, sx, sy+2*off);
-            text('clients :               '+numUsers, sx, sy+3*off);
+            text('scale : ', sx, sy+3*off);
+            //text('clients :               '+numUsers, sx, sy+3*off);
+            text('client id : '+sessionID,sx, sy+10*off);
+            text('phase :    '+myPhase, sx, sy+11*off);
+            text('BPM :' , sx, sy+12*off);
+            if(proposedBPM > -1){
+                //console.log('show proposedBPM');
+                text('proposed BPM : '+proposedBPM+' ?', sx, sy+13*off);
+                buttonYes.visible = true;
+                buttonNo.visible = true;
+                //hide();
+            } else {
+                text('no proposed BPM', sx, sy+13*off);
+                //buttonYes.hide();
+                buttonYes.visible = false;
+                buttonNo.visible = false;
+            }
+
             
             // text('beat :        '+myBeat, sx, sy+2*off);
             // text('Start/Stop', sx, sy+3*off);
@@ -459,6 +633,7 @@
             text('bar :                          '+bar, sx+250, sy+off );
             text('midi :                       '+midiChannel, sx+250, sy+2*off);
             text('instrument :          '+instr[myInstr], sx+250, sy+3*off);
+            
 
             //text('step :        '+step, sx+300, sy+4*off);
 
@@ -472,6 +647,12 @@
                 data =  { bpm:1 }; 
                 socket.emit('mtmss', data); 
             } */
+
+            /*if (button.isPressed){
+                console.log("proposing : "+proposeBPM);
+                data =  { proposeBPM};
+                socket.emit('propose', proposeBPM);
+            }*/
   
             if (minus.isPressed) {
             // Print a message when Button is pressed.

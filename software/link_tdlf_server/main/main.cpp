@@ -85,7 +85,7 @@ extern "C" {
   
   #define PORT 3333
 
-  char clientIPAddresses[8][21]; // 8 potential clients, IPv6 format + 1 for string termination by strncat
+  char clientIPAddresses[8][22]; // 8 potential clients, IPv6 format + 1 for string termination by strncat
   
   int clientIPCheck ( char myArray[] ) { // ESP_LOGI(SOCKET_TAG, "This is myArray : %s", myArray);
     
@@ -592,7 +592,8 @@ static void initialise_mdns(void)
     };
 
     //initialize service
-    ESP_ERROR_CHECK( mdns_service_add("tdlf", "_osc", "_udp", PORT, serviceTxtData, 3) );
+    ESP_ERROR_CHECK( mdns_service_add("tdlf", "_tdlf", "_udp", PORT, serviceTxtData, 3) );
+    //ESP_ERROR_CHECK( mdns_service_add("tdlf", "_osc", "_udp", PORT, serviceTxtData, 3) );
 
     free(hostname);
 }
@@ -680,6 +681,7 @@ extern "C" {
            //switch (tosc_getFormat(&osc)) {
             switch(osc.format[0]) {
     
+                //case 'i': {
                 case 'm': {
                     unsigned char *m = tosc_getNextMidi(&osc);
                     //printf(" 0x%02X%02X%02X%02X", m[0], m[1], m[2], m[3]);
@@ -733,7 +735,8 @@ extern "C" {
               }
             
             else {   // Data received
-                    inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
+                inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1); // Get the sender's ip address as string
+                //ESP_LOGI(SOCKET_TAG, "This is the address : %s", addr_str);
               }
                 
            // ESP_LOGI(SOCKET_TAG, "Received %d bytes from %s:", len, addr_str);
@@ -748,7 +751,7 @@ extern "C" {
 
               if ( checkIPExist == 42 ) { // if it doesn't exist, add it
               
-                strncat(clientIPAddresses[nmbrClients], inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1),20); // add that address to the array 
+                strncat(clientIPAddresses[nmbrClients], inet6_ntoa_r(source_addr.sin6_addr, addr_str, sizeof(addr_str) - 1),21); // add that address to the array 
                 ESP_LOGI(SOCKET_TAG, "Added client address : %s", clientIPAddresses[nmbrClients]);
 
                 nmbrClients++; // Count the newly registered client
@@ -788,7 +791,7 @@ extern "C" {
 
               } // End of "else if IP exists"
 
-              ESP_LOGI(SOCKET_TAG, "nmbrClients : %i\n", nmbrClients); 
+              // ESP_LOGI(SOCKET_TAG, "nmbrClients : %i\n", nmbrClients); 
             
             } 
 
