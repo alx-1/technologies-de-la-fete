@@ -22,14 +22,16 @@ const myUsersAndVotes = {}; // socketid:vote // Keep id's and votes together
 let proposedBPM;
 let countDown;
 let counting = 16;
-//let newScale;
-let maGamme;
+
+let scaleTracker = Math.floor(Math.random()*4);
+//console.log('scaleTracker : ' +scaleTracker);
 let scales = [
     ['G','k67','k69','k71','k72','k74','k76','k78','k79'],
     ['Gm','k67','k69','k70','k72','k74','k75','k77','k79'],
     ['G#','k68','k70','k72','k73','k75','k77','k79','k80'],
     ['G#m','k68','k70','k71','k73','k75','k76','k78','k80']
 ];
+let maGamme = scales[scaleTracker];
 
 
 //console.log("scales test : "+scales[1][0]);
@@ -141,6 +143,9 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         myUsersAndVotesLength = Object.keys(myUsersAndVotes).length;
         console.log('myUsersAndVotes length '+myUsersAndVotesLength);
         io.emit('myUsers', { myUsersAndVotesLength });
+        console.log("maGamme : "+maGamme);
+        socket.broadcast.emit('newScale',maGamme);
+        socket.emit('newScale',maGamme); 
 
     socket.on('disconnect', function() { 
         console.log(socket.id + ' disconnected');
@@ -212,19 +217,24 @@ io.on('connection', (socket) => {  // start listening from events from the socke
             maGamme = data;
 
             console.log("maVieilleGamme : "+maGamme);
+
             for(i=0;i<scales.length;i++){
                 console.log("i : "+i);
                 if (scales[i][0] == "G#m"){
-                    maGamme = scales[0][0]; // "back to G"
+                    console.log("should go back to G!");
+                    maGamme = scales[0]; // "back to G"
+                    socket.broadcast.emit('newScale',scales[0]);
+                    socket.emit('newScale',scales[0]); 
                     break;
                 }
                 else if (scales[i][0] == maGamme){
-                    maGamme = scales[i+1][0];
+                    maGamme = scales[i+1];
+                    socket.broadcast.emit('newScale',scales[i+1]);
+                    socket.emit('newScale',scales[i+1]); 
                     break;
                 }   
             }
-            socket.broadcast.emit('newScale',maGamme);
-            socket.emit('newScale',maGamme); 
+            
         });
     
     socket.on('interface', (data) => {
