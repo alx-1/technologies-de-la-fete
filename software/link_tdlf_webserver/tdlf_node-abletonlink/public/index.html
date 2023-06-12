@@ -1,17 +1,18 @@
 <html>
 
     <head>
-        <meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
+        <!--<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">-->
+        <meta name="viewport" content="user-scalable=yes,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
         <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black">
         <style> body {padding: 0; margin: 0;} </style>
     </head>
 <body>
-
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/p5.min.js" type="text/javascript"></script>
     <script src ="js/p5.touchgui.js" type="text/javascript"></script>
+    <!--<script src="js/p5.dom.js" type="text/javascript"></script>-->
    
     <script>
 
@@ -26,6 +27,7 @@
         var myBPM = 66.6;
         let sessionID;
         let input;
+        let s;
         let proposeBPM = -1;
         let proposedBPM = -1;
         let buttonPropose;
@@ -59,7 +61,7 @@
         let kXBSize = 28;
         let kYBSize = 80;
         let koff = 36;
-        var myPlayState;
+        let myPlayState = false;
         let showScales = true;
         let showTouches = false;
         let showButtons = true;
@@ -78,6 +80,11 @@
 
         
         let mstr = new Array(79); // Array to send to the node.js server
+
+        let mtdmss = [[],[]];
+        
+        //console.log(items[0][0]);
+
         for (let i = 0; i < mstr.length; i++) {
             mstr[i] = false;
             // console.log(mstr[i]);
@@ -93,13 +100,24 @@
         let touches = ["k60","k61","k62","k63","k64","k65","k66","k67","k68","k69","k70","k71","k72","k73","k74","k75","k76","k77","k78","k79","k80","k81","k82","k83"];
         let instr = ["   bd  ", " snare ", "low tom", " hi tom", " cl hat", " op hat", "  clap ", " claves"]
         let myInstr = 0;
-        let midiChannel = 1;
+        let midiChannel = 10; // Starting value for the korg volca beats
         let scales = [
-                ['G','k67','k69','k71','k72','k74','k76','k78','k79'],
-                ['Gm','k67','k69','k70','k72','k74','k75','k77','k79'],
-                ['G#','k68','k70','k72','k73','k75','k77','k79','k80'],
-                ['G#m','k68','k70','k71','k73','k75','k76','k78','k80']
-            ];
+            ['G','k67','k69','k71','k72','k74','k76','k78','k79'],
+            ['Gm','k67','k69','k70','k72','k74','k75','k77','k79'],
+            ['G#','k68','k70','k72','k73','k75','k77','k79','k80'],
+            ['G#m','k68','k70','k71','k73','k75','k76','k78','k80'],
+            ['A', 'k69', 'k71', 'k73', 'k74', 'k76', 'k78', 'k80', 'k81'],
+            ['Am', 'k69', 'k71', 'k72', 'k74', 'k76', 'k77', 'k79', 'k81'],
+            ['B', 'k71', 'k73', 'k75', 'k76', 'k78', 'k80', 'k82', 'k83'],
+            ['Bm', 'k71', 'k73', 'k74', 'k76', 'k78', 'k79', 'k81', 'k83'],
+            ['C', 'k72', 'k74', 'k76', 'k77', 'k79', 'k81', 'k83', 'k60'],
+            ['Cm', 'k60', 'k62', 'k63', 'k65', 'k67', 'k68', 'k70', 'k72'],
+            ['D', 'k62', 'k64', 'k66', 'k67', 'k69', 'k71', 'k73', 'k74'],
+            ['Dm', 'k62', 'k64', 'k65', 'k67', 'k69', 'k70', 'k72', 'k74'],
+            ['E', 'k64', 'k66', 'k68', 'k69', 'k71', 'k73', 'k75', 'k76'],
+            ['F', 'k65', 'k67', 'k69', 'k70', 'k72', 'k74', 'k76', 'k77'],
+            ['Fm', 'k65', 'k67', 'k68', 'k70', 'k72', 'k73', 'k75', 'k77']
+];
         
 
         //console.log("scales test : "+scales[1][0]);
@@ -108,28 +126,6 @@
             // do some stuff
             return false;
         }
-
-        function noteEncode(note) { // broken, I don't know why charAt(i) crashes 
-
-            let tmpTotal = note.toString(2);
-            console.log ("note : "+note);
-            console.log ("note in binary : "+note.toString(2));
-            for (i = 0;i<3;i++){
-                mtmss[4+i] = tmpTotal.charAt(i);
-                //console.log ("tmpTotal : "+tmpTotal.charAt(i));
-            }
-        }  
-        
-        function midiEncode(myMidiIndex) { // broken, I don't know why charAt(i) crashes 
-             
-            let tmpTotal = midiChannel.toString(2);
-            console.log ("midiChannel : "+midiChannel);
-            console.log ("midiChannel in binary :"+tmpTotal);
-            for (i = 0;i<3;i++){
-                mtmss[i] = tmpTotal.charAt(i);
-                //console.log ("tmpTotal :"+tmpTotal.charAt(i));
-            }
-        } 
 
         function myInputEvent() {
             console.log('you are typing: ', this.value());
@@ -232,25 +228,23 @@
             gui.loadStyle("Rose");
             gui.setStrokeWeight(4);
 
-            input = createInput('');
-            input.position(100,330); // x, sy+12*off)
-            input.size(48);
-            input.input(myInputEvent);
+            s = createSlider("Slider", 80, sy+10+9*off,180, 24, 20, 160);
+            eval(s).onChange = sliderBPM;
 
-            buttonPropose = createButton('propose',180,326,80,25);
+            buttonPropose = createButton('propose',320,sy+10+9*off,80,25);
             eval(buttonPropose).onRelease = proposing;
 
-            buttonYes = createButton('yes',220,356,40,25);
+            buttonYes = createButton('yes',220,20+10*off,40,25);
             eval(buttonYes).onRelease = votingYes;
 
-            buttonNo = createButton('no',280,356,40,25);
+            buttonNo = createButton('no',280,20+10*off,40,25);
             eval(buttonNo).onRelease = votingNo;
 
             buttonTDLF = createButton("technologies de la fête",sx-9,sy+9,220,26); // sx, sy+off);
             eval(buttonTDLF).onRelease = changeMode; // Scale or drum sequencer
 
             // buttonGamme = createButton(maGamme[0],sx+70,sy+2*off+10,50,25);
-            buttonGamme = createButton("",sx+70,sy+2*off+10,50,25);
+            buttonGamme = createButton("",sx+62,sy+2*off+10,50,25);
             eval(buttonGamme).onRelease = myNewScale; 
 
             createNotes();
@@ -261,19 +255,29 @@
             // G# Sol# majeur "G#","68","70","72","73","75","77","79","80" 
             // G#m Sol# mineur "G#m","68","70","71","73","75","76","78","80" 
 
-            minus = createButton("-", sx+55, sy+2*off-16, hbutton, vbutton);
-            plus = createButton("+", sx+150, sy+2*off-16, hbutton, vbutton);
+            minus = createButton("-", sx+62, sy+2*off-16, hbutton, vbutton);
+            eval(minus).onRelease = minusPressed;
 
-            //startStop = createButton("Start/Stop", sx+130, sy+3*off-16, 20, 20);
+            plus = createButton("+", sx+135, sy+2*off-16, hbutton, vbutton);
+            eval(plus).onRelease = plusPressed;
+
+            startStop = createButton("Start/Stop", sx+130, sy+3*off-16, 20, 20);
+            eval(startStop).onRelease = startStopPressed;
 
             minusBar = createButton("-", sx+350, sy+off-16, hbutton,vbutton);
             plusBar = createButton("+", sx+465, sy+off-16, hbutton,vbutton);
 
             minusMidi = createButton("-", sx+350, sy+2*off-16, hbutton, vbutton);
+            eval(minusMidi).onRelease = minusMidiPressed;
+
             plusMidi = createButton("+", sx+465, sy+2*off-16, hbutton, vbutton);
+            eval(plusMidi).onRelease = plusMidiPressed;
 
             minusInstr= createButton("-", sx+350, sy+3*off-16, hbutton, vbutton);
+            eval(minusInstr).onRelease = minusInstrPressed;
+
             plusInstr = createButton("+", sx+465, sy+3*off-16, hbutton, vbutton);
+            eval(plusInstr).onRelease = plusInstrPressed;
 
             background(25);
             noLoop(); // don't update draw
@@ -282,9 +286,10 @@
         function updatePitons() {
 
             for(x = 0; x < 16; x++){
+                //mstr[x+15] = mtmss[x+15+(myInstr*79)]; // populate mstr correctly
             
                 if(mtmss[x+15+(myInstr*79)]==true){
-                    console.log("piton pas de couleur "+pitons[x]);
+                    // console.log("piton pas de couleur "+pitons[x]);
                     eval(pitons[x]).setStyle("fillBg", color(250, 210, 250)); 
                     eval(pitons[x]).setStyle("fillLabel", color(240, 210, 250));
                     }else{
@@ -298,11 +303,70 @@
                 //console.log("  ");
             eval(pitons[step]).setStyle("fillBg", color(120, 255, 255));
             eval(pitons[step]).setStyle("fillLabel", color(253, 250, 253));
-      
+            
             redraw();
         
         }
 
+        function startStopPressed(){
+                myPlayState = !myPlayState;
+                data = !myPlayState;
+                socket.emit('startStop', data);
+                console.log("start/stop : "+data);
+            } 
+     
+
+        function minusPressed() {
+            // Print a message when Button is pressed.
+            print(minus.label + " pressed.");
+            data =  { bpm:-1 };
+                socket.emit('chBPM', data);
+            }
+
+        function plusPressed() {
+            // Print a message when Button is pressed.
+            print(plus.label + " pressed.");
+            data =  { bpm:1 };
+           // var data =  { isPlaying:false };
+           socket.emit('chBPM', data);
+            }
+
+        function plusMidiPressed() {
+                midiChannel =midiChannel +1;
+                if (midiChannel == 17){
+                    midiChannel = 1; // the maximum
+                }
+                print("Midi Channel : "+midiChannel);
+            }
+
+        function minusMidiPressed() {
+                midiChannel = midiChannel -1;
+                if (midiChannel == 0){
+                    midiChannel = 16; // the minimum
+                }
+                print("Midi Channel : "+midiChannel);
+            }
+
+        function minusInstrPressed() {
+                myInstr--;
+                if (myInstr == -1){
+                    myInstr = instr.length-1; 
+                }
+            }
+
+         function plusInstrPressed() {
+                myInstr++;
+
+                if (myInstr == instr.length){
+                    myInstr = 0 ;
+                }
+            }
+
+        function sliderBPM() {
+            //console.log(s.val);
+            proposeBPM = Math.round(s.val);
+            console.log("proposeBPM : "+proposeBPM);
+        }
 
         function votingYes() {
             console.log('votingYes');
@@ -325,11 +389,10 @@
             showTouches = !showTouches;
             showButtons = !showButtons;
             console.log("change mode showTouches :"+showTouches);
-            
         }
 
        function myNewScale() {
-            console.log("maGamme : "+maGamme[0]);
+            console.log("maGamme était : "+maGamme[0]);
             //data = maGamme[0]
             //data = { data };
             socket.emit('newScale', maGamme[0]);
@@ -340,181 +403,42 @@
             let numberPressed = int(this.label); // Otherwise it contatenates a number as text
             console.log("numberPressed : " +numberPressed);
             mtmss[numberPressed+15+(myInstr*79)] = !mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
-            mstr[numberPressed+15] = mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
+            //mstr[numberPressed+15] = mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
             
+            ///// midi channel /////
+            mstr[1] = midiChannel;
+
+            ///// instrument that is selected /////
             console.log("myInstr : "+myInstr);
-
-            // get the myInstr value, use as multiplicator to write to the correct part of the database
-            // send that mstr (79) values part of the database to the node.js server to relay to the tdlf server.
+            mstr[2] = myInstr;
             
-            //////////// fix noteEncode for an elegant solution ////
-            if (myInstr == 7){
-                mstr[4] = true;  // 1
-                mstr[5] = true;  // 2
-                mstr[6] = true;  // 4
-                mstr[7] = false; // 8
-            }
-            else if (myInstr == 6){
-                mstr[4] = false;  
-                mstr[5] = true;  
-                mstr[6] = true;  
-                mstr[7] = false;  
-            }
-            else if (myInstr == 5){
-                mstr[4] = true;  
-                mstr[5] = false;  
-                mstr[6] = true;  
-                mstr[7] = false;  
-            }
-            else if (myInstr == 4){
-                mstr[4] = false;  
-                mstr[5] = false;  
-                mstr[6] = true; 
-                mstr[7] = false;  
-            }
-            else if (myInstr == 3){
-                mstr[4] = true;  
-                mstr[5] = true;  
-                mstr[6] = false;
-                mstr[7] = false;  
-            }
-            else if (myInstr == 2){
-                mstr[4] = false;  
-                mstr[5] = true;  
-                mstr[6] = false;  
-                mstr[7] = false;  
-            }
-            else if (myInstr == 1){
-                mstr[4] = true;  
-                mstr[5] = false;  
-                mstr[6] = false;  
-                mstr[7] = false;  
-            }
-            else if (myInstr == 0){
-                mstr[4] = false;  
-                mstr[5] = false;  
-                mstr[6] = false;  
-                mstr[7] = false; 
-            } 
-
-
-            ////// midi channel encoding /// fix midiEncode() for an elegant solution...
-
-            if (midiChannel-1 == 15){  
-                mstr[0] = true;  // 1
-                mstr[1] = true;  // 2
-                mstr[2] = true;  // 4
-                mstr[3] = true;  // 8
-            }
-
-            else if (midiChannel-1 == 14){  
-                mstr[0] = false; // 1 
-                mstr[1] = true; // 2  
-                mstr[2] = true; // 4  
-                mstr[3] = true; // 8   
-            }
-
-            else if (midiChannel-1 == 13){  
-                mstr[0] = true;  // 1
-                mstr[1] = false; // 2
-                mstr[2] = true;  // 4
-                mstr[3] = true;  // 8
-            }
-
-            else if (midiChannel-1 == 12){  
-                mstr[0] = false; // 1 
-                mstr[1] = false;  // 2
-                mstr[2] = true;  // 4
-                mstr[3] = true;  // 8
-            }
-
-            else if (midiChannel-1 == 11){  
-                mstr[0] = true;  // 1 
-                mstr[1] = true;  // 2
-                mstr[2] = false; // 4 
-                mstr[3] = true;  // 8
-            }
-
-            else if (midiChannel-1 == 10){  
-                mstr[0] = false;  // 1  
-                mstr[1] = true;   // 2
-                mstr[2] = false;  // 4
-                mstr[3] = true;   // 8
-            }
+            //for(i=0;i<79;i++){ // just get the 16 steps of interest
+            //   mstr[i] = mtmss[i+myInstr*79];
+            //} // this doesn't work, no llips allowed...
+            //data = mtmss[myInstr*79] // only send the necessary 79 steps according to the instrument
             
-            else if (midiChannel-1 == 9){  
-                mstr[0] = true;  
-                mstr[1] = false;  
-                mstr[2] = false;  
-                mstr[3] = true;  
-            }
-            else if (midiChannel-1 == 8){  
-                mstr[0] = false;  
-                mstr[1] = false;  
-                mstr[2] = false;  
-                mstr[3] = true;  
-            }
-            else if (midiChannel-1 == 7){ 
-                mstr[0] = true;  
-                mstr[1] = true;  
-                mstr[2] = true;  
-                mstr[3] = false;  
-            }
-            else if (midiChannel-1 == 6){
-                mstr[0] = false;  
-                mstr[1] = true;  
-                mstr[2] = true;  
-                mstr[3] = false;  
-            }
-            else if (midiChannel-1 == 5){
-                mstr[0] = true;  
-                mstr[1] = false;  
-                mstr[2] = true;  
-                mstr[3] = false;  
-            }
-            else if (midiChannel-1 == 4){
-                mstr[0] = false;  
-                mstr[1] = false;  
-                mstr[2] = true;  
-                mstr[3] = false;  
-            }
-            else if (midiChannel-1 == 3){
-                mstr[0] = true;  
-                mstr[1] = true;  
-                mstr[2] = false;  
-                mstr[3] = false;  
-            }
-            else if (midiChannel-1 == 2){
-                mstr[0] = false;  
-                mstr[1] = true;  
-                mstr[2] = false;  
-                mstr[3] = false;  
-            }
-            
-            else if (midiChannel-1 == 1){
-                mstr[0] = true;  
-                mstr[1] = false;  
-                mstr[2] = false;  
-                mstr[3] = false;  
-            }
-            
-            else if (midiChannel-1 == 0){
-                mstr[0] = false;  
-                mstr[1] = false;  
-                mstr[2] = false;  
-                mstr[3] = false; 
-            }
-
-
-            //////////// fix noteEncode for an elegant solution, problem seems to be using for loops here ////
-            
-            /* for(i=15;i<32;i++){ // just get the 16 steps of interest
-                mstr[i] = mtmss[i+myInstr*79];
-            } */ // this doesn't work, no llips allowed...
+      
+            // The horror...
+            mstr[0+15] = mtmss[0+15+(myInstr*79)]; // populate mstr correctly
+            mstr[1+15] = mtmss[1+15+(myInstr*79)]; // populate mstr correctly
+            mstr[2+15] = mtmss[2+15+(myInstr*79)]; // populate mstr correctly
+            mstr[3+15] = mtmss[3+15+(myInstr*79)]; // populate mstr correctly
+            mstr[4+15] = mtmss[4+15+(myInstr*79)]; // populate mstr correctly
+            mstr[5+15] = mtmss[5+15+(myInstr*79)]; // populate mstr correctly
+            mstr[6+15] = mtmss[6+15+(myInstr*79)]; // populate mstr correctly
+            mstr[7+15] = mtmss[7+15+(myInstr*79)]; // populate mstr correctly
+            mstr[8+15] = mtmss[8+15+(myInstr*79)]; // populate mstr correctly
+            mstr[9+15] = mtmss[9+15+(myInstr*79)]; // populate mstr correctly
+            mstr[10+15] = mtmss[10+15+(myInstr*79)]; // populate mstr correctly
+            mstr[11+15] = mtmss[11+15+(myInstr*79)]; // populate mstr correctly
+            mstr[12+15] = mtmss[12+15+(myInstr*79)]; // populate mstr correctly
+            mstr[13+15] = mtmss[13+15+(myInstr*79)]; // populate mstr correctly
+            mstr[14+15] = mtmss[14+15+(myInstr*79)]; // populate mstr correctly
+            mstr[15+15] = mtmss[15+15+(myInstr*79)]; // populate mstr correctly
 
             data = mstr;
 
-            // console.log("mstr : "+mstr);
+            console.log("mstr envoyé : "+mstr);
             socket.emit('interface', data);
         }
 
@@ -551,12 +475,10 @@
 
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-            console.log("mon step : "+data);
+            // console.log("mon step : "+data);
             step = data;
             updatePitons();
-        
-        });
-
+            });
         
         socket.on('connect', function() {
             sessionID = socket.id; //
@@ -571,7 +493,7 @@
         socket.on('counting', function(data) {
             console.log('counting : '+data.counting);
             counting = data.counting;
-        });
+            });
 
         socket.on('beat', function(data) {
             //console.log("data : "+data);
@@ -583,7 +505,6 @@
             myPhase = data.phase;
             myPhase = myPhase.toFixed(1);
             //console.log("phase : "+myPhase)
-            
             redraw();
         });
     
@@ -593,9 +514,9 @@
             background(70,50,70);
             //image(img, 0, 0);
             fill("#111111");
-            rect(5,5,545,245,20);
-            rect(555,5,250,245,20);
-            rect(5,255,800,150,20);
+            rect(5,5,539,245,20); // top left
+            rect(549,5,250,245,20); // top right
+            rect(5,255,794,142,20); // bottom
             drawGui();
             fill("#DDBB44");
             textSize(18);
@@ -619,9 +540,7 @@
                     eric_Y = mouseY-5;
                     console.log("eric_X : "+eric_X);
                     console.log("eric_Y : "+eric_Y);
-
                     ccData = [42,eric_X,eric_Y];
-
                     data = ccData;
                     socket.emit('CCData', data);
                 }
@@ -643,21 +562,23 @@
             }
             
             //text('technologies de la fête', sx, sy+off);
-            text('BPM :        '+myBPM, sx, sy+2*off);
-            text('scale : ', sx, sy+3*off);
+            text('BPM :          '+Math.round(myBPM), sx, sy+2*off);
+            if (proposeBPM != -1){
+                text(proposeBPM, sx+250, sy+10*off);
+                }
+            text('scale : ',sx, sy+3*off);
             //text('clients :               '+numUsers, sx, sy+3*off);
-            text('client id : '+sessionID,sx, sy+10*off);
-            text('phase :    '+myPhase, sx, sy+11*off);
-            text('BPM :' , sx, sy+12*off);
+            text('client id : '+sessionID,sx, sy+13*off);
+            text('phase :    '+myPhase, sx, sy+12*off);
+            text('BPM :' , sx, sy+10*off);
             if(proposedBPM > -1){
                 //console.log('show proposedBPM');
-                text('proposed BPM : '+proposedBPM+' ?', sx, sy+13*off);
+                text('proposed BPM : '+proposedBPM+' ?', sx, sy+11*off);
                 buttonYes.visible = true;
                 buttonNo.visible = true;
                 //hide();
             } else {
-                text('no proposed BPM', sx, sy+13*off);
-                //buttonYes.hide();
+                text('no proposed BPM', sx, sy+11*off);
                 buttonYes.visible = false;
                 buttonNo.visible = false;
             }
@@ -689,7 +610,7 @@
                 eval(pitons[x]).visible = true;
                 }
             }
-               
+
             // text('beat :        '+myBeat, sx, sy+2*off);
             // text('Start/Stop', sx, sy+3*off);
             // text('phase :     '+round(myPhase), sx, sy+4*off);
@@ -698,7 +619,7 @@
             text('midi :                       '+midiChannel, sx+250, sy+2*off);
             text('instrument :          '+instr[myInstr], sx+250, sy+3*off);
             
-
+            //input.input(myInputEvent);
             //text('step :        '+step, sx+300, sy+4*off);
 
             /* if (a.isPressed){
@@ -712,25 +633,6 @@
                 socket.emit('mtmss', data); 
             } */
 
-            /*if (button.isPressed){
-                console.log("proposing : "+proposeBPM);
-                data =  { proposeBPM};
-                socket.emit('propose', proposeBPM);
-            }*/
-  
-            if (minus.isPressed) {
-            // Print a message when Button is pressed.
-            print(minus.label + " pressed.");
-            data =  { bpm:-1 };
-                socket.emit('chBPM', data);
-            }
-            if (plus.isPressed) {
-            // Print a message when Button is pressed.
-            print(plus.label + " pressed.");
-            data =  { bpm:1 };
-           // var data =  { isPlaying:false };
-           socket.emit('chBPM', data);
-            }
 
             if (plusBar.isPressed) {
                 bar = bar+1;
@@ -744,87 +646,6 @@
                     bar = 1; // the minimum
                 }
             }
-
-            if (plusMidi.isPressed) {
-                midiChannel =midiChannel +1;
-                if (midiChannel == 17){
-                    midiChannel = 1; // the maximum
-                }
-                print("Midi Channel : "+midiChannel);
-                //midiEncode(myMidiIndex);
-    
-            }
-            if (minusMidi.isPressed) {
-                midiChannel = midiChannel -1;
-                if (midiChannel == 0){
-                    midiChannel = 16; // the minimum
-                }
-                print("Midi Channel : "+midiChannel);
-                //midiEncode(myMidiIndex);
-    
-            }
-
-            if (plusInstr.isPressed) {
-                myInstr++;
-
-                if (myInstr == instr.length){
-                    myInstr = 0 ;
-                }
-
-              // load the right data into mstr !
-              // no for loop as that results in a weird error
-              mstr[15] = mtmss[myInstr*79+15];
-              mstr[16] = mtmss[myInstr*79+16];
-              mstr[17] = mtmss[myInstr*79+17];
-              mstr[18] = mtmss[myInstr*79+18];
-              mstr[19] = mtmss[myInstr*79+19];
-              mstr[20] = mtmss[myInstr*79+20];
-              mstr[21] = mtmss[myInstr*79+21];
-              mstr[22] = mtmss[myInstr*79+22];
-              mstr[23] = mtmss[myInstr*79+23];
-              mstr[24] = mtmss[myInstr*79+24];
-              mstr[25] = mtmss[myInstr*79+25];
-              mstr[26] = mtmss[myInstr*79+26];
-              mstr[27] = mtmss[myInstr*79+27];
-              mstr[28] = mtmss[myInstr*79+28];
-              mstr[29] = mtmss[myInstr*79+29];
-              mstr[30] = mtmss[myInstr*79+30];
-
-                console.log("myInstr : "+myInstr);
-                //noteEncode(myInstr);
-            }
-
-            if (minusInstr.isPressed) {
-                myInstr--;
-                if (myInstr == -1){
-                    myInstr = instr.length-1; 
-                }
-
-              mstr[15] = mtmss[myInstr*79+15];
-              mstr[16] = mtmss[myInstr*79+16];
-              mstr[17] = mtmss[myInstr*79+17];
-              mstr[18] = mtmss[myInstr*79+18];
-              mstr[19] = mtmss[myInstr*79+19];
-              mstr[20] = mtmss[myInstr*79+20];
-              mstr[21] = mtmss[myInstr*79+21];
-              mstr[22] = mtmss[myInstr*79+22];
-              mstr[23] = mtmss[myInstr*79+23];
-              mstr[24] = mtmss[myInstr*79+24];
-              mstr[25] = mtmss[myInstr*79+25];
-              mstr[26] = mtmss[myInstr*79+26];
-              mstr[27] = mtmss[myInstr*79+27];
-              mstr[28] = mtmss[myInstr*79+28];
-              mstr[29] = mtmss[myInstr*79+29];
-              mstr[30] = mtmss[myInstr*79+30];
-                console.log("myInstr : "+myInstr);
-                //noteEncode(myInstr);
-            }
-            
-           /*  if (startStop.isPressed) {
-                data =  true;
-                socket.emit('startStop', data);
-                console.log("start/stop")
-            } */
           
         } // fin de draw
 

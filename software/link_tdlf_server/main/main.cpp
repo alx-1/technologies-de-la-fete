@@ -216,9 +216,9 @@ typedef struct {
 
 steps_t steps[64]; // Declare an array of type struct steps
 
-bool mstr[79] = {}; // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
+bool mstr[79] = {}; // mstr[0] (type of source) // mstr[1] (channel) // mstr[2] (note) // mstr[3] (note duration) // mstr[4] (bar) // mstr[5] (mute) // mstr[6] (erasePart) // mstr[7] (eraseAll) // mstr[15-79](steps)
 bool oldmstr[79] = {1}; 
-bool mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
+int mtmss[1264] = {0}; // 79 x 16 géant et flat (save this for retrieval, add button to select and load them)
 
 int channel; // 4 bits midi channel (0-15) -> // drums + más
 int note; // 4 bits note info // 8 notes correspond to 8 colors // (0-7) -> (36,38,43,50,42,46,39,75),67,49 // más de 8 !
@@ -608,7 +608,8 @@ extern "C" {
   static void udp_server_task(void *pvParameters)
   {
 
-    char mstr[16]; // char mstr[64]
+    //char mstr[16]; // 
+    char mstr[79];
     char addr_str[128];
     int addr_family = AF_INET6;
     int ip_protocol = IPPROTO_IPV6;
@@ -653,10 +654,56 @@ extern "C" {
           //mstr should be 79 values long;
           int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
            
-        /*   for(int i = 0; i<sizeof(mstr); i++){
-            test = mstr[i];
-            ESP_LOGE(SOCKET_TAG, "data %i", test); 
-          }   */
+          // for(int i = 0; i<sizeof(mstr); i++){
+          //  test = mstr[i];
+          //  ESP_LOGE(SOCKET_TAG, "data %i", test); 
+          //}  
+
+          test = mstr[0];
+          ESP_LOGE(SOCKET_TAG, "testing mstr[0] %i", test); 
+
+          if (test==0||test==1){
+            ESP_LOGE(SOCKET_TAG, "got an an old array"); 
+            ///// midi channel ///// 1-16 midi channels
+            channel = mstr[1];
+            ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
+
+            ///// note ///// use this for solenoids!
+            note = mstr[2]; // Which instrument is playing ()
+            ESP_LOGI(SOCKET_TAG, "note : %i", note); 
+
+            ///// noteDuration //////
+            // duration = mstr[3];
+            // ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
+
+            ///// bar //////
+            // bar = mstr[4];
+            // ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
+
+            ///// mute ///// NIY
+            // mute = mstr[5];
+            // ESP_LOGI(SOCKET_TAG, "mute : %f", mute); 
+            // read in the bit value for mute and store 
+            // muteRecords[note] = mstr[14]; // redo this the position has changed in the mstr array
+            // ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
+
+            ///// erase part ///// NIY
+            // erasePart = mstr[6];
+            // ESP_LOGI(SOCKET_TAG, "erasePart : %f", erasePart); 
+
+            ///// erase all ///// NIY
+            // eraseAll = mstr[7];
+            // ESP_LOGI(SOCKET_TAG, "eraseAll : %f", eraseAll);
+
+            
+            for (int i = 0; i <=79; i++){
+              mtmss[i+note*79] = mstr[i];
+            //  ESP_LOGI(SOCKET_TAG, "hello mtmss : %i", mtmss[i]); 
+            } 
+
+            // depending on note number, enter this value in mtmss
+
+          } else {
 
           /////////////////// FROM TINYOSC ///////////////////////
           //tosc_printOscBuffer(rx_buffer, len);
@@ -710,23 +757,11 @@ extern "C" {
   
                 printf("\n");
             /////////////////// END TINYOSC ///////////////////////
-
-            ///// midi channel ///// 1-16 midi channels
-            // ESP_LOGI(SOCKET_TAG, "channel : %i", channel); 
-  
-            ///// note ///// use this for solenoids!
-            // ESP_LOGI(SOCKET_TAG, "note : %i", note); 
-
-            ///// noteDuration //////
-            // ESP_LOGI(SOCKET_TAG, "noteDuration : %f", noteDuration); 
+          }
 
             ///// Step ///// 0-63 steps
             //ESP_LOGI(SOCKET_TAG, "note : %i", note); // Change this
             // Where is the note going in the sequence
-          
-            // read in the bit value for mute and store 
-            muteRecords[note] = mstr[14];
-            // ESP_LOGI(SOCKET_TAG, "mute ? : %i", mstr[10]);  
           
             // Error occurred during receiving ?
             if (len < 0) {
@@ -1642,7 +1677,7 @@ void tickTask(void* userParam)
 
                 //// Send step via OSC here ////
                 char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
-                uint8_t stepper = step; // The step value to send tp the OSC client 
+                uint8_t stepper = step; // The step value to send to the OSC client 
                 ESP_LOGI(LINK_TAG, "step : %i", step);
 
                 steps[0].on = true; // Test writing to the array of structs
@@ -1720,15 +1755,15 @@ void tickTask(void* userParam)
               //ESP_LOGI(LINK_TAG, "nouveau 'dub'Step : %i", dubStep);
 
               currStep = (i*79)+dubStep+15; // 15 is where the step info starts
-              // ESP_LOGI(LINK_TAG, "currStep : %i", currStep);
+              ESP_LOGI(LINK_TAG, "currStep : %i", currStep);
 
-               /* for(int j = 0; j<79;j++){
-                    ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
-               }  */ 
+               //for(int j = 0; j<79;j++){
+               //     ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
+               //}  
 
               if (mtmss[currStep] == 1){ // send [midi] note out // mute to be implemented // && !muteRecords[i]){ 
-              // ESP_LOGI(LINK_TAG, "MIDI_NOTE_ON_CH, %i", channel);
-              // ESP_LOGI(LINK_TAG, "Note on, %i", i);
+                  ESP_LOGI(LINK_TAG, "Check MIDI_NOTE_ON_CH, %i", channel);
+                  ESP_LOGI(LINK_TAG, "Check Note on, %i", i);
 
                 if (channel == 10){ // are we playing drumz // solenoids ?
                   char zedata1[] = { MIDI_NOTE_ON_CH[channel] }; // défini comme channel 10(drums), ou channel 1(synth base) pour l'instant mais dois pouvoir changer

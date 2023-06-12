@@ -1,5 +1,37 @@
 const path = require('path');
 
+//var mdns = require('mdns'); // Not implement yet
+//var browser = mdns.createBrowser(mdns.tcp('http')); // Not implemented yet
+
+//var osc = require("osc");
+
+/* var udpPort = new osc.UDPPort({
+    // This is the port we're listening on.
+    localAddress: "127.0.0.1",
+    localPort: 57121,
+
+    // This is where sclang is listening for OSC messages.
+    remoteAddress: "192.168.50.152",
+    remotePort: 3333,
+    metadata: true
+});
+
+udpPort.on("error", function (err) {
+    console.log(err);
+});
+
+// Open the socket.
+udpPort.open();
+
+////
+
+udpPort.on("ready", function () {
+    console.log("on se rend ici");
+});
+
+*/
+
+
 const express = require('express');
 const app = express();
 app.use(express.static('public'));
@@ -23,14 +55,26 @@ let proposedBPM;
 let countDown;
 let counting = 16;
 
-let scaleTracker = Math.floor(Math.random()*4);
+let scaleTracker = Math.floor(Math.random()*8);
 //console.log('scaleTracker : ' +scaleTracker);
 let scales = [
     ['G','k67','k69','k71','k72','k74','k76','k78','k79'],
     ['Gm','k67','k69','k70','k72','k74','k75','k77','k79'],
     ['G#','k68','k70','k72','k73','k75','k77','k79','k80'],
-    ['G#m','k68','k70','k71','k73','k75','k76','k78','k80']
+    ['G#m','k68','k70','k71','k73','k75','k76','k78','k80'],
+    ['A', 'k69', 'k71', 'k73', 'k74', 'k76', 'k78', 'k80', 'k81'],
+    ['Am', 'k69', 'k71', 'k72', 'k74', 'k76', 'k77', 'k79', 'k81'],
+    ['B', 'k71', 'k73', 'k75', 'k76', 'k78', 'k80', 'k82', 'k83'],
+    ['Bm', 'k71', 'k73', 'k74', 'k76', 'k78', 'k79', 'k81', 'k83'],
+    ['C', 'k72', 'k74', 'k76', 'k77', 'k79', 'k81', 'k83', 'k60'],
+    ['Cm', 'k60', 'k62', 'k63', 'k65', 'k67', 'k68', 'k70', 'k72'],
+    ['D', 'k62', 'k64', 'k66', 'k67', 'k69', 'k71', 'k73', 'k74'],
+    ['Dm', 'k62', 'k64', 'k65', 'k67', 'k69', 'k70', 'k72', 'k74'],
+    ['E', 'k64', 'k66', 'k68', 'k69', 'k71', 'k73', 'k75', 'k76'],
+    ['F', 'k65', 'k67', 'k69', 'k70', 'k72', 'k74', 'k76', 'k77'],
+    ['Fm', 'k65', 'k67', 'k68', 'k70', 'k72', 'k73', 'k75', 'k77']
 ];
+
 let maGamme = scales[scaleTracker];
 
 
@@ -96,7 +140,7 @@ link.on('playState', (playState) => console.log("playState", playState));
         //console.log("beat? : "+beat);
         if(0 < beat - lastBeat) {
             io.emit('beat', { beat, phase, bpm, playState }); // playState returns 'undefined' regardless
-            console.log("beat? : "+beat);  
+            //console.log("beat? : "+beat);  
             lastBeat = beat;
             if(countDown == true){
                 counting = counting-1;
@@ -116,7 +160,7 @@ link.on('playState', (playState) => console.log("playState", playState));
          //numUsers = link.numPeers;
          //io.emit('numUsers',{ numUsers });
          test = link.isPlayStateSync;
-         io.emit('test',{test});
+         io.emit('test playState',{test});
 
          prev_beat_time = curr_beat_time;
     });
@@ -163,7 +207,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
       
         // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
         var s = dgram.createSocket('udp4');
-        console.log("data : "+data);
+        console.log("data testing : "+data);
         for (let i = 0; i < data.length; i++) {
             CCDatas[i] = data[i];
         }
@@ -220,7 +264,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
 
             for(i=0;i<scales.length;i++){
                 console.log("i : "+i);
-                if (scales[i][0] == "G#m"){
+                if (scales[i][0] == "Fm"){
                     console.log("should go back to G!");
                     maGamme = scales[0]; // "back to G"
                     socket.broadcast.emit('newScale',scales[0]);
@@ -238,17 +282,33 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         });
     
     socket.on('interface', (data) => {
-      
+        /* var msg = {
+            address: "/oscjs",
+            args: [
+                {
+                    type: "f",
+                    value: Math.random()
+                },
+                {
+                    type: "f",
+                    value: Math.random()
+                }
+            ]
+        };
+     */
+       /// console.log("Sending message", msg.address, msg.args, "to", udpPort.options.remoteAddress + ":" + udpPort.options.remotePort);
+       /// udpPort.send(msg);
         
         // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
         var s = dgram.createSocket('udp4');
-        // console.log("data : "+data);
-        for (let i = 0; i < data.length; i++) {
-            mstr[i] = data[i];
+        console.log("data : "+data);
+            for (let i = 0; i < data.length; i++) {
+                mstr[i] = data[i];
         }
-        s.send(Buffer.from(mstr), 3333, '192.168.0.100'); // 
-        //s.send(Buffer.from(mstr), 10000, '192.168.0.101'); // 
-        console.log("mstr envoyé : "+mstr);
+        s.send(Buffer.from(mstr), 3333, '192.168.50.152'); // 
+        //s.send(Buffer.from(mstr), 3333, '192.168.50.152'); // 
+
+        console.log("mstr envoyé : "+mstr); 
 
         });
 
@@ -266,9 +326,15 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         });
 
     socket.on('startStop', (data) => {
-        console.log('link.playstate : '+link.playstate);
-            link.playState = true;
-            console.log(data);
+            console.log('link.isplaying : '+link.isPlaying);
+            
+            if (data == true){
+                console.log('startStop is : ' +data);
+                link.start; // try to do stg about playing or stopping!
+            } else {
+                console.log('startStop is : ' +data);
+                link.stop;
+            }
         }); 
 
     
