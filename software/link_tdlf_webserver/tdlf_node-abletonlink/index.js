@@ -1,5 +1,17 @@
 const path = require('path');
 
+/* node-abletonlink
+├── abletonlink@0.1.1
+├── dgram@1.0.1
+├── express@4.17.1
+├── mdns@2.7.2
+├── node-osc@6.1.11
+├── osc@2.4.4
+├── p5@1.3.1
+├── socket.io@1.7.4
+├── webmidi@2.5.1
+└── ws@8.13.0
+ */
 //var mdns = require('mdns'); // Not implement yet
 //var browser = mdns.createBrowser(mdns.tcp('http')); // Not implemented yet
 
@@ -38,8 +50,7 @@ app.use(express.static('public'));
 
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
-//const p5 = require('p5')(server);
-const dgram = require('dgram');
+const dgram = require('dgram'); // To connect to the tdlf module
 
 //require { Bundle, Client } from 'node-osc';
 Bundle = require('node-osc').Bundle;
@@ -305,11 +316,8 @@ io.on('connection', (socket) => {  // start listening from events from the socke
             for (let i = 0; i < data.length; i++) {
                 mstr[i] = data[i];
         }
-        s.send(Buffer.from(mstr), 3333, '192.168.50.152'); // 
-        //s.send(Buffer.from(mstr), 3333, '192.168.50.152'); // 
-
+        s.send(Buffer.from(mstr), 3333, '192.168.50.152');
         console.log("mstr envoyé : "+mstr); 
-
         });
 
     socket.on('chBPM', (data) => {
