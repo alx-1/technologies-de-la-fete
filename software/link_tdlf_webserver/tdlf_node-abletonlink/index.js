@@ -126,6 +126,8 @@ link.on('playState', (playState) => console.log("playState", playState));
     link.isLinkEnable = true;
     link.isPlayStateSync = true;
     link.enablePlayStateSync;
+    link.enableStartStopSync = true;
+    //link.play = true;
     
     var test = link.isPlayStateSync;
     console.log('link.isPlayStateSync : '+test);
@@ -141,9 +143,13 @@ link.on('playState', (playState) => console.log("playState", playState));
         //console.log("prev_step : "+prev_step);
         if(prev_step != curr_step){
             curr_step = prev_step;
-            io.emit('step', { curr_step });
-            io.send(curr_step);
+            // console.log('link.isplaying : '+link.isPlaying);
+            if (link.isPlaying){
+                io.emit('step', { curr_step });
+                io.send(curr_step);
+            }
             
+            // console.log("            playState : "+playState);
            //console.log("            curr_step : "+curr_step);
         }
 
@@ -218,6 +224,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
       
         // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
         var s = dgram.createSocket('udp4');
+        
         console.log("data testing : "+data);
         for (let i = 0; i < data.length; i++) {
             CCDatas[i] = data[i];
@@ -321,7 +328,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         });
 
     socket.on('chBPM', (data) => {
-        //var s = dgram.createSocket('udp4');
+        var s = dgram.createSocket('udp4');
         //s.send(Buffer.from('bpm 90'), 3333, '192.168.1.239');
         console.log(data.bpm);
         console.log('current bpm : '+link.bpm);
@@ -334,18 +341,14 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         });
 
     socket.on('startStop', (data) => {
-            console.log('link.isplaying : '+link.isPlaying);
-            
-            if (data == true){
-                console.log('startStop is : ' +data);
-                link.start; // try to do stg about playing or stopping!
-            } else {
-                console.log('startStop is : ' +data);
-                link.stop;
+        if (data == true){
+            console.log('startStop is : ' +data);
+            link.play(); 
+        } else {
+            console.log('startStop is : ' +data);
+            link.stop();
             }
         }); 
-
-    
     });
 
     'use strict';

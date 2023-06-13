@@ -261,8 +261,9 @@
             plus = createButton("+", sx+135, sy+2*off-16, hbutton, vbutton);
             eval(plus).onRelease = plusPressed;
 
-            startStop = createButton("Start/Stop", sx+130, sy+3*off-16, 20, 20);
+            startStop = createButton("Start/Stop", 320, sy+10+11*off, 100, 25);
             eval(startStop).onRelease = startStopPressed;
+            
 
             minusBar = createButton("-", sx+350, sy+off-16, hbutton,vbutton);
             plusBar = createButton("+", sx+465, sy+off-16, hbutton,vbutton);
@@ -317,18 +318,15 @@
      
 
         function minusPressed() {
-            // Print a message when Button is pressed.
-            print(minus.label + " pressed.");
+            print(minus.label + " pressed."); // Print a message when Button is pressed.
             data =  { bpm:-1 };
-                socket.emit('chBPM', data);
+            socket.emit('chBPM', data);
             }
 
         function plusPressed() {
-            // Print a message when Button is pressed.
-            print(plus.label + " pressed.");
+            print(plus.label + " pressed."); // Print a message when Button is pressed.
             data =  { bpm:1 };
-           // var data =  { isPlaying:false };
-           socket.emit('chBPM', data);
+            socket.emit('chBPM', data);
             }
 
         function plusMidiPressed() {
@@ -475,7 +473,7 @@
 
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-            // console.log("mon step : "+data);
+            console.log("mon step : "+data);
             step = data;
             updatePitons();
             });
