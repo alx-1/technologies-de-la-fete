@@ -325,6 +325,7 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         }
         s.send(Buffer.from(mstr), 3333, '192.168.50.152');
         console.log("mstr envoyé : "+mstr); 
+        socket.broadcast.emit('echoMstr',mstr); // send the received sequence so all users can update their sequence.
         });
 
     socket.on('chBPM', (data) => {

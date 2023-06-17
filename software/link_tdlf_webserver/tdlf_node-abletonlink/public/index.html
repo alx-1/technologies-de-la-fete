@@ -100,6 +100,8 @@
         let touches = ["k60","k61","k62","k63","k64","k65","k66","k67","k68","k69","k70","k71","k72","k73","k74","k75","k76","k77","k78","k79","k80","k81","k82","k83"];
         let instr = ["   bd  ", " snare ", "low tom", " hi tom", " cl hat", " op hat", "  clap ", " claves"]
         let myInstr = 0;
+        let tmpInstr;
+        let echoInstr;
         let midiChannel = 10; // Starting value for the korg volca beats
         let scales = [
             ['G','k67','k69','k71','k72','k74','k76','k78','k79'],
@@ -414,31 +416,37 @@
             //   mstr[i] = mtmss[i+myInstr*79];
             //} // this doesn't work, no llips allowed...
             //data = mtmss[myInstr*79] // only send the necessary 79 steps according to the instrument
-            
-      
-            // The horror...
-            mstr[0+15] = mtmss[0+15+(myInstr*79)]; // populate mstr correctly
-            mstr[1+15] = mtmss[1+15+(myInstr*79)]; // populate mstr correctly
-            mstr[2+15] = mtmss[2+15+(myInstr*79)]; // populate mstr correctly
-            mstr[3+15] = mtmss[3+15+(myInstr*79)]; // populate mstr correctly
-            mstr[4+15] = mtmss[4+15+(myInstr*79)]; // populate mstr correctly
-            mstr[5+15] = mtmss[5+15+(myInstr*79)]; // populate mstr correctly
-            mstr[6+15] = mtmss[6+15+(myInstr*79)]; // populate mstr correctly
-            mstr[7+15] = mtmss[7+15+(myInstr*79)]; // populate mstr correctly
-            mstr[8+15] = mtmss[8+15+(myInstr*79)]; // populate mstr correctly
-            mstr[9+15] = mtmss[9+15+(myInstr*79)]; // populate mstr correctly
-            mstr[10+15] = mtmss[10+15+(myInstr*79)]; // populate mstr correctly
-            mstr[11+15] = mtmss[11+15+(myInstr*79)]; // populate mstr correctly
-            mstr[12+15] = mtmss[12+15+(myInstr*79)]; // populate mstr correctly
-            mstr[13+15] = mtmss[13+15+(myInstr*79)]; // populate mstr correctly
-            mstr[14+15] = mtmss[14+15+(myInstr*79)]; // populate mstr correctly
-            mstr[15+15] = mtmss[15+15+(myInstr*79)]; // populate mstr correctly
-
+            updateMtmss(myInstr);
             data = mstr;
-
-            console.log("mstr envoyé : "+mstr);
+            //console.log("mstr envoyé : "+mstr);
             socket.emit('interface', data);
         }
+
+        socket.on('echoMstr', function(data) {
+            console.log("echoMstr : "+data);
+            let echoMstr = data;
+            echoInstr = echoMstr[2];          // What is the instrument 
+            console.log("myEchoInstr : "+echoInstr);
+            //  console.log('echoMstr : '+echoMstr);
+            mtmss[0+15+(echoInstr*79)] = echoMstr[0+15]; // write to mtmss, for loop not permitted here
+            mtmss[1+15+(echoInstr*79)] = echoMstr[1+15];
+            mtmss[2+15+(echoInstr*79)] = echoMstr[2+15];
+            mtmss[3+15+(echoInstr*79)] = echoMstr[3+15];
+            mtmss[4+15+(echoInstr*79)] = echoMstr[4+15];
+            mtmss[5+15+(echoInstr*79)] = echoMstr[5+15];
+            mtmss[6+15+(echoInstr*79)] = echoMstr[6+15];
+            mtmss[7+15+(echoInstr*79)] = echoMstr[7+15];
+            mtmss[8+15+(echoInstr*79)] = echoMstr[8+15];
+            mtmss[9+15+(echoInstr*79)] = echoMstr[9+15];
+            mtmss[10+15+(echoInstr*79)] = echoMstr[10+15];
+            mtmss[11+15+(echoInstr*79)] = echoMstr[11+15];
+            mtmss[12+15+(echoInstr*79)] = echoMstr[12+15];
+            mtmss[13+15+(echoInstr*79)] = echoMstr[13+15];
+            mtmss[14+15+(echoInstr*79)] = echoMstr[14+15];
+            mtmss[15+15+(echoInstr*79)] = echoMstr[15+15];
+            // console.log('mtmss : '+mtmss);
+            updatePitons();
+        });
 
         socket.on('myUsers', function(data) {
             console.log(data);
@@ -473,7 +481,7 @@
 
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-            console.log("mon step : "+data);
+            // console.log("mon step : "+data);
             step = data;
             updatePitons();
             });
@@ -648,14 +656,38 @@
         } // fin de draw
 
 
-    /*function deviceMoved() {
+/*     function deviceMoved() {
 
-        //rx = map(rotationX, -90, 90, 0, displayHeight);
-        //ry = map(rotationY, -90, 90, 0, displayWidth);
-        //rz = radians(rotationZ);
+        rx = map(rotationX, -90, 90, 0, displayHeight);
+        ry = map(rotationY, -90, 90, 0, displayWidth);
+        rz = radians(rotationZ);
         text("rotated", 50,50);
+
         }
-    */
+     */
+
+     function updateMtmss(data){
+        // Can't use a for loop here for some reason that escapes me
+        tmpInstr = data;
+        console.log('tmpInstr : '+tmpInstr);
+        mstr[0+15] = mtmss[0+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[1+15] = mtmss[1+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[2+15] = mtmss[2+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[3+15] = mtmss[3+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[4+15] = mtmss[4+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[5+15] = mtmss[5+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[6+15] = mtmss[6+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[7+15] = mtmss[7+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[8+15] = mtmss[8+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[9+15] = mtmss[9+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[10+15] = mtmss[10+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[11+15] = mtmss[11+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[12+15] = mtmss[12+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[13+15] = mtmss[13+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[14+15] = mtmss[14+15+(tmpInstr*79)]; // populate mstr correctly
+        mstr[15+15] = mtmss[15+15+(tmpInstr*79)]; // populate mstr correctly
+
+     }
 
     </script>
 </body>
