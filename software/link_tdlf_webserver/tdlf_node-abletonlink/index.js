@@ -55,9 +55,15 @@ const dgram = require('dgram'); // To connect to the tdlf module
 //require { Bundle, Client } from 'node-osc';
 Bundle = require('node-osc').Bundle;
 Client = require('node-osc').Client;
-const client = new Client('192.168.0.128', 8000);
+Message = require('node-osc').Message;
 
-let myIP = "42";
+//const clientUnity = new Client('192.168.8.124', 12345);
+
+//const client = new Client('192.168.8.124', 12345);
+const client = new Client('10.10.10.140', 12345);
+
+//const client = new Client('10.10.10.128', 8000);
+let myIP = "10.10.10.133"; // change this to your IP
 let myUsers = [];
 let myUsersLength;
 let myUsersAndVotesLength;
@@ -65,6 +71,8 @@ const myUsersAndVotes = {}; // socketid:vote // Keep id's and votes together
 let proposedBPM;
 let countDown;
 let counting = 16;
+
+let perceptoMidi = [0,0,0,666,0,0,0,0,0] // 
 
 let scaleTracker = Math.floor(Math.random()*8);
 //console.log('scaleTracker : ' +scaleTracker);
@@ -218,26 +226,6 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         io.emit('myUsers', { myUsersAndVotesLength });
         }
     );
-    // We need to keep track of how many clients are connected and send them their own id
-
-    socket.on('CCData', (data) => {
-      
-        // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
-        var s = dgram.createSocket('udp4');
-        
-        console.log("data testing : "+data);
-        for (let i = 0; i < data.length; i++) {
-            CCDatas[i] = data[i];
-        }
-        //s.send(Buffer.from(mstr), 3333, '192.168.1.239'); // 
-        // a bundle without an explicit time tag
-        const bundle = new Bundle(['/CC1', CCDatas[1]], ['/CC2', CCDatas[2]]);
-        client.send(bundle);
-        s.send(Buffer.from(CCDatas), 3333, '192.168.0.100'); // 
-
-        console.log("CCData envoyé : "+CCDatas);
-
-        });
 
     socket.on('propose', (data) => {
         console.log("data : "+data);
@@ -300,33 +288,57 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         });
     
     socket.on('interface', (data) => {
-        /* var msg = {
-            address: "/oscjs",
-            args: [
-                {
-                    type: "f",
-                    value: Math.random()
-                },
-                {
-                    type: "f",
-                    value: Math.random()
-                }
-            ]
-        };
-     */
-       /// console.log("Sending message", msg.address, msg.args, "to", udpPort.options.remoteAddress + ":" + udpPort.options.remotePort);
-       /// udpPort.send(msg);
         
         // mstr[0-3] (channel) // mstr[4-7] (note) // mstr[8-11] (note duration) // mstr[12-13] (bar) // mstr[14] (mute) // mstr[15-79](steps)
         var s = dgram.createSocket('udp4');
         console.log("data : "+data);
+
+        if (data.length < 4){
+            perceptoMidi[5] = data[0]; // CC number
+            perceptoMidi[6] = data[1]; // CC1 messages // X of the web interface
+            perceptoMidi[7] = data[2]; // CC2 messages // Y to the web interface
+            // perceptoMidi[8] = data[9]; // CC3 Z messages    
+            } else {
+            perceptoMidi[0] = data[0]; // 1-64 //step number that just got changed
+            perceptoMidi[1] = data[1]; // 1-16 //midi channel
+            perceptoMidi[2] = data[2]; // // midi note number // instrument (bd, snare, etc) // actually note number
+            perceptoMidi[3] = 666; // data[3] // note duration, hardcoded for now // might need to add it to the web interface
+            if(data[3]==true){
+                perceptoMidi[4] = 127;
+            } else { 
+                perceptoMidi[4] = 0;
+            }
+            // perceptoMidi[4] = data[3]; // velocity hardcoded (off = 0 , on = 127) // might need to add it to the web interface
+            perceptoMidi[5] = 42;// CC messages // add to the web interface
+            perceptoMidi[6] = data[7];// CC1 messages // X of the web interface
+            perceptoMidi[7] = data[8];// CC2 messages // Y to the web interface
+            perceptoMidi[8] = data[9];// CC3 Z messages 
+
+            for(let i = 0; i < perceptoMidi.length; i++){
+                console.log("perceptoMidi["+i+"] : "+perceptoMidi[i]);
+            }
+
             for (let i = 0; i < data.length; i++) {
-                mstr[i] = data[i];
-        }
-        s.send(Buffer.from(mstr), 3333, '192.168.50.152');
+                mstr[i] = data[i];       
+            }
+
+        } // end of else
+
+        //s.send(Buffer.from(mstr), 3333, '192.168.50.152');
+        s.send(Buffer.from(mstr), 3333, '192.168.50.41');
         console.log("mstr envoyé : "+mstr); 
         socket.broadcast.emit('echoMstr',mstr); // send the received sequence so all users can update their sequence.
-        });
+
+        ///// Open a socket to Unity /////
+           //const message = new Message('/percepto');
+          
+           //message.append(perceptoMidi);
+
+           client.send('/percepto', perceptoMidi, () => {
+            //client.close();
+          });
+        ////////////////////////////////////////////
+    });
 
     socket.on('chBPM', (data) => {
         var s = dgram.createSocket('udp4');

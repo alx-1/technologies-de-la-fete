@@ -25,9 +25,10 @@
         var socket = io();
         var myBeat = 42;
         var myBPM = 66.6;
+        let myCC = 42;
         let sessionID;
         let input;
-        let s;
+        //let s;
         let proposeBPM = -1;
         let proposedBPM = -1;
         let buttonPropose;
@@ -71,12 +72,15 @@
         
         var output;
     
-        let data;
+        let data; // for the array 
+        let dataPad; // for the X Y grid
         let note;
+        let velocity;
 
         //let ccData = ['s',120,42];
 
-        let ccData = ['s',eric_X,eric_Y];
+        let ccData = [eric_X,eric_Y];
+        //let ccData = ['s',eric_X,eric_Y];
 
         
         let mstr = new Array(79); // Array to send to the node.js server
@@ -98,8 +102,25 @@
 
         let pitons = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p"];
         let touches = ["k60","k61","k62","k63","k64","k65","k66","k67","k68","k69","k70","k71","k72","k73","k74","k75","k76","k77","k78","k79","k80","k81","k82","k83"];
-        let instr = ["   bd  ", " snare ", "low tom", " hi tom", " cl hat", " op hat", "  clap ", " claves"]
+        let instr = ["   bd  ", " snare ", "low tom", " hi tom", " cl hat", " op hat", "  clap ", " claves"];
         let myInstr = 0;
+        let volcaBeatsMapping = [36,38,43,50,42,46,39,75,67,49]; // The midi note mapping for the Volca Beats
+        //let synthMapping = [];
+
+        /*
+        0x24 // 36 // C2 //  Kick
+        0x26 // 38 // D2 //  Snare
+        0x2B // 43 // G2 //  Low tom
+        0x32 // 50 // D3 //  Hi Tom 
+        0x2A // 42 // F#2 // Closed Hat 
+        0x2E // 46 // A#2 // Open Hat
+        0x27 // 39 // D#2 // Clap 
+        0x4B // 75 // D#5 // Claves 
+        0x43 // 67 // G4 //  Agogo 
+        0x31 // 49 // C#3 // Crash
+        */
+
+
         let tmpInstr;
         let echoInstr;
         let midiChannel = 10; // Starting value for the korg volca beats
@@ -233,6 +254,9 @@
             s = createSlider("Slider", 80, sy+10+9*off,180, 24, 20, 160);
             eval(s).onChange = sliderBPM;
 
+            t = createSlider("Slider", 80, sy+10+12*off,180, 24, 40, 127);
+            eval(t).onChange = sliderCC;
+
             buttonPropose = createButton('propose',320,sy+10+9*off,80,25);
             eval(buttonPropose).onRelease = proposing;
 
@@ -266,7 +290,6 @@
             startStop = createButton("Start/Stop", 320, sy+10+11*off, 100, 25);
             eval(startStop).onRelease = startStopPressed;
             
-
             minusBar = createButton("-", sx+350, sy+off-16, hbutton,vbutton);
             plusBar = createButton("+", sx+465, sy+off-16, hbutton,vbutton);
 
@@ -368,6 +391,12 @@
             console.log("proposeBPM : "+proposeBPM);
         }
 
+        function sliderCC() {
+            //console.log(t.val);
+            myCC = Math.round(t.val);
+            console.log("CC : "+myCC);
+        }
+
         function votingYes() {
             console.log('votingYes');
             socket.emit('voting', 1);
@@ -404,13 +433,19 @@
             console.log("numberPressed : " +numberPressed);
             mtmss[numberPressed+15+(myInstr*79)] = !mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
             //mstr[numberPressed+15] = mtmss[numberPressed+15+(myInstr*79)];  // write the notes in their right place
-            
+            mstr[0] = numberPressed;
             ///// midi channel /////
             mstr[1] = midiChannel;
 
             ///// instrument that is selected /////
-            console.log("myInstr : "+myInstr);
-            mstr[2] = myInstr;
+            /*console.log("myInstr : "+myInstr);
+            if(instrument select == volcaBeats){
+                mstr[2] = volcaBeatsMapping[myInstr]; // 
+            } else {
+                mstr[2] = myInstr;
+            }*/
+            mstr[2] = volcaBeatsMapping[myInstr]; //  // hardcoded for now
+            mstr[3] = mtmss[numberPressed+15+(myInstr*79)] // velocity;
             
             //for(i=0;i<79;i++){ // just get the 16 steps of interest
             //   mstr[i] = mtmss[i+myInstr*79];
@@ -423,6 +458,7 @@
         }
 
         socket.on('echoMstr', function(data) {
+            console.log("whaaatststs");
             console.log("echoMstr : "+data);
             let echoMstr = data;
             echoInstr = echoMstr[2];          // What is the instrument 
@@ -444,7 +480,7 @@
             mtmss[13+15+(echoInstr*79)] = echoMstr[13+15];
             mtmss[14+15+(echoInstr*79)] = echoMstr[14+15];
             mtmss[15+15+(echoInstr*79)] = echoMstr[15+15];
-            // console.log('mtmss : '+mtmss);
+            //console.log('mtmss : '+mtmss);
             updatePitons();
         });
 
@@ -481,7 +517,7 @@
 
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-            // console.log("mon step : "+data);
+            //console.log("mon step : "+data);
             step = data;
             updatePitons();
             });
@@ -544,11 +580,11 @@
                     //stroke(255);
                     eric_X = mouseX-555;
                     eric_Y = mouseY-5;
-                    console.log("eric_X : "+eric_X);
-                    console.log("eric_Y : "+eric_Y);
-                    ccData = [42,eric_X,eric_Y];
-                    data = ccData;
-                    socket.emit('CCData', data);
+                    //console.log("eric_X : "+eric_X);
+                    //console.log("eric_Y : "+eric_Y);
+                    dataPad = [myCC,eric_X,eric_Y];
+                    console.log(dataPad);
+                    socket.emit('interface', dataPad);
                 }
 
                 rect(eric_X+555,eric_Y-10+5,4,24);
@@ -573,10 +609,11 @@
                 text(proposeBPM, sx+250, sy+10*off);
                 }
             text('scale : ',sx, sy+3*off);
-            //text('clients :               '+numUsers, sx, sy+3*off);
-            text('client id : '+sessionID,sx, sy+13*off);
+            text('CC : ', sx, sy+13*off);
+            text('client id : '+sessionID,sx+295, sy+13*off);
             text('phase :    '+myPhase, sx, sy+12*off);
             text('BPM :' , sx, sy+10*off);
+            text(myCC, sx+250,sy+13*off);
             if(proposedBPM > -1){
                 //console.log('show proposedBPM');
                 text('proposed BPM : '+proposedBPM+' ?', sx, sy+11*off);
@@ -669,7 +706,7 @@
      function updateMtmss(data){
         // Can't use a for loop here for some reason that escapes me
         tmpInstr = data;
-        console.log('tmpInstr : '+tmpInstr);
+        console.log('updateMtmss with tmpInstr : '+tmpInstr);
         mstr[0+15] = mtmss[0+15+(tmpInstr*79)]; // populate mstr correctly
         mstr[1+15] = mtmss[1+15+(tmpInstr*79)]; // populate mstr correctly
         mstr[2+15] = mtmss[2+15+(tmpInstr*79)]; // populate mstr correctly
@@ -686,8 +723,7 @@
         mstr[13+15] = mtmss[13+15+(tmpInstr*79)]; // populate mstr correctly
         mstr[14+15] = mtmss[14+15+(tmpInstr*79)]; // populate mstr correctly
         mstr[15+15] = mtmss[15+15+(tmpInstr*79)]; // populate mstr correctly
-
-     }
+    }
 
     </script>
 </body>
