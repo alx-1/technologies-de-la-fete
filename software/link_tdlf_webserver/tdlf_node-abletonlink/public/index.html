@@ -517,7 +517,7 @@
 
         // handle the event sent with socket.send()
         socket.on("message", (data) => {
-            //console.log("mon step : "+data);
+            console.log("mon step : "+data);
             step = data;
             updatePitons();
             });
