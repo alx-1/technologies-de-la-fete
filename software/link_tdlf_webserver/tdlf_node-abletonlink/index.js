@@ -59,11 +59,12 @@ Message = require('node-osc').Message;
 
 //const clientUnity = new Client('192.168.8.124', 12345);
 
-//const client = new Client('192.168.8.124', 12345);
-const client = new Client('10.10.10.140', 12345);
+const client = new Client('192.168.8.124', 12345);
+//const client = new Client('10.10.10.122', 12345);
 
 //const client = new Client('10.10.10.128', 8000);
-let myIP = "10.10.10.133"; // change this to your IP
+//let myIP = "10.10.10.119"; // change this to your IP
+let myIP = "192.168.8.123   "; // change this to your IP
 let myUsers = [];
 let myUsersLength;
 let myUsersAndVotesLength;
@@ -325,7 +326,9 @@ io.on('connection', (socket) => {  // start listening from events from the socke
         } // end of else
 
         //s.send(Buffer.from(mstr), 3333, '192.168.50.152');
-        s.send(Buffer.from(mstr), 3333, '192.168.50.41');
+        //s.send(Buffer.from(mstr), 3333, '192.168.50.41'); // 192.168.8.192
+        s.send(Buffer.from(mstr), 3333, '192.168.8.192'); // 192.168.8.192
+
         console.log("mstr envoyé : "+mstr); 
         socket.broadcast.emit('echoMstr',mstr); // send the received sequence so all users can update their sequence.
 

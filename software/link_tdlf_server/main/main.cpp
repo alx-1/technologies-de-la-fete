@@ -653,7 +653,7 @@ extern "C" {
             
           //mstr should be 79 values long;
           int len = recvfrom(sock, mstr, sizeof(mstr), 0, (struct sockaddr *)&source_addr, &socklen);
-           
+          ESP_LOGE(SOCKET_TAG, "len %i", len); 
           // for(int i = 0; i<sizeof(mstr); i++){
           //  test = mstr[i];
           //  ESP_LOGE(SOCKET_TAG, "data %i", test); 
@@ -662,7 +662,8 @@ extern "C" {
           test = mstr[0];
           ESP_LOGE(SOCKET_TAG, "testing mstr[0] %i", test); 
 
-          if (test==0||test==1){
+          //if (test==0||test==1){
+          if (test<42){
             ESP_LOGE(SOCKET_TAG, "got an an old array"); 
             ///// midi channel ///// 1-16 midi channels
             channel = mstr[1];
@@ -697,18 +698,42 @@ extern "C" {
 
             
             for (int i = 0; i <=79; i++){
+              if (note == 36) { // Volca notes 36,38,43,50,42,46,39,75
+                note = 0;
+              } else if (note == 38) {
+                note = 1;
+              } else if (note == 43) {
+                note = 2;
+              } else if (note == 50) {
+                note = 3;
+              } else if (note == 42) {
+                note = 4;
+              } else if (note == 46) {
+                note = 5;
+              } else if (note == 39) {
+                note = 6;
+              } else if (note == 75) {
+                note = 7;
+              }
+
               mtmss[i+note*79] = mstr[i];
-            //  ESP_LOGI(SOCKET_TAG, "hello mtmss : %i", mtmss[i]); 
+              //ESP_LOGI(SOCKET_TAG, "hello mtmss : %i", mtmss[i]); 
+              //ESP_LOGI(SOCKET_TAG, "hello mstr !!!!! %i : %i", i, mstr[i]);
             } 
 
             // depending on note number, enter this value in mtmss
 
           } else {
-
+          // ESP_LOGI(SOCKET_TAG, "testing testing"); 
+              for (int i = 0; i <=79; i++){
+              mtmss[i+note*79] = mstr[i];
+              //ESP_LOGI(SOCKET_TAG, "hello mtmss !!!!! : %i", mtmss[i]); 
+              ESP_LOGI(SOCKET_TAG, "hello mstr !!!!! %i : %i", i, mstr[i]);
+            } 
           /////////////////// FROM TINYOSC ///////////////////////
           //tosc_printOscBuffer(rx_buffer, len);
-          tosc_printOscBuffer(mstr, len);
-
+            tosc_printOscBuffer(mstr, len);
+            ESP_LOGI(SOCKET_TAG, "testing testing"); 
             tosc_message osc; // declare the TinyOSC structure
             char buffer[1024]; // char buffer[64]; declare a buffer into which to read the socket contents
             //int oscLen = 0; // the number of bytes read from the socket
@@ -724,7 +749,8 @@ extern "C" {
             ////&osc->len,              // the number of bytes in the OSC message
             //tosc_getAddress(&osc),  // the OSC address string, e.g. "/button1"
             //tosc_getFormat(&osc));  // the OSC format string, e.g. "f"
-
+            
+            ESP_LOGI(SOCKET_TAG, " Unknown format: %c", osc.format[0]);
            //switch (tosc_getFormat(&osc)) {
             switch(osc.format[0]) {
     
@@ -733,7 +759,7 @@ extern "C" {
                     unsigned char *m = tosc_getNextMidi(&osc);
                     //printf(" 0x%02X%02X%02X%02X", m[0], m[1], m[2], m[3]);
                     //printf("\n");
-                    // the follwing is for sending CC messages
+                    // the following is for sending CC messages
                     CCChannel = m[0];
                     sensorValue = m[1];
                     CCmessage = m[2];
@@ -1678,7 +1704,7 @@ void tickTask(void* userParam)
                 //// Send step via OSC here ////
                 char monBuffer[16]; // monBuffer[16] // // declare a buffer for writing the OSC packet into
                 uint8_t stepper = step; // The step value to send to the OSC client 
-                ESP_LOGI(LINK_TAG, "step : %i", step);
+                // ESP_LOGI(LINK_TAG, "step : %i", step);
 
                 steps[0].on = true; // Test writing to the array of structs
                 //ESP_LOGI(SEQ_TAG, "First step : %i", steps[0].on);                                   
@@ -1755,11 +1781,11 @@ void tickTask(void* userParam)
               //ESP_LOGI(LINK_TAG, "nouveau 'dub'Step : %i", dubStep);
 
               currStep = (i*79)+dubStep+15; // 15 is where the step info starts
-              ESP_LOGI(LINK_TAG, "currStep : %i", currStep);
+              //ESP_LOGI(LINK_TAG, "currStep : %i", currStep);
 
-               //for(int j = 0; j<79;j++){
-               //     ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
-               //}  
+              // for(int j = 0; j<79;j++){
+              //      ESP_LOGI(LINK_TAG, "mtmss : %i, %i", j, mtmss[j]);
+              // }  
 
               if (mtmss[currStep] == 1){ // send [midi] note out // mute to be implemented // && !muteRecords[i]){ 
                   ESP_LOGI(LINK_TAG, "Check MIDI_NOTE_ON_CH, %i", channel);
@@ -1824,7 +1850,7 @@ void tickTask(void* userParam)
         }
 
         if(isPlaying){
-          // ESP_LOGI(LINK_TAG, "step : %d", step); 
+          // ESP_LOGI(LINK_TAG, "We should see this step if we're playing : step : %d", step); 
           step++; // might be off to add '1' right away
           }
 
